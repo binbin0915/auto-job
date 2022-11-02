@@ -1,0 +1,45 @@
+package com.example.autojob.skeleton.model.register;
+
+import com.example.autojob.skeleton.annotation.ProcessorLevel;
+import com.example.autojob.skeleton.framework.launcher.AutoJobApplication;
+import com.example.autojob.skeleton.framework.processor.IAutoJobLoader;
+import com.example.autojob.util.bean.ObjectUtil;
+import lombok.extern.slf4j.Slf4j;
+import org.reflections.Reflections;
+import org.reflections.scanners.Scanners;
+
+import java.util.Set;
+
+/**
+ * 注册器加载器
+ *
+ * @Author Huang Yongxiang
+ * @Date 2022/07/30 11:19
+ */
+@ProcessorLevel(Integer.MAX_VALUE)
+@Slf4j
+public class AutoJobRegisterLoader implements IAutoJobLoader {
+
+    @Override
+    public void load() {
+        IAutoJobRegister autoJobRegister = AutoJobApplication.getInstance().getRegister();
+        Reflections reflections = new Reflections(Scanners.SubTypes);
+        Set<Class<? extends AbstractRegisterHandler>> classes = reflections.getSubTypesOf(AbstractRegisterHandler.class);
+        Set<Class<? extends AbstractRegisterFilter>> filterClasses = reflections.getSubTypesOf(AbstractRegisterFilter.class);
+        AbstractRegisterHandler.Builder handlerBuilder = AbstractRegisterHandler.builder();
+        for (Class<? extends AbstractRegisterHandler> clazz : classes) {
+            handlerBuilder.addHandler(ObjectUtil.getClassInstance(clazz));
+        }
+        log.debug("成功加载{}个注册处理器", classes.size());
+
+        AbstractRegisterFilter.Builder filterBuilder = AbstractRegisterFilter.builder();
+        for (Class<? extends AbstractRegisterFilter> clazz : filterClasses) {
+            filterBuilder.addHandler(ObjectUtil.getClassInstance(clazz));
+        }
+        log.debug("成功加载{}个注册过滤器", filterClasses.size());
+
+        autoJobRegister.setHandler(handlerBuilder.build());
+        autoJobRegister.setFilter(filterBuilder.build());
+    }
+
+}

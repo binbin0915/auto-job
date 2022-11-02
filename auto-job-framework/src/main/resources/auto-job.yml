@@ -1,0 +1,106 @@
+# 动态任务调度框架配置
+autoJob:
+  context:
+    schedulingQueue:
+      length: 1000
+    memoryContainer:
+      length: 200
+      cleanStrategy: CLEAN_FINISHED
+  annotation:
+    enable: true
+    defaultDelayTime: 30
+  executor:
+    fastPool:
+      update:
+        enable: true
+        trafficUpdateCycle: 5
+        adjustedThreshold: 0.5
+      coreThread:
+        initial: 5
+        min: 5
+        max: 50
+        keepAliveTime: 60
+      maxThread:
+        initial: 10
+        min: 10
+        max: 50
+    slowPool:
+      update:
+        enable: false
+        trafficUpdateCycel: 5
+        adjustedThreshold: 0.5
+      coreThread:
+        initial: 10
+        min: 5
+        max: 50
+        keepAliveTime: 60
+      maxThread:
+        initial: 20
+        min: 10
+        max: 50
+    queue:
+      length: 100
+    relegation:
+      threshold: 3
+  register:
+    filter:
+      enable: true
+      classPath: "**.job.**"
+  scheduler:
+    finished:
+      error:
+        retry:
+          enable: true
+          retryCount: 3
+          interval: 0.12
+  emailAlert:
+    enable: true
+    auth:
+      sender: "15756481826@163.com"
+      receiver: "2213809350@qq.com"
+      token: "LXZYEPEDLJCEWASU"
+      type: 163Mail
+      customize:
+        smtpAddress:
+        smtpPort:
+    config:
+      taskRunError: true
+      taskRefuseHandle: true
+      clusterOpenProtectedMode: true
+      clusterCloseProtectedMode: true
+  logging:
+    taskLog:
+      memory:
+        enable: false
+        length: 100
+        defaultExpireTime: 3
+    runLog:
+      memory:
+        enable: false
+        length: 100
+        defaultExpireTime: 3
+  cluster:
+    enable: false
+    port: 7777
+    auth:
+      enable: true
+      publicKey: "autoJob!@#=123.?"
+      token: "hello"
+    client:
+      nodeUrl: "localhost:8087"
+      pool:
+        size: 10
+        getTimeout: 3
+        getDataTimeout: 10
+        connectTimeout: 10
+        keepAliveTimeout: 10
+      allowMaxJetLag: 3
+      nodeSync:
+        cycle: 5
+        offLineThreshold: 3
+    config:
+      annotations:
+        enable: false
+      protectedMode:
+        enable: true
+        threshold: 0.2

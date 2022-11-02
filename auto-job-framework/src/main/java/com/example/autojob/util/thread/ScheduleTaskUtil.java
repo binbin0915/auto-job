@@ -1,0 +1,157 @@
+package com.example.autojob.util.thread;
+
+import com.example.autojob.util.id.SystemClock;
+import lombok.extern.slf4j.Slf4j;
+
+import java.util.List;
+import java.util.concurrent.*;
+
+/**
+ * @Description 异步任务构建器，提供单例模式和多例模式，调用静态方法instance()和使用静态任务执行方法
+ * 均是使用的单例对象，单例模式下提交的任务将是串行执行，如果你不能保证你执行的任务都能在可接受的时间内完成，
+ * 请优先使用build()方法构建多例来运行
+ * @Auther Huang Yongxiang
+ * @Date 2022/03/22 9:39
+ */
+@Slf4j
+public class ScheduleTaskUtil {
+    private static final String DEFAULT_THREAD_NAME = "defaultScheduleThread";
+    private ScheduledExecutorService executorService;
+
+
+    private ScheduleTaskUtil() {
+    }
+
+    public static ScheduleTaskUtil build() {
+        ScheduleTaskUtil scheduleTaskUtil = new ScheduleTaskUtil();
+        scheduleTaskUtil.executorService = Executors.newSingleThreadScheduledExecutor(runnable -> {
+            Thread thread = new Thread(runnable, DEFAULT_THREAD_NAME + SystemClock.now());
+
+            thread.setDaemon(true);
+            return thread;
+        });
+        return scheduleTaskUtil;
+    }
+
+    /**
+     * 构建一个异步任务调度工具实例
+     *
+     * @param isDaemon   是否是守护线程
+     * @param threadName 线程名
+     * @return com.example.autojob.util.thread.ScheduleTaskUtil
+     * @author Huang Yongxiang
+     * @date 2022/3/22 10:46
+     */
+    public static ScheduleTaskUtil build(boolean isDaemon, String threadName) {
+        ScheduleTaskUtil scheduleTaskUtil = new ScheduleTaskUtil();
+        scheduleTaskUtil.executorService = Executors.newSingleThreadScheduledExecutor(runnable -> {
+            Thread thread = new Thread(runnable, threadName);
+            thread.setDaemon(isDaemon);
+            return thread;
+        });
+        return scheduleTaskUtil;
+    }
+
+    public void shutdown() {
+        executorService.shutdown();
+    }
+
+    public List<Runnable> shutdownNow() {
+        return executorService.shutdownNow();
+    }
+
+    public ScheduledFuture<Object> EOneTimeTask(Callable<Object> runnable, long delay, TimeUnit unit) {
+        if (runnable == null || delay < 0 || unit == null) {
+            log.error("执行失败，错误参数");
+            return null;
+        }
+        return executorService.schedule(runnable, delay == 0 ? 1 : delay, unit);
+    }
+
+    public void EFixedRateTask(Runnable runnable, long delay, long rate, TimeUnit unit) {
+        if (runnable == null || delay < 0 || unit == null || rate <= 0) {
+            log.error("执行失败，错误参数");
+            return;
+        }
+        executorService.scheduleAtFixedRate(runnable, delay == 0 ? 1 : delay, rate, unit);
+    }
+
+    public void EFixedRateDelayTask(Runnable runnable, long delay, long nextDaly, TimeUnit unit) {
+        if (runnable == null || delay < 0 || unit == null || nextDaly <= 0) {
+            log.error("执行失败，错误参数");
+            return;
+        }
+        executorService.scheduleWithFixedDelay(runnable, delay, nextDaly, unit);
+    }
+
+
+    public static ScheduledExecutorService instance() {
+        return ThreadHolder.executorService;
+    }
+
+
+    /**
+     * <p>执行一次性任务，如果该任务是一个不可退出任务，如死循环，则在单例模式下后面的任务几乎永远不会执行，
+     * 因此使用静态方法请保证你所执行的任务不会发生死循环。简单来说，该方法提交的任务实际是串行进行，但是
+     * 独立于主线程外</p>
+     *
+     * @param runnable 任务
+     * @param delay    启动前延迟
+     * @param unit     delay的时间单位
+     * @return void
+     * @author Huang Yongxiang
+     * @date 2022/3/22 10:01
+     */
+    public static ScheduledFuture<Object> oneTimeTask(Callable<Object> runnable, long delay, TimeUnit unit) {
+        if (runnable == null || delay < 0 || unit == null) {
+            log.error("执行失败，错误参数");
+            return null;
+        }
+        return instance().schedule(runnable, delay == 0 ? 1 : delay, unit);
+    }
+
+
+    public static void fixedRateTask(Runnable runnable, long delay, long rate, TimeUnit unit) {
+        if (runnable == null || delay < 0 || unit == null || rate <= 0) {
+            log.error("执行失败，错误参数");
+            return;
+        }
+        instance().scheduleAtFixedRate(runnable, delay == 0 ? 1 : delay, rate, unit);
+    }
+
+    /**
+     * 创建并执行一个周期性操作，该操作首先在给定的初始延迟之后启用，随后在一个执行的终止和下一个执行的开始
+     * 之间具有给定的延迟。如果任务的任何执行遇到异常，则后续执行将被抑制。否则，任务只会通过取消或终止执行
+     * 者来终止
+     *
+     * @param runnable 任务
+     * @param delay    首次延迟
+     * @param nextDaly 上一次执行完与下一次执行开始之间的延迟
+     * @param unit     时间单位
+     * @return void
+     * @author Huang Yongxiang
+     * @date 2022/3/22 10:41
+     */
+    public static void fixedRateDelayTask(Runnable runnable, long delay, long nextDaly, TimeUnit unit) {
+        if (runnable == null || delay < 0 || unit == null || nextDaly <= 0) {
+            log.error("执行失败，错误参数");
+            return;
+        }
+        instance().scheduleWithFixedDelay(runnable, delay, nextDaly, unit);
+    }
+
+    private static class ThreadHolder {
+        private static final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor(runnable -> {
+            Thread thread = new Thread(() -> {
+                try {
+                    runnable.run();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }, DEFAULT_THREAD_NAME);
+            thread.setDaemon(true);
+            return thread;
+        });
+    }
+
+}

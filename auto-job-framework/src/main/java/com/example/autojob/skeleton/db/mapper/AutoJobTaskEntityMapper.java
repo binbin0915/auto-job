@@ -1,0 +1,173 @@
+package com.example.autojob.skeleton.db.mapper;
+
+import com.example.autojob.skeleton.db.entity.AutoJobTaskEntity;
+import com.example.autojob.skeleton.db.entity.AutoJobTriggerEntity;
+import com.example.autojob.util.bean.ObjectUtil;
+import com.example.autojob.util.id.SystemClock;
+
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * 任务持久层对象mapper
+ *
+ * @Author Huang Yongxiang
+ * @Date 2022/08/17 16:46
+ */
+public class AutoJobTaskEntityMapper extends BaseMapper<AutoJobTaskEntity> {
+
+
+    public AutoJobTaskEntityMapper() {
+        super(AutoJobTaskEntity.class);
+    }
+
+    /**
+     * 所有列
+     */
+    public static final String ALL_COLUMNS = "id, alias, annotation_id, method_class_name, method_name,params, content, method_object_factory, script_content, script_path, script_file_name, script_cmd, trigger_id, type, is_child_task, run_lock, task_level, version, belong_to, status, create_time, del_flag";
+    /**
+     * 表名
+     */
+    public static final String TABLE_NAME = "aj_auto_job";
+
+
+    /**
+     * 判断一个任务是否被上锁
+     *
+     * @param taskId 任务id
+     * @return boolean
+     * @author Huang Yongxiang
+     * @date 2022/8/18 11:05
+     */
+    public boolean isLock(long taskId) {
+        AutoJobTaskEntity taskEntity = selectById(taskId);
+        if (taskEntity == null) {
+            return false;
+        }
+        return taskEntity.getRunLock() == 1;
+    }
+
+    /**
+     * 尝试对任务进行上锁
+     *
+     * @param taskId 要上锁的任务Id
+     * @return boolean
+     * @author Huang Yongxiang
+     * @date 2022/8/18 11:04
+     */
+    public boolean lock(long taskId) {
+        AutoJobTaskEntity entity = selectById(taskId);
+        AutoJobTriggerEntity triggerEntity = AutoJobMapperHolder.TRIGGER_ENTITY_MAPPER.selectOneByTaskId(taskId);
+
+        if (entity == null || ObjectUtil.isNull(entity)) {
+            return true;
+        }
+        if (entity.getRunLock() == 1 || (triggerEntity != null && triggerEntity.getIsPause() == 1) || entity.getStatus() == 0) {
+            return false;
+        }
+        int count = updateOne(getUpdateExpression() + " set run_lock = 1 where del_flag = 0 and id = ?", taskId);
+        return count == 1;
+    }
+
+    public boolean unLock(long taskId) {
+        return updateOne(getUpdateExpression() + " set run_lock = 0 where del_flag = 0 and id = ?", taskId) == 1;
+    }
+
+    /**
+     * 查询未来时间内会执行的任务
+     *
+     * @param nearTime 未来时间段
+     * @param unit     时间单位
+     * @return java.util.List<com.example.autojob.skeleton.db.entity.AutoJobTaskEntity>
+     * @author Huang Yongxiang
+     * @date 2022/8/26 9:50
+     */
+    public List<AutoJobTaskEntity> selectNearTask(long nearTime, TimeUnit unit) {
+        String sql = getSelectExpression() + " where (id in (SELECT task_id FROM `aj_trigger` where next_triggering_time >= ? and next_triggering_time <= ? and del_flag = 0 and is_pause = 0) or is_child_task = 1) and del_flag = 0 and status = 1";
+        return queryList(sql, SystemClock.now(), SystemClock.now() + unit.toMillis(nearTime));
+    }
+
+
+    /**
+     * 通过id查询子任务
+     *
+     * @param taskId 任务id
+     * @return com.example.autojob.skeleton.db.entity.AutoJobTaskEntity
+     * @author Huang Yongxiang
+     * @date 2022/8/26 9:50
+     */
+    public AutoJobTaskEntity selectChildTask(long taskId) {
+        String condition = " where is_child_task = 1 and del_flag = 0 and id = ? and status = 1";
+        return queryOne(getSelectExpression() + condition, taskId);
+    }
+
+    /**
+     * 查找最新版本的注解任务
+     *
+     * @param annotationId 注解上给定的id
+     * @return com.example.autojob.skeleton.db.entity.AutoJobTaskEntity
+     * @author Huang Yongxiang
+     * @date 2022/8/26 9:51
+     */
+    public AutoJobTaskEntity selectLatestAnnotationTask(long annotationId) {
+        String sql = getSelectExpression() + " where id = (select max(id) from " + getTableName() + " where annotation_id = ? and del_flag = 0 and status = 1)";
+        return queryOne(sql, annotationId);
+    }
+
+    /**
+     * 通过id删除任务
+     *
+     * @param ids 注解id
+     * @return int
+     * @author Huang Yongxiang
+     * @date 2022/8/26 9:36
+     */
+    public int deleteTasksById(List<Long> ids) {
+        if (ids == null || ids.size() == 0) {
+            return 0;
+        }
+        String condition = " where id in (" + idRepeat(ids) + ")";
+        return updateOne(getDeleteExpression() + condition);
+    }
+
+    public int deleteTasksByIds(List<Long> ids) {
+        if (ids == null || ids.size() == 0) {
+            return 0;
+        }
+        String condition = " where id in (" + idRepeat(ids) + ")";
+        return updateOne(getDeleteExpression() + condition);
+    }
+
+    /**
+     * 查询被暂停的任务
+     *
+     * @param taskId 任务id
+     * @return com.example.autojob.skeleton.db.entity.AutoJobTaskEntity
+     * @author Huang Yongxiang
+     * @date 2022/8/26 9:51
+     */
+    public AutoJobTaskEntity selectPausedTaskById(long taskId) {
+        String condition = " where exists (select id from " + AutoJobMapperHolder.TRIGGER_ENTITY_MAPPER.getTableName() + " where task_id = ? and del_flag = 0 and is_pause = 1) and del_flag = 0 and status = 1 and id = ?";
+        return queryOne(getSelectExpression() + condition, taskId, taskId);
+    }
+
+    public int updateById(AutoJobTaskEntity task, long taskId) {
+        if (task == null) {
+            return -1;
+        }
+        task.setId(null);
+        return updateEntity(task, "id = ?", taskId);
+    }
+
+
+    @Override
+    public String getAllColumns() {
+        return ALL_COLUMNS;
+    }
+
+    @Override
+    public String getTableName() {
+        return TABLE_NAME;
+    }
+
+}
