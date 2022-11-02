@@ -6,7 +6,7 @@ import com.example.autojob.api.task.AutoJobTaskAttributes;
 import com.example.autojob.api.task.AutoJobTriggerAttributes;
 import com.example.autojob.job.Jobs;
 import com.example.autojob.skeleton.model.builder.AutoJobMethodTaskBuilder;
-import com.example.autojob.skeleton.framework.launcher.AutoJobLauncherBuilder;
+import com.example.autojob.skeleton.framework.launcher.AutoJobBootstrap;
 import com.example.autojob.skeleton.framework.network.handler.client.RPCClientProxy;
 import com.example.autojob.skeleton.model.task.method.MethodTask;
 import com.example.autojob.util.id.SystemClock;
@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class AutoJobRemoteAPIApplication {
     public static void main(String[] args) {
-        new AutoJobLauncherBuilder(AutoJobMainApplication.class)
+        new AutoJobBootstrap(AutoJobMainApplication.class)
                 .withAutoScanProcessor()
                 .build()
                 .run();

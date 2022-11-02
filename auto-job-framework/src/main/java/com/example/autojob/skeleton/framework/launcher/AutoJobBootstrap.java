@@ -48,13 +48,13 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
- * 应用启动构建器，构建一个完整的AutoJob应用，该应用为全局单例
+ * AutoJob应用启动引导类，用于构建一个全局AutoJobApplication应用
  *
  * @Author Huang Yongxiang
  * @Date 2022/08/12 16:29
  */
 @Slf4j
-public class AutoJobLauncherBuilder {
+public class AutoJobBootstrap {
     /**
      * 配置源
      */
@@ -89,7 +89,7 @@ public class AutoJobLauncherBuilder {
 
     private ILogSaveStrategyDelegate<AutoJobRunLog> runLogSaveStrategyDelegate;
 
-    public AutoJobLauncherBuilder(Class<?> applicationEntrance) {
+    public AutoJobBootstrap(Class<?> applicationEntrance) {
         this(new AutoJobConfigHolder("auto-job.yml", "auto-job.properties"), applicationEntrance);
     }
 
@@ -102,7 +102,7 @@ public class AutoJobLauncherBuilder {
      * @author Huang Yongxiang
      * @date 2022/8/12 17:34
      */
-    public AutoJobLauncherBuilder(AutoJobConfigHolder configHolder, Class<?> applicationEntrance) {
+    public AutoJobBootstrap(AutoJobConfigHolder configHolder, Class<?> applicationEntrance) {
         if (configHolder == null) {
             throw new NullPointerException();
         }
@@ -184,7 +184,7 @@ public class AutoJobLauncherBuilder {
      * @author Huang Yongxiang
      * @date 2022/8/13 11:19
      */
-    public <T extends AbstractScheduler> AutoJobLauncherBuilder addScheduler(Class<T> scheduler) {
+    public <T extends AbstractScheduler> AutoJobBootstrap addScheduler(Class<T> scheduler) {
         return addScheduler(createScheduler(scheduler));
     }
 
@@ -196,7 +196,7 @@ public class AutoJobLauncherBuilder {
      * @author Huang Yongxiang
      * @date 2022/8/15 18:15
      */
-    public AutoJobLauncherBuilder addScheduler(AbstractScheduler scheduler) {
+    public AutoJobBootstrap addScheduler(AbstractScheduler scheduler) {
         if (scheduler == null) {
             return this;
         }
@@ -229,7 +229,7 @@ public class AutoJobLauncherBuilder {
      * @author Huang Yongxiang
      * @date 2022/8/16 9:10
      */
-    public AutoJobLauncherBuilder addProcessor(IAutoJobProcessor processor) {
+    public AutoJobBootstrap addProcessor(IAutoJobProcessor processor) {
         if (processor == null) {
             return this;
         }
@@ -261,7 +261,7 @@ public class AutoJobLauncherBuilder {
      * @author Huang Yongxiang
      * @date 2022/8/16 9:12
      */
-    public AutoJobLauncherBuilder withAutoScanProcessor() {
+    public AutoJobBootstrap withAutoScanProcessor() {
         isAutoScanProcessor = true;
         return this;
     }
@@ -274,7 +274,7 @@ public class AutoJobLauncherBuilder {
      * @author Huang Yongxiang
      * @date 2022/8/25 15:38
      */
-    public AutoJobLauncherBuilder setDataSource(DataSource dataSource) {
+    public AutoJobBootstrap setDataSource(DataSource dataSource) {
         if (dataSource == null) {
             throw new NullPointerException();
         }
@@ -290,7 +290,7 @@ public class AutoJobLauncherBuilder {
      * @author Huang Yongxiang
      * @date 2022/8/16 9:13
      */
-    public AutoJobLauncherBuilder setRegister(IAutoJobRegister register) {
+    public AutoJobBootstrap setRegister(IAutoJobRegister register) {
         if (register == null) {
             throw new NullPointerException();
         }
@@ -308,7 +308,7 @@ public class AutoJobLauncherBuilder {
      * @author Huang Yongxiang
      * @date 2022/8/16 9:13
      */
-    public AutoJobLauncherBuilder setRegister(IAutoJobRegister register, AbstractRegisterHandler handler, AbstractRegisterFilter filter) {
+    public AutoJobBootstrap setRegister(IAutoJobRegister register, AbstractRegisterHandler handler, AbstractRegisterFilter filter) {
         if (register == null) {
             throw new NullPointerException();
         }
@@ -318,7 +318,7 @@ public class AutoJobLauncherBuilder {
         return this;
     }
 
-    public AutoJobLauncherBuilder setExecutorPool(AutoJobTaskExecutorPool executorPool) {
+    public AutoJobBootstrap setExecutorPool(AutoJobTaskExecutorPool executorPool) {
         if (executorPool == null) {
             throw new NullPointerException();
         }
@@ -326,7 +326,7 @@ public class AutoJobLauncherBuilder {
         return this;
     }
 
-    public AutoJobLauncherBuilder setTaskQueue(AutoJobTaskQueue taskQueue) {
+    public AutoJobBootstrap setTaskQueue(AutoJobTaskQueue taskQueue) {
         if (taskQueue == null) {
             throw new NullPointerException();
         }
@@ -341,7 +341,7 @@ public class AutoJobLauncherBuilder {
      * @author Huang Yongxiang
      * @date 2022/11/2 16:32
      */
-    public AutoJobLauncherBuilder closeMemoryTaskScheduler() {
+    public AutoJobBootstrap closeMemoryTaskScheduler() {
         isCloseMemoryScheduler = true;
         return this;
     }
@@ -353,7 +353,7 @@ public class AutoJobLauncherBuilder {
      * @author Huang Yongxiang
      * @date 2022/11/2 16:33
      */
-    public AutoJobLauncherBuilder closeDBTaskScheduler() {
+    public AutoJobBootstrap closeDBTaskScheduler() {
         isCloseDBScheduler = true;
         return this;
     }
@@ -422,12 +422,12 @@ public class AutoJobLauncherBuilder {
         }
     }
 
-    public AutoJobLauncherBuilder setLogSaveStrategyDelegate(ILogSaveStrategyDelegate<AutoJobLog> logSaveStrategyDelegate) {
+    public AutoJobBootstrap setLogSaveStrategyDelegate(ILogSaveStrategyDelegate<AutoJobLog> logSaveStrategyDelegate) {
         this.logSaveStrategyDelegate = logSaveStrategyDelegate;
         return this;
     }
 
-    public AutoJobLauncherBuilder setRunLogSaveStrategyDelegate(ILogSaveStrategyDelegate<AutoJobRunLog> runLogSaveStrategyDelegate) {
+    public AutoJobBootstrap setRunLogSaveStrategyDelegate(ILogSaveStrategyDelegate<AutoJobRunLog> runLogSaveStrategyDelegate) {
         this.runLogSaveStrategyDelegate = runLogSaveStrategyDelegate;
         return this;
     }

@@ -1,7 +1,7 @@
 package com.example.autojob;
 
 import com.example.autojob.job.IServerTest;
-import com.example.autojob.skeleton.framework.launcher.AutoJobLauncherBuilder;
+import com.example.autojob.skeleton.framework.launcher.AutoJobBootstrap;
 import com.example.autojob.skeleton.framework.network.handler.client.RPCClientProxy;
 import com.example.autojob.skeleton.model.task.method.MethodTask;
 import com.example.autojob.util.servlet.InetUtil;
@@ -15,7 +15,7 @@ import java.util.List;
  */
 public class ClientApplication {
     public static void main(String[] args) {
-        new AutoJobLauncherBuilder(AutoJobMainApplication.class)
+        new AutoJobBootstrap(AutoJobMainApplication.class)
                 .withAutoScanProcessor()
                 .build()
                 .run();

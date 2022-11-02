@@ -34,7 +34,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
- * AutoJob程序，包含AutoJob运行的上下文，该程序为全局单例，通过{@link AutoJobLauncherBuilder}构建该应用，构建后你可以通过{@link AutoJobApplication#getInstance()}来获取单例，如果你要使用该应用内的某个组件，请务必保证应用状态{@link AutoJobApplication#status}为RUNNING时再调用
+ * AutoJob程序，包含AutoJob运行的上下文，该程序为全局单例，通过{@link AutoJobBootstrap}构建该应用，构建后你可以通过{@link AutoJobApplication#getInstance()}来获取单例，如果你要使用该应用内的某个组件，请务必保证应用状态{@link AutoJobApplication#status}为RUNNING时再调用
  *
  * @Author Huang Yongxiang
  * @Date 2022/08/13 10:41

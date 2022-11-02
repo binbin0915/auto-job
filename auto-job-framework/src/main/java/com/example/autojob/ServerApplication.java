@@ -1,6 +1,6 @@
 package com.example.autojob;
 
-import com.example.autojob.skeleton.framework.launcher.AutoJobLauncherBuilder;
+import com.example.autojob.skeleton.framework.launcher.AutoJobBootstrap;
 
 /**
  * @Author Huang Yongxiang
@@ -8,7 +8,7 @@ import com.example.autojob.skeleton.framework.launcher.AutoJobLauncherBuilder;
  */
 public class ServerApplication {
     public static void main(String[] args) {
-        new AutoJobLauncherBuilder(AutoJobMainApplication.class)
+        new AutoJobBootstrap(AutoJobMainApplication.class)
                 .withAutoScanProcessor()
                 .build()
                 .run();
