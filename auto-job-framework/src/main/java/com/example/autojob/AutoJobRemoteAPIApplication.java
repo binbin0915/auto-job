@@ -1,9 +1,9 @@
 package com.example.autojob;
 
-import com.example.autojob.api.AutoJobAPI;
-import com.example.autojob.api.AutoJobMethodTaskAttributes;
-import com.example.autojob.api.AutoJobTaskAttributes;
-import com.example.autojob.api.AutoJobTriggerAttributes;
+import com.example.autojob.api.task.AutoJobAPI;
+import com.example.autojob.api.task.AutoJobMethodTaskAttributes;
+import com.example.autojob.api.task.AutoJobTaskAttributes;
+import com.example.autojob.api.task.AutoJobTriggerAttributes;
 import com.example.autojob.job.Jobs;
 import com.example.autojob.skeleton.model.builder.AutoJobMethodTaskBuilder;
 import com.example.autojob.skeleton.framework.launcher.AutoJobLauncherBuilder;

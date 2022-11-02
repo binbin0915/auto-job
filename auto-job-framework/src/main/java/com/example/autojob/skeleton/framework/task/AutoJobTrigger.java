@@ -64,7 +64,7 @@ public class AutoJobTrigger {
      */
     protected Long cycle;
     /**
-     * 最大运行时长
+     * 最大运行时长，毫秒
      */
     protected Long maximumExecutionTime;
     /**
@@ -182,7 +182,8 @@ public class AutoJobTrigger {
     }
 
     public boolean isReachTriggerTime() {
-        return SystemClock.now() >= triggeringTime;
+        long in = triggeringTime - SystemClock.now();
+        return Math.abs(in) <= 1000;
     }
 
     /**

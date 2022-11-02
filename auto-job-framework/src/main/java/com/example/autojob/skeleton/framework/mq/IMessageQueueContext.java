@@ -30,4 +30,8 @@ public interface IMessageQueueContext<M> {
      */
     void destroy();
 
+    void addMessagePublishedListener(String topic, MessagePublishedListener<M> listener);
+
+    void addMessageExpiredListener(String topic, MessageExpiredListener<M> listener);
+
 }

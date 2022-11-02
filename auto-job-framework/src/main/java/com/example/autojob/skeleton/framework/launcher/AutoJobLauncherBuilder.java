@@ -1,7 +1,7 @@
 package com.example.autojob.skeleton.framework.launcher;
 
-import com.example.autojob.api.DBTaskAPI;
-import com.example.autojob.api.MemoryTaskAPI;
+import com.example.autojob.api.task.DBTaskAPI;
+import com.example.autojob.api.task.MemoryTaskAPI;
 import com.example.autojob.logging.domain.AutoJobLog;
 import com.example.autojob.logging.domain.AutoJobRunLog;
 import com.example.autojob.logging.model.AutoJobLogContainer;
@@ -71,6 +71,15 @@ public class AutoJobLauncherBuilder {
      * 是否自动扫描处理器
      */
     private boolean isAutoScanProcessor;
+    /**
+     * 是否关闭内存任务调度器
+     */
+    private boolean isCloseMemoryScheduler;
+    /**
+     * 是否关闭DB任务调度器
+     */
+    private boolean isCloseDBScheduler;
+
     /**
      * AutoJob扫描器
      */
@@ -189,6 +198,18 @@ public class AutoJobLauncherBuilder {
      */
     public AutoJobLauncherBuilder addScheduler(AbstractScheduler scheduler) {
         if (scheduler == null) {
+            return this;
+        }
+        if (isCloseDBScheduler && scheduler instanceof AutoJobDBTaskScheduler) {
+            log.warn("DB任务调度器已被关闭！");
+            return this;
+        }
+        if (isCloseMemoryScheduler && scheduler instanceof AutoJobMemoryTaskScheduler) {
+            log.warn("Memory任务调度器已被关闭！");
+            return this;
+        }
+        if (isCloseMemoryScheduler && isCloseDBScheduler && scheduler instanceof AutoJobTimeWheelScheduler) {
+            log.warn("时间轮调度器已被关闭！");
             return this;
         }
         if (scheduler instanceof IAutoJobProcessor) {
@@ -313,6 +334,30 @@ public class AutoJobLauncherBuilder {
         return this;
     }
 
+    /**
+     * 关闭内存任务调度器，关闭后将不会停止对内存任务进行调度，如果同时关闭DB调度器，在没有添加自定义调度器的情况下框架会被禁用任务调度功能，即配置的所有任务将不会被执行
+     *
+     * @return com.example.autojob.skeleton.framework.launcher.AutoJobLauncherBuilder
+     * @author Huang Yongxiang
+     * @date 2022/11/2 16:32
+     */
+    public AutoJobLauncherBuilder closeMemoryTaskScheduler() {
+        isCloseMemoryScheduler = true;
+        return this;
+    }
+
+    /**
+     * 关闭DB任务调度器，关闭后将不会对DB任务进行调度，如果同时关闭Memory调度器，在没有添加自定义调度器的情况下框架会被禁用任务调度功能，即配置的所有任务将不会被执行
+     *
+     * @return com.example.autojob.skeleton.framework.launcher.AutoJobLauncherBuilder
+     * @author Huang Yongxiang
+     * @date 2022/11/2 16:33
+     */
+    public AutoJobLauncherBuilder closeDBTaskScheduler() {
+        isCloseDBScheduler = true;
+        return this;
+    }
+
     protected void createLogContext() {
 
         /*=================添加日志消息队列=================>*/
@@ -324,8 +369,12 @@ public class AutoJobLauncherBuilder {
                         .setListenerPolicy(ExpirationListenerPolicy.SINGLE_THREAD)
                         .setAllowSetEntryExpired(true)
                         .setDefaultExpiringTime(24, TimeUnit.HOURS)
-                        .setAllowMaxTopicCount(1000)
-                        .setAllowMaxMessageCountPerQueue(1000)
+                        .setAllowMaxTopicCount(config
+                                .getExecutorPoolConfig()
+                                .getFastPoolMaxThreadCount() + config
+                                .getExecutorPoolConfig()
+                                .getSlowPoolMaxCoreThreadCount())
+                        .setAllowMaxMessageCountPerQueue(10000)
                         .build());
         /*=======================Finished======================<*/
 

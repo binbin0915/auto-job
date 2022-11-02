@@ -1,4 +1,4 @@
-package com.example.autojob.api;
+package com.example.autojob.api.task;
 
 import com.example.autojob.skeleton.framework.task.AutoJobTask;
 import com.example.autojob.skeleton.model.executor.IMethodObjectFactory;

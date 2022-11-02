@@ -146,7 +146,7 @@ public class MemoryTaskContainer implements WithDaemonThread {
                             }
                         }
                     }
-                }, 0, 1, TimeUnit.MILLISECONDS);
+                }, 1000 - System.currentTimeMillis() % 1000, 1, TimeUnit.MILLISECONDS);
     }
 
     @Setter

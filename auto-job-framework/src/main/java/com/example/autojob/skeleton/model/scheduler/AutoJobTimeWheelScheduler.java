@@ -14,7 +14,8 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
- * @Description 时间轮调度器
+ * 时间轮调度器
+ *
  * @Author Huang Yongxiang
  * @Date 2022/08/07 17:51
  */
@@ -49,7 +50,6 @@ public class AutoJobTimeWheelScheduler extends AbstractScheduler implements With
                     tasks.addAll(timeWheel.getSecondTasks((int) (((SystemClock.now() - 1000 * i) / 1000) % 60)));
                 }
                 if (tasks.size() > 0) {
-                    //log.warn("得到下标：{}下{}条任务", second, tasks.size());
                     tasks.forEach(item -> {
                         //log.warn("任务：{}时间轮触发成功", item.getId());
                         if (item.getType() == AutoJobTask.TaskType.DB_TASK && lock(item.getId())) {
@@ -59,13 +59,6 @@ public class AutoJobTimeWheelScheduler extends AbstractScheduler implements With
                         }
                     });
                 }
-                //if (second == 59) {
-                //    List<AutoJobTask> missFireTask = timeWheel.getAllTasks();
-                //    if (missFireTask.size() > 0) {
-                //        log.warn("本轮存在：{}个任务没被触发", missFireTask.size());
-                //        timeWheel.clear();
-                //    }
-                //}
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -87,9 +80,9 @@ public class AutoJobTimeWheelScheduler extends AbstractScheduler implements With
                             .getTrigger()
                             .isNearTriggeringTime(ADVANCE_TIME)) {
                         if (timeWheel.joinTask(headTask)) {
-                            //log.warn("任务：{}，启动时间：{}调度进时间轮成功", headTask.getId(), DateUtils.formatDateTime(new Date(headTask
+                            //log.warn("任务：{}，启动时间：{}调度进时间轮成功", headTask.getId(), DateUtils.formatDate(new Date(headTask
                             //        .getTrigger()
-                            //        .getTriggeringTime())));
+                            //        .getTriggeringTime()), "yyyy-MM-dd HH:mm:ss,SSS"));
                         }
                         register.takeTask();
                     }
@@ -98,8 +91,9 @@ public class AutoJobTimeWheelScheduler extends AbstractScheduler implements With
                 e.printStackTrace();
             }
         };
-        startSchedulerThread.EFixedRateTask(start, 0, 1, TimeUnit.SECONDS);
-        transferSchedulerThread.EFixedRateTask(schedule, 0, 1, TimeUnit.MILLISECONDS);
+        //精确调度下首次延迟采用System.currentTimeMillis()而非SystemClock.now()，因为经过测试发现后者会比实际系统时间有10ms-20ms的误差
+        startSchedulerThread.EFixedRateTask(start, 1000 - System.currentTimeMillis() % 1000, 1000, TimeUnit.MILLISECONDS);
+        transferSchedulerThread.EFixedRateTask(schedule, 1000 - System.currentTimeMillis() % 1000, 1, TimeUnit.MILLISECONDS);
     }
 
 

@@ -12,7 +12,6 @@ import com.example.autojob.skeleton.lifecycle.event.TaskEvent;
 import com.example.autojob.skeleton.lifecycle.event.imp.TaskAfterRunEvent;
 import com.example.autojob.skeleton.lifecycle.event.imp.TaskBeforeRunEvent;
 import com.example.autojob.skeleton.lifecycle.event.imp.TaskFinishedEvent;
-import com.example.autojob.util.id.SystemClock;
 import com.example.autojob.util.json.JsonUtil;
 import com.example.autojob.util.thread.ScheduleTaskUtil;
 import com.example.autojob.util.thread.SyncHelper;
@@ -71,7 +70,10 @@ public class AutoJobLogConsumer implements ITaskEventHandler<TaskEvent> {
                     .getTask()
                     .getId());
             handler.addRunLog(AutoJobRunLogFactory.getAutoJobRunLog(event));
-            handler.saveRunLogs();
+            saveLogScheduler.EOneTimeTask(() -> {
+                handler.saveRunLogs();
+                return null;
+            }, 0, TimeUnit.MILLISECONDS);
         }
         if (event instanceof TaskAfterRunEvent) {
             AutoJobLogHandler handler = logHandlerMap.get(event
@@ -88,7 +90,9 @@ public class AutoJobLogConsumer implements ITaskEventHandler<TaskEvent> {
             saveLogScheduler.EOneTimeTask(() -> {
                 handler.finishScheduling(task
                         .getRunResult()
-                        .isRunSuccess(), result, SystemClock.now() - ((TaskAfterRunEvent) event).getEndTime());
+                        .isRunSuccess(), result, ((TaskAfterRunEvent) event).getEndTime() - task
+                        .getTrigger()
+                        .getStartRunTime());
                 return null;
             }, 0, TimeUnit.MILLISECONDS);
         }

@@ -70,7 +70,7 @@ public class AutoJobDBTaskScheduler extends AbstractScheduler implements WithDae
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-                }, 0, 5, TimeUnit.SECONDS);
+                }, 1000 - System.currentTimeMillis() % 1000, 5, TimeUnit.SECONDS);
     }
 
     @Override

@@ -1,7 +1,7 @@
 package com.example.autojob.skeleton.framework.launcher;
 
-import com.example.autojob.api.DBTaskAPI;
-import com.example.autojob.api.MemoryTaskAPI;
+import com.example.autojob.api.task.DBTaskAPI;
+import com.example.autojob.api.task.MemoryTaskAPI;
 import com.example.autojob.logging.model.AutoJobLogContext;
 import com.example.autojob.logging.model.producer.AutoJobLogHelper;
 import com.example.autojob.skeleton.annotation.ProcessorLevel;

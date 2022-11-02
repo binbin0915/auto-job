@@ -10,7 +10,8 @@ import com.example.autojob.util.id.SystemClock;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
- * @Description 任务事件工厂
+ * 任务事件工厂
+ *
  * @Author Huang Yongxiang
  * @Date 2022/07/12 9:58
  */

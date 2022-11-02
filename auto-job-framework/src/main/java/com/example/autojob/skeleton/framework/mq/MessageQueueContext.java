@@ -5,6 +5,7 @@ import com.example.autojob.util.convert.StringUtils;
 import com.example.autojob.util.id.IdGenerator;
 import com.example.autojob.util.id.SystemClock;
 import com.example.autojob.util.thread.ScheduleTaskUtil;
+import com.example.autojob.util.thread.SyncHelper;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -54,14 +55,16 @@ public class MessageQueueContext<M> implements IMessageQueueContext<M>, IProduce
     //存储消息的数据结构
     private Map<String, MessageQueue<MessageEntry<M>>> messageQueues;
 
+    private final Map<String, List<MessagePublishedListener<M>>> publishedListenersMap = new ConcurrentHashMap<>();
+
+    private final Map<String, List<MessageExpiredListener<M>>> expiredListenersMap = new ConcurrentHashMap<>();
+
     private boolean isOpenListener = false;
 
     /**
      * 守护线程
      */
     private ScheduledExecutorService executorService;
-
-    private ScheduledExecutorService unsubThread;
 
     /**
      * 各个主题的订阅数
@@ -123,7 +126,10 @@ public class MessageQueueContext<M> implements IMessageQueueContext<M>, IProduce
 
     @Override
     public boolean hasRegexTopic(String regexTopic) {
-        return messageQueues.keySet().stream().anyMatch(topic -> RegexUtil.isMatch(topic, regexTopic));
+        return messageQueues
+                .keySet()
+                .stream()
+                .anyMatch(topic -> RegexUtil.isMatch(topic, regexTopic));
     }
 
     @Override
@@ -159,7 +165,13 @@ public class MessageQueueContext<M> implements IMessageQueueContext<M>, IProduce
         messageEntry.setMessageId(IdGenerator.getNextIdAsLong());
         messageEntry.setMessage(message);
         messageEntry.setExpiringTime(unit.toMillis(expiringTime) + SystemClock.now());
-        return messageQueues.get(topic).publishMessage(messageEntry);
+        if (messageQueues
+                .get(topic)
+                .publishMessage(messageEntry)) {
+            executeMessagePublishedListeners(topic, message);
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -185,7 +197,12 @@ public class MessageQueueContext<M> implements IMessageQueueContext<M>, IProduce
         messageEntry.setMessage(message);
         messageEntry.setExpiringTime(unit.toMillis(expiringTime) + SystemClock.now());
         try {
-            return messageQueues.get(topic).publishMessageSync(messageEntry);
+            if (messageQueues
+                    .get(topic)
+                    .publishMessageSync(messageEntry)) {
+                executeMessagePublishedListeners(topic, message);
+                return true;
+            }
         } catch (InterruptedException e) {
             log.warn("发布可阻塞消息发生异常，等待时被异常占用：{}", e.getMessage());
         }
@@ -209,13 +226,17 @@ public class MessageQueueContext<M> implements IMessageQueueContext<M>, IProduce
         }
         if (isTakeout) {
             try {
-                return messageQueues.get(topic).takeMessageSync().message;
+                return messageQueues
+                        .get(topic)
+                        .takeMessageSync().message;
             } catch (InterruptedException e) {
                 log.warn("可阻塞获取消息发生异常，等待时被异常占用：{}", e.getMessage());
             }
             return null;
         }
-        return messageQueues.get(topic).readMessage().message;
+        return messageQueues
+                .get(topic)
+                .readMessage().message;
     }
 
     @Override
@@ -223,13 +244,19 @@ public class MessageQueueContext<M> implements IMessageQueueContext<M>, IProduce
         if (!hasTopic(topic)) {
             return null;
         }
-        if (messageQueues.get(topic).length() == 0) {
+        if (messageQueues
+                .get(topic)
+                .length() == 0) {
             return null;
         }
         if (isTakeout) {
-            return messageQueues.get(topic).takeMessage().message;
+            return messageQueues
+                    .get(topic)
+                    .takeMessage().message;
         }
-        return messageQueues.get(topic).readMessage().message;
+        return messageQueues
+                .get(topic)
+                .readMessage().message;
     }
 
     @Override
@@ -237,13 +264,18 @@ public class MessageQueueContext<M> implements IMessageQueueContext<M>, IProduce
         if (!hasTopic(topic)) {
             return Collections.emptyList();
         }
-        if (messageQueues.get(topic).length() == 0) {
+        if (messageQueues
+                .get(topic)
+                .length() == 0) {
             return Collections.emptyList();
         }
         List<M> messages = new LinkedList<>();
         try {
             if (!isTakeout) {
-                return messageQueues.get(topic).messageQueue.stream().map(item -> item.message).collect(Collectors.toList());
+                return messageQueues.get(topic).messageQueue
+                        .stream()
+                        .map(item -> item.message)
+                        .collect(Collectors.toList());
             } else {
                 while (true) {
                     M message = takeMessageNoBlock(topic, true);
@@ -266,7 +298,11 @@ public class MessageQueueContext<M> implements IMessageQueueContext<M>, IProduce
         if (!hasRegexTopic(regexTopic)) {
             return null;
         }
-        List<String> topics = messageQueues.keySet().stream().filter(topic -> RegexUtil.isMatch(topic, regexTopic)).collect(Collectors.toList());
+        List<String> topics = messageQueues
+                .keySet()
+                .stream()
+                .filter(topic -> RegexUtil.isMatch(topic, regexTopic))
+                .collect(Collectors.toList());
         log.debug("获取到正则主题：{}的匹配主题{}个", regexTopic, topics.size());
         if (topics.size() == 0) {
             return null;
@@ -283,7 +319,11 @@ public class MessageQueueContext<M> implements IMessageQueueContext<M>, IProduce
         if (!hasRegexTopic(regexTopic)) {
             return null;
         }
-        List<String> topics = messageQueues.keySet().stream().filter(topic -> RegexUtil.isMatch(topic, regexTopic)).collect(Collectors.toList());
+        List<String> topics = messageQueues
+                .keySet()
+                .stream()
+                .filter(topic -> RegexUtil.isMatch(topic, regexTopic))
+                .collect(Collectors.toList());
         log.debug("获取到正则主题：{}的匹配主题{}个", regexTopic, topics.size());
         if (topics.size() == 0) {
             return null;
@@ -317,22 +357,24 @@ public class MessageQueueContext<M> implements IMessageQueueContext<M>, IProduce
             return messageQueue;
         }
         //进行阻塞获取
-        ScheduledFuture<Object> future = ScheduleTaskUtil.build(false, "subscriptionBlock").EOneTimeTask(() -> {
-            long blockTime = unit.toMillis(wait);
-            int i = 0;
-            try {
-                do {
-                    if (hasTopic(topic)) {
-                        return messageQueues.get(topic);
+        ScheduledFuture<Object> future = ScheduleTaskUtil
+                .build(false, "subscriptionBlock")
+                .EOneTimeTask(() -> {
+                    long blockTime = unit.toMillis(wait);
+                    int i = 0;
+                    try {
+                        do {
+                            if (hasTopic(topic)) {
+                                return messageQueues.get(topic);
+                            }
+                            Thread.sleep(1);
+                        } while (i++ <= blockTime);
+                        return null;
+                    } catch (Exception e) {
+                        log.error("阻塞订阅时发生异常：{}", e.getMessage());
                     }
-                    Thread.sleep(1);
-                } while (i++ <= blockTime);
-                return null;
-            } catch (Exception e) {
-                log.error("阻塞订阅时发生异常：{}", e.getMessage());
-            }
-            return null;
-        }, 1, TimeUnit.MILLISECONDS);
+                    return null;
+                }, 1, TimeUnit.MILLISECONDS);
         try {
             return (MessageQueue<MessageEntry<M>>) future.get();
         } catch (InterruptedException | ExecutionException e) {
@@ -358,33 +400,28 @@ public class MessageQueueContext<M> implements IMessageQueueContext<M>, IProduce
             if (atomicLong.get() == 0 && length(topic) == 0) {
                 long w = unit.toMillis(wait);
                 log.debug("主题为{}的消息队列目前订阅数为0且积压消息为0，当{}ms后若无生产者发布消息将自动删除该主题队列", topic, w);
-                if (unsubThread == null) {
-                    synchronized (ScheduleTaskUtil.class) {
-                        if (unsubThread == null) {
-                            unsubThread = Executors.newSingleThreadScheduledExecutor(runnable -> {
-                                Thread thread = new Thread(runnable, "temporaryProducerListener");
-                                thread.setDaemon(true);
-                                return thread;
-                            });
+                Thread thread = new Thread(() -> {
+                    try {
+                        int i = 0;
+                        boolean flag = true;
+                        do {
+                            if (length(topic) > 0) {
+                                flag = false;
+                                break;
+                            }
+                            SyncHelper.sleepQuietly(1, TimeUnit.MILLISECONDS);
+                        } while (i++ <= w);
+                        if (flag) {
+                            log.debug("主题：{}自动删除完成", topic);
+                            removeMessageQueue(topic);
                         }
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
-                }
-                unsubThread.schedule(() -> {
-                    int i = 0;
-                    boolean flag = true;
-                    do {
-                        if (length(topic) > 0) {
-                            flag = false;
-                            break;
-                        }
-                        Thread.sleep(1);
-                    } while (i++ <= w);
-                    if (flag) {
-                        log.debug("主题：{}自动删除完成", topic);
-                        removeMessageQueue(topic);
-                    }
-                    return flag;
-                }, 0, TimeUnit.MILLISECONDS);
+                });
+                thread.setDaemon(true);
+                thread.setName("unsubListener");
+                thread.start();
             }
         }
     }
@@ -392,7 +429,9 @@ public class MessageQueueContext<M> implements IMessageQueueContext<M>, IProduce
     @Override
     public int length(String topic) {
         if (messageQueues.containsKey(topic)) {
-            return messageQueues.get(topic).length();
+            return messageQueues
+                    .get(topic)
+                    .length();
         }
         return 0;
     }
@@ -403,7 +442,9 @@ public class MessageQueueContext<M> implements IMessageQueueContext<M>, IProduce
             throw new IllegalArgumentException("参数有误，ID非法或主题不存在");
         }
         try {
-            boolean flag = messageQueues.get(topic).remove(messageEntry);
+            boolean flag = messageQueues
+                    .get(topic)
+                    .remove(messageEntry);
             if (!flag) {
                 throw new ErrorExpiredException("移出失败");
             }
@@ -426,6 +467,49 @@ public class MessageQueueContext<M> implements IMessageQueueContext<M>, IProduce
         }
         System.gc();
     }
+
+    @Override
+    public void addMessagePublishedListener(String topic, MessagePublishedListener<M> listener) {
+        if (listener == null) {
+            throw new NullPointerException();
+        }
+        if (hasTopic(topic)) {
+            if (!this.publishedListenersMap.containsKey(topic)) {
+                synchronized (publishedListenersMap) {
+                    if (!this.publishedListenersMap.containsKey(topic)) {
+                        this.publishedListenersMap.put(topic, new ArrayList<>());
+                    }
+                }
+            }
+            publishedListenersMap
+                    .get(topic)
+                    .add(listener);
+        } else {
+            throw new IllegalArgumentException("不存在相关主题：" + topic);
+        }
+    }
+
+    @Override
+    public void addMessageExpiredListener(String topic, MessageExpiredListener<M> listener) {
+        if (listener == null) {
+            throw new NullPointerException();
+        }
+        if (hasTopic(topic)) {
+            if (!this.expiredListenersMap.containsKey(topic)) {
+                synchronized (expiredListenersMap) {
+                    if (!this.expiredListenersMap.containsKey(topic)) {
+                        this.expiredListenersMap.put(topic, new ArrayList<>());
+                    }
+                }
+            }
+            expiredListenersMap
+                    .get(topic)
+                    .add(listener);
+        } else {
+            throw new IllegalArgumentException("不存在相关主题：" + topic);
+        }
+    }
+
 
     /**
      * <p>根据迭代器位置来使得一个元素过期，由于迭代器的弱一致性，多线程环境下可能会出现使用迭代器时
@@ -450,6 +534,34 @@ public class MessageQueueContext<M> implements IMessageQueueContext<M>, IProduce
         }
     }
 
+    private void executeMessagePublishedListeners(String topic, M message) {
+        if (publishedListenersMap.containsKey(topic)) {
+            publishedListenersMap
+                    .get(topic)
+                    .forEach(listener -> {
+                        try {
+                            listener.onMessagePublished(message);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    });
+        }
+    }
+
+    private void executeMessageExpiredListeners(String topic, M message) {
+        if (expiredListenersMap.containsKey(topic)) {
+            expiredListenersMap
+                    .get(topic)
+                    .forEach(listener -> {
+                        try {
+                            listener.onMessageExpired(message);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    });
+        }
+    }
+
     @Override
     public boolean publishMessageNoBlock(M message, String topic) {
         if (!messageQueues.containsKey(topic)) {
@@ -464,7 +576,13 @@ public class MessageQueueContext<M> implements IMessageQueueContext<M>, IProduce
         messageEntry.setMessageId(IdGenerator.getNextIdAsLong());
         messageEntry.setMessage(message);
         messageEntry.setExpiringTime(defaultExpiringTime > 0 ? defaultExpiringTime + SystemClock.now() : -1);
-        return messageQueues.get(topic).publishMessage(messageEntry);
+        if (messageQueues
+                .get(topic)
+                .publishMessage(messageEntry)) {
+            executeMessagePublishedListeners(topic, message);
+            return true;
+        }
+        return false;
     }
 
     public boolean publishMessageBlock(M message, String topic) {
@@ -481,7 +599,13 @@ public class MessageQueueContext<M> implements IMessageQueueContext<M>, IProduce
             messageEntry.setMessageId(IdGenerator.getNextIdAsLong());
             messageEntry.setMessage(message);
             messageEntry.setExpiringTime(defaultExpiringTime > 0 ? defaultExpiringTime + SystemClock.now() : -1);
-            return messageQueues.get(topic).publishMessageSync(messageEntry);
+            if (messageQueues
+                    .get(topic)
+                    .publishMessageSync(messageEntry)) {
+                executeMessagePublishedListeners(topic, message);
+            } else {
+                return false;
+            }
         } catch (InterruptedException e) {
             log.warn("发布可阻塞消息发生异常，等待时被异常占用：{}", e.getMessage());
         }
@@ -496,13 +620,16 @@ public class MessageQueueContext<M> implements IMessageQueueContext<M>, IProduce
         });
         executorService.scheduleAtFixedRate(() -> {
             for (Map.Entry<String, MessageQueue<MessageEntry<M>>> entry : messageQueues.entrySet()) {
-                for (Iterator<MessageEntry<M>> it = entry.getValue().iterator(); it.hasNext(); ) {
+                for (Iterator<MessageEntry<M>> it = entry
+                        .getValue()
+                        .iterator(); it.hasNext(); ) {
                     MessageEntry<M> message = it.next();
                     //如果达到过期时间则通知其过期
                     if (message.expiringTime >= 0 && message.expiringTime <= SystemClock.now()) {
                         try {
                             log.debug("messageId：{}，消息内容：{},已过期", message.messageId, message.message);
                             expire(it);
+                            executeMessageExpiredListeners(entry.getKey(), message.message);
                         } catch (ErrorExpiredException e) {
                             log.error("主题：{}，消息ID：{}过期失败：{}", entry.getKey(), message.getMessageId(), e.getMessage());
                         }
@@ -528,13 +655,16 @@ public class MessageQueueContext<M> implements IMessageQueueContext<M>, IProduce
 
                 queueScheduler.schedule(() -> {
                     synchronized (MessageEntry.class) {
-                        for (Iterator<MessageEntry<M>> it = entry.getValue().iterator(); it.hasNext(); ) {
+                        for (Iterator<MessageEntry<M>> it = entry
+                                .getValue()
+                                .iterator(); it.hasNext(); ) {
                             MessageEntry<M> message = it.next();
                             //如果达到过期时间则通知其过期
                             if (message.expiringTime >= 0 && message.expiringTime <= SystemClock.now()) {
                                 try {
                                     log.debug("messageId：{}已过期", message.messageId);
                                     expire(it);
+                                    executeMessageExpiredListeners(entry.getKey(), message.message);
                                 } catch (ErrorExpiredException e) {
                                     log.error("主题：{}，消息ID：{}过期失败：{}", entry.getKey(), message.getMessageId(), e.getMessage());
                                 }
@@ -584,9 +714,10 @@ public class MessageQueueContext<M> implements IMessageQueueContext<M>, IProduce
             return this;
         }
 
+
         public <M1 extends M> MessageQueueContext<M1> build() {
             MessageQueueContext<M1> messageQueueContext = new MessageQueueContext<>();
-            messageQueueContext.messageQueues = new Hashtable<>(this.allowMaxTopicCount);
+            messageQueueContext.messageQueues = new ConcurrentHashMap<>(this.allowMaxTopicCount);
             messageQueueContext.isAllowSetEntryExpired = this.isAllowSetEntryExpired;
             messageQueueContext.allowMaxMessageCountPerQueue = this.allowMaxMessageCountPerQueue;
             messageQueueContext.defaultExpiringTime = this.defaultExpiringTime;

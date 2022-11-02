@@ -1,4 +1,4 @@
-package com.example.autojob.api;
+package com.example.autojob.api.task;
 
 import com.example.autojob.skeleton.annotation.AutoJobRPCService;
 import com.example.autojob.skeleton.db.entity.AutoJobTaskEntity;
@@ -6,12 +6,13 @@ import com.example.autojob.skeleton.db.entity.AutoJobTriggerEntity;
 import com.example.autojob.skeleton.db.entity.EntityConvertor;
 import com.example.autojob.skeleton.db.mapper.AutoJobMapperHolder;
 import com.example.autojob.skeleton.db.mapper.TransactionEntry;
-import com.example.autojob.skeleton.model.builder.AutoJobTriggerFactory;
 import com.example.autojob.skeleton.framework.launcher.AutoJobApplication;
 import com.example.autojob.skeleton.framework.task.AutoJobTask;
 import com.example.autojob.skeleton.framework.task.AutoJobTrigger;
+import com.example.autojob.skeleton.model.builder.AutoJobTriggerFactory;
 import com.example.autojob.skeleton.model.register.IAutoJobRegister;
 import com.example.autojob.skeleton.model.task.method.MethodTask;
+import com.example.autojob.skeleton.model.task.script.ScriptTask;
 import com.example.autojob.util.bean.ObjectUtil;
 import lombok.extern.slf4j.Slf4j;
 
@@ -34,11 +35,19 @@ public class DBTaskAPI implements AutoJobAPI {
             .getRegister();
 
     @Override
-    public List<AutoJobTask> page(Integer pageNum, Integer size) {
+    public List<AutoJobTaskAttributes> page(Integer pageNum, Integer size) {
         return AutoJobMapperHolder.TASK_ENTITY_MAPPER
                 .page(pageNum, size)
                 .stream()
                 .map(EntityConvertor::taskEntity2Task)
+                .map(task -> {
+                    if (task instanceof MethodTask) {
+                        return new AutoJobMethodTaskAttributes((MethodTask) task);
+                    } else if (task instanceof ScriptTask) {
+                        return new AutoJobScriptTaskAttributes((ScriptTask) task);
+                    }
+                    return null;
+                })
                 .collect(Collectors.toList());
     }
 

@@ -1,8 +1,7 @@
-package com.example.autojob.api;
+package com.example.autojob.api.task;
 
 import com.example.autojob.skeleton.annotation.AutoJobRPCClient;
 import com.example.autojob.skeleton.framework.network.handler.client.RPCClientInvokeProxy;
-import com.example.autojob.skeleton.framework.task.AutoJobTask;
 import com.example.autojob.skeleton.framework.task.TaskRunningContext;
 
 import java.util.List;
@@ -24,7 +23,7 @@ public interface AutoJobAPI {
      * @author Huang Yongxiang
      * @date 2022/10/18 15:02
      */
-    List<AutoJobTask> page(Integer pageNum, Integer size);
+    List<AutoJobTaskAttributes> page(Integer pageNum, Integer size);
 
     /**
      * 返回当前任务数目

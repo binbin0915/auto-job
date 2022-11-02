@@ -187,8 +187,8 @@ public class TaskRunningContext extends AbstractScheduler implements WithDaemonT
                         Long maximumExecutionTime = entry.getValue().getTrigger().getMaximumExecutionTime();
                         if (maximumExecutionTime != null && maximumExecutionTime > 0) {
                             long runTime = SystemClock.now() - entry.getValue().getTrigger().getStartRunTime();
-                            if (runTime > maximumExecutionTime * 1000) {
-                                log.info("任务：{}已执行{}ms，最长运行时间：{}，尝试进行停止", entry.getKey(), runTime, maximumExecutionTime * 1000);
+                            if (runTime > maximumExecutionTime) {
+                                log.info("任务：{}已执行{}ms，最长运行时间：{}，尝试进行停止", entry.getKey(), runTime, maximumExecutionTime);
                                 if (stopRunningTask(entry.getKey())) {
                                     log.info("任务{}停止成功", entry.getKey());
                                 }

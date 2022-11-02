@@ -7,7 +7,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
- * @Description 任务执行前
+ * 任务执行前
+ *
  * @Auther Huang Yongxiang
  * @Date 2021/12/15 17:18
  */
@@ -15,8 +16,9 @@ import lombok.Setter;
 @Setter
 public class TaskBeforeRunEvent extends TaskEvent {
     private long startTime;
+
     public TaskBeforeRunEvent(AutoJobTask task) {
         super(task);
-        level="INFO";
+        level = "INFO";
     }
 }

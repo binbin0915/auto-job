@@ -44,7 +44,7 @@ public @interface AutoJob {
     String childTasksId() default "";
 
     /**
-     * 最大执行时长，超出时系统将会尝试停止，默认是24小时
+     * 最大执行时长，毫秒，超出时系统将会尝试停止，默认是24小时
      */
     long maximumExecutionTime() default -1;
 

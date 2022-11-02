@@ -1,4 +1,4 @@
-package com.example.autojob.api;
+package com.example.autojob.api.task;
 
 import com.example.autojob.skeleton.annotation.AutoJobRPCService;
 import com.example.autojob.skeleton.model.builder.AutoJobTriggerFactory;
@@ -7,11 +7,14 @@ import com.example.autojob.skeleton.framework.launcher.AutoJobApplication;
 import com.example.autojob.skeleton.framework.task.AutoJobTask;
 import com.example.autojob.skeleton.framework.task.AutoJobTrigger;
 import com.example.autojob.skeleton.model.task.method.MethodTask;
+import com.example.autojob.skeleton.model.task.script.ScriptTask;
 import com.example.autojob.util.bean.ObjectUtil;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * Memory任务一站式API，该类能被框架内置RPC客户端调用
@@ -27,14 +30,26 @@ public class MemoryTaskAPI implements AutoJobAPI {
             .getMemoryTaskContainer();
 
     @Override
-    public List<AutoJobTask> page(Integer pageNum, Integer size) {
+    public List<AutoJobTaskAttributes> page(Integer pageNum, Integer size) {
         List<AutoJobTask> tasks = container.list();
         if (tasks.size() == 0) {
-            return tasks;
+            return Collections.emptyList();
         }
         int skip = (pageNum - 1) * size;
         int startIndex = Math.min(tasks.size(), skip);
-        return tasks.subList(startIndex, Math.min(tasks.size(), startIndex + size));
+        return tasks
+                .subList(startIndex, Math.min(tasks.size(), startIndex + size))
+                .stream()
+                .map(task -> {
+                    if (task instanceof MethodTask) {
+                        return new AutoJobMethodTaskAttributes((MethodTask) task);
+                    }
+                    else if(task instanceof ScriptTask){
+                        return new AutoJobScriptTaskAttributes((ScriptTask) task);
+                    }
+                    return null;
+                })
+                .collect(Collectors.toList());
     }
 
     @Override
