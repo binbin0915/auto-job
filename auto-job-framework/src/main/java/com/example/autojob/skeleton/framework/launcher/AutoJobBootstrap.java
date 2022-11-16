@@ -48,7 +48,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
- * AutoJob应用启动引导类，用于构建一个全局AutoJobApplication应用
+ * AutoJob应用启动引导类，用于构建一个全局AutoJobApplication
  *
  * @Author Huang Yongxiang
  * @Date 2022/08/12 16:29
@@ -89,13 +89,32 @@ public class AutoJobBootstrap {
 
     private ILogSaveStrategyDelegate<AutoJobRunLog> runLogSaveStrategyDelegate;
 
+    /**
+     * 创建一个默认的引导者实例，默认使用类路径下的auto-job.yaml或auto-job.properties文件作为配置源
+     *
+     * @param applicationEntrance 应用入口
+     * @author Huang Yongxiang
+     * @date 2022/11/2 16:47
+     */
     public AutoJobBootstrap(Class<?> applicationEntrance) {
         this(new AutoJobConfigHolder("auto-job.yml", "auto-job.properties"), applicationEntrance);
     }
 
+    /**
+     * 创建一个引导类实例
+     *
+     * @param applicationEntrance 应用入口
+     * @param classpathResources  类路径下的配置文件名
+     * @author Huang Yongxiang
+     * @date 2022/11/2 16:45
+     */
+    public AutoJobBootstrap(Class<?> applicationEntrance, String... classpathResources) {
+        this(new AutoJobConfigHolder(classpathResources), applicationEntrance);
+    }
+
 
     /**
-     * 创建一个构建者实例，构建者对所需要的组件进行了首次初始化
+     * 创建一个引导类实例，引导类对所需要的组件进行了首次初始化
      *
      * @param configHolder        配置源
      * @param applicationEntrance 应用入口，一般是main方法所在的类

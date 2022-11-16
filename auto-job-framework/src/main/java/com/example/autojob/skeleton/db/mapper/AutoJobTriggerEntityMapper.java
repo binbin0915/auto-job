@@ -2,6 +2,7 @@ package com.example.autojob.skeleton.db.mapper;
 
 import com.example.autojob.skeleton.db.entity.AutoJobTriggerEntity;
 import com.example.autojob.util.bean.ObjectUtil;
+import com.example.autojob.util.id.SystemClock;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -121,8 +122,8 @@ public class AutoJobTriggerEntityMapper extends BaseMapper<AutoJobTriggerEntity>
      * @date 2022/8/26 18:44
      */
     public List<AutoJobTriggerEntity> selectNearTrigger(long nearTime, TimeUnit unit) {
-        String condition = "  where next_triggering_time > unix_timestamp(now()) and next_triggering_time < ? and finished_times< repeat_times and del_flag = 0 and is_pause = 0";
-        return queryList(getSelectExpression() + condition, unit.toMillis(nearTime));
+        String condition = "  where next_triggering_time > ? and next_triggering_time < ? and finished_times< repeat_times and del_flag = 0 and is_pause = 0";
+        return queryList(getSelectExpression() + condition, SystemClock.now(), SystemClock.now() + unit.toMillis(nearTime));
     }
 
 

@@ -69,7 +69,7 @@ public class AutoJobConfig extends AbstractAutoJobConfig {
         if (propertiesHolder != null) {
             schedulingQueueLength = propertiesHolder.getProperty("autoJob.context.schedulingQueue.length", Integer.class, "1000");
             memoryContainerLength = propertiesHolder.getProperty("autoJob.context.memoryContainer.length", Integer.class, "200");
-            cleanStrategy = CleanStrategy.findWithName(propertiesHolder.getProperty("autoJob.context.memoryContainer.cleanStrategy", String.class, "CLEAN_FINISHED"));
+            cleanStrategy = CleanStrategy.findWithName(propertiesHolder.getProperty("autoJob.context.memoryContainer.cleanStrategy", String.class, "KEEP_FINISHED"));
             allowCheckExist = propertiesHolder.getProperty("autoJob.context.allowCheckExist", Boolean.class, "true");
             enableAnnotation = propertiesHolder.getProperty("autoJob.annotation.enable", Boolean.class, "true");
             annotationDefaultDelayTime = propertiesHolder.getProperty("autoJob.annotation.defaultDelayTime", Double.class, "30");

@@ -178,6 +178,10 @@ public class LocalCacheManager<K, V> {
         return localCache.entrySet();
     }
 
+    public List<V> values() {
+        return new ArrayList<>(localCache.values());
+    }
+
     @Setter
     @Accessors(chain = true)
     public static class Builder<K, V> {

@@ -9,7 +9,8 @@ import java.math.BigDecimal;
 import java.util.*;
 
 /**
- * @Description 消息对象管理类
+ * Restful消息对象管理类
+ *
  * @Auther Huang Yongxiang
  * @Date 2021/09/29 16:12
  */
@@ -79,7 +80,9 @@ public class MessageMaster {
         }
         try {
             JsonObject jsonObject = JsonUtil.stringToJsonObj(message);
-            return jsonObject.get("code").getAsInt() == 200;
+            return jsonObject
+                    .get("code")
+                    .getAsInt() == 200;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -92,7 +95,9 @@ public class MessageMaster {
         }
         try {
             JsonObject jsonObject = JsonUtil.stringToJsonObj(message);
-            return JsonUtil.jsonStringToPojo(jsonObject.get("data").getAsString(), clazz);
+            return JsonUtil.jsonStringToPojo(jsonObject
+                    .get("data")
+                    .getAsString(), clazz);
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -105,10 +110,14 @@ public class MessageMaster {
         }
         try {
             JsonObject jsonObject = JsonUtil.stringToJsonObj(message);
-            JsonArray jsonArray = jsonObject.get("data").getAsJsonArray();
+            JsonArray jsonArray = jsonObject
+                    .get("data")
+                    .getAsJsonArray();
             List<JsonObject> jsonObjects = new LinkedList<>();
             for (int i = 0; i < jsonArray.size(); i++) {
-                jsonObjects.add(jsonArray.get(i).getAsJsonObject());
+                jsonObjects.add(jsonArray
+                        .get(i)
+                        .getAsJsonObject());
             }
             return jsonObjects;
         } catch (Exception e) {
@@ -175,7 +184,10 @@ public class MessageMaster {
             return null;
         }
         try {
-            return JsonUtil.stringToJsonObj(message).get("message").getAsString();
+            return JsonUtil
+                    .stringToJsonObj(message)
+                    .get("message")
+                    .getAsString();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -187,7 +199,9 @@ public class MessageMaster {
             return null;
         }
         JsonObject jsonObject = JsonUtil.stringToJsonObj(message);
-        return jsonObject.get("data").getAsJsonObject();
+        return jsonObject
+                .get("data")
+                .getAsJsonObject();
     }
 
 

@@ -5,7 +5,7 @@ autoJob:
       length: 1000
     memoryContainer:
       length: 200
-      cleanStrategy: CLEAN_FINISHED
+      cleanStrategy: KEEP_FINISHED
   annotation:
     enable: true
     defaultDelayTime: 30

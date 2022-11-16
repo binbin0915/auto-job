@@ -29,7 +29,7 @@ public class AutoJobAttributeContext {
         this.attributeString = task.getParamsString();
     }
 
-    private boolean isSimpleAttribute() {
+    public boolean isSimpleAttribute() {
         return RegexUtil.isMatch(attributeString, "\\{(((\\d+)|((-?\\d+)(\\.\\d+))|(true|false)|(\\'.*\\')){1}(,)?)*\\}");
     }
 

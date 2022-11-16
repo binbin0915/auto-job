@@ -1,5 +1,7 @@
 package com.example.autojob.skeleton.model.task;
 
+import com.example.autojob.logging.domain.AutoJobLog;
+import com.example.autojob.logging.model.AutoJobLogContainer;
 import com.example.autojob.logging.model.producer.AutoJobLogHelper;
 import com.example.autojob.skeleton.db.mapper.AutoJobMapperHolder;
 import com.example.autojob.skeleton.framework.pool.AutoJobPoolExecutor;
@@ -10,7 +12,10 @@ import com.example.autojob.skeleton.framework.task.AutoJobTask;
 import com.example.autojob.skeleton.framework.task.TaskRunningContext;
 import com.example.autojob.skeleton.lifecycle.ITaskEventHandler;
 import com.example.autojob.skeleton.lifecycle.TaskEventFactory;
-import com.example.autojob.skeleton.lifecycle.event.imp.*;
+import com.example.autojob.skeleton.lifecycle.event.imp.TaskAfterRunEvent;
+import com.example.autojob.skeleton.lifecycle.event.imp.TaskBeforeRunEvent;
+import com.example.autojob.skeleton.lifecycle.event.imp.TaskRunErrorEvent;
+import com.example.autojob.skeleton.lifecycle.event.imp.TaskRunSuccessEvent;
 import com.example.autojob.skeleton.lifecycle.manager.TaskEventManager;
 import lombok.extern.slf4j.Slf4j;
 
@@ -65,6 +70,10 @@ public class DefaultRunnablePostProcessor implements RunnablePostProcessor {
                 }
                 autoJobTask.setIsStart(true);
                 autoJobTask.setIsFinished(false);
+                AutoJobLogContainer
+                        .getInstance()
+                        .getMessageQueueContext(AutoJobLog.class)
+                        .registerMessageQueue(autoJobTask.getId() + "");
                 TaskEventManager
                         .getInstance()
                         .publishTaskEventSync(TaskEventFactory.newBeforeRunEvent(autoJobTask), TaskBeforeRunEvent.class, true);

@@ -7,7 +7,7 @@ import com.example.autojob.skeleton.framework.task.TaskRunningContext;
 import java.util.List;
 
 /**
- * 任务操作的API接口，该接口可以作为一个内嵌RPC框架的客户端，请使用{@link RPCClientInvokeProxy}生成该接口的代理
+ * 任务操作的API接口，该接口可以作为一个内嵌RPC框架的客户端，请使用{@link RPCClientInvokeProxy}生成该接口的代理，由于该接口支持RPC，所以部分参数和返回值使用的是包装类型，保证能被RPC框架安全地编解码
  *
  * @Author Huang Yongxiang
  * @Date 2022/10/14 13:52

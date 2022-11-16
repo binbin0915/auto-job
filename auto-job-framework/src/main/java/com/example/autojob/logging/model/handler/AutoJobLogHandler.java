@@ -10,13 +10,18 @@ import com.example.autojob.skeleton.db.entity.EntityConvertor;
 import com.example.autojob.skeleton.db.mapper.AutoJobMapperHolder;
 import com.example.autojob.skeleton.framework.launcher.AutoJobApplication;
 import com.example.autojob.skeleton.framework.task.AutoJobTask;
+import com.example.autojob.skeleton.lang.WithDaemonThread;
 import com.example.autojob.util.id.IdGenerator;
-import lombok.Data;
+import com.example.autojob.util.id.SystemClock;
+import com.example.autojob.util.thread.SyncHelper;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 /**
@@ -25,20 +30,20 @@ import java.util.stream.Collectors;
  * @Author Huang Yongxiang
  * @Date 2022/10/21 14:30
  */
-@Data
-public class AutoJobLogHandler {
+@Slf4j
+public class AutoJobLogHandler implements WithDaemonThread {
     /**
      * 调度ID
      */
-    private long schedulingId;
+    private final long schedulingId;
     /**
      * 任务ID
      */
-    private long taskId;
+    private final long taskId;
     /**
      * 调度记录
      */
-    private AutoJobSchedulingRecord record;
+    private final AutoJobSchedulingRecord record;
     /**
      * 运行日志
      */
@@ -47,8 +52,18 @@ public class AutoJobLogHandler {
      * 任务日志
      */
     private final List<AutoJobLog> logs = new ArrayList<>();
-    private ILogSaveStrategyDelegate<AutoJobLog> logSaveStrategyDelegate;
-    private ILogSaveStrategyDelegate<AutoJobRunLog> runLogSaveStrategyDelegate;
+    private final ILogSaveStrategyDelegate<AutoJobLog> logSaveStrategyDelegate;
+    private final ILogSaveStrategyDelegate<AutoJobRunLog> runLogSaveStrategyDelegate;
+
+    /**
+     * 保存周期，一定周期保存一次日志
+     */
+    private long saveCycle;
+
+    /**
+     * 最大缓冲长度，日志达到该长度后自动保存
+     */
+    private int maxBufferLength;
 
     private volatile boolean isFinished = false;
 
@@ -61,8 +76,11 @@ public class AutoJobLogHandler {
         record = new AutoJobSchedulingRecord(task);
         record.setSchedulingId(schedulingId);
         taskId = task.getId();
+        saveCycle = 5000;
+        maxBufferLength = 10;
         this.logSaveStrategyDelegate = logSaveStrategyDelegate;
         this.runLogSaveStrategyDelegate = runLogSaveStrategyDelegate;
+        startWork();
     }
 
     public boolean saveSchedulingRecord() {
@@ -115,7 +133,7 @@ public class AutoJobLogHandler {
         runLogs.clear();
     }
 
-    public void saveLogs() {
+    public synchronized void saveLogs() {
         logs.forEach(log -> log.setSchedulingId(schedulingId));
         if (logSaveStrategyDelegate == null) {
             new DefaultLogSaveStrategyDelegate()
@@ -139,5 +157,41 @@ public class AutoJobLogHandler {
         saveLogs();
         saveRunLogs();
         isFinished = true;
+    }
+
+    public boolean isFinished() {
+        return isFinished;
+    }
+
+    public AutoJobLogHandler setSaveCycle(long saveCycle, TimeUnit unit) {
+        this.saveCycle = unit.toMillis(saveCycle);
+        return this;
+    }
+
+    public AutoJobLogHandler setMaxBufferLength(int maxBufferLength) {
+        this.maxBufferLength = maxBufferLength;
+        return this;
+    }
+
+    @Override
+    public void startWork() {
+        AtomicLong lastSaveTime = new AtomicLong(SystemClock.now());
+        Thread thread = new Thread(() -> {
+            try {
+                while (!isFinished) {
+                    SyncHelper.sleepQuietly(1, TimeUnit.SECONDS);
+                    if (SystemClock.now() - lastSaveTime.get() >= saveCycle || logs.size() >= maxBufferLength) {
+                        //log.info("自动日志保存：{}条", logs.size());
+                        saveLogs();
+                        lastSaveTime.set(SystemClock.now());
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+        thread.setName("logHandler");
+        thread.setDaemon(true);
+        thread.start();
     }
 }

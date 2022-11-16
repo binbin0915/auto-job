@@ -1,7 +1,7 @@
 package com.example.autojob.skeleton.framework.container;
 
-import com.example.autojob.skeleton.lang.WithDaemonThread;
 import com.example.autojob.skeleton.framework.task.AutoJobTask;
+import com.example.autojob.skeleton.lang.WithDaemonThread;
 import com.example.autojob.util.cache.LocalCacheManager;
 import com.example.autojob.util.convert.StringUtils;
 import com.example.autojob.util.thread.ScheduleTaskUtil;
@@ -9,7 +9,6 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import net.jodah.expiringmap.ExpirationPolicy;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -80,22 +79,88 @@ public class MemoryTaskContainer implements WithDaemonThread {
         return memoryTaskContainer.get(annotationId + "");
     }
 
+    /**
+     * 通过id移除任务，该方法复杂度为O(n)
+     *
+     * @param taskId 要移除的任务ID
+     * @return com.example.autojob.skeleton.framework.task.AutoJobTask
+     * @author Huang Yongxiang
+     * @date 2022/11/15 17:48
+     */
     public AutoJobTask removeById(long taskId) {
-        return memoryTaskContainer.remove(taskId + "");
+        AutoJobTask removed = getById(taskId);
+        if (removed == null) {
+            return null;
+        }
+        if (memoryTaskContainer
+                .values()
+                .removeIf(removed::equals) && size.get() > 0) {
+            size.addAndGet(-1);
+        }
+        return removed;
     }
 
+    /**
+     * 通过别名移除任务，该方法复杂度为O(n)
+     *
+     * @param alias 别名
+     * @return com.example.autojob.skeleton.framework.task.AutoJobTask
+     * @author Huang Yongxiang
+     * @date 2022/11/15 17:54
+     */
     public AutoJobTask removeByAlias(String alias) {
-        return memoryTaskContainer.remove(alias);
+        AutoJobTask removed = getByAlias(alias);
+        if (removed == null) {
+            return null;
+        }
+        if (memoryTaskContainer
+                .values()
+                .removeIf(removed::equals) && size.get() > 0) {
+            size.addAndGet(-1);
+        }
+        return removed;
     }
 
+
+    /**
+     * 通过注解ID移除任务，该方法复杂度为O(n)
+     *
+     * @param annotationId 注解ID
+     * @return com.example.autojob.skeleton.framework.task.AutoJobTask
+     * @author Huang Yongxiang
+     * @date 2022/11/15 17:54
+     */
     public AutoJobTask removeByAnnotationId(long annotationId) {
-        return memoryTaskContainer.remove(annotationId + "");
+        AutoJobTask removed = getByAnnotationId(annotationId);
+        if (removed == null) {
+            return null;
+        }
+        if (memoryTaskContainer
+                .values()
+                .removeIf(removed::equals) && size.get() > 0) {
+            size.addAndGet(-1);
+        }
+        return removed;
     }
 
+    /**
+     * 移除一个内存任务，该方法要求移除的任务的ID必须存在，该方法时间复杂度为O(1)
+     *
+     * @param task 包含任务ID的任务对象
+     * @return com.example.autojob.skeleton.framework.task.AutoJobTask
+     * @author Huang Yongxiang
+     * @date 2022/11/15 17:47
+     */
     public AutoJobTask remove(AutoJobTask task) {
         AutoJobTask removed = removeById(task.getId());
-        removeByAlias(task.getAlias());
-        removeByAnnotationId(task.getAnnotationId());
+        if (removed == null) {
+            return null;
+        }
+        memoryTaskContainer.remove(task.getAlias());
+        memoryTaskContainer.remove(task.getAnnotationId() + "");
+        if (size.get() > 0) {
+            size.addAndGet(-1);
+        }
         return removed;
     }
 
@@ -121,11 +186,19 @@ public class MemoryTaskContainer implements WithDaemonThread {
     }
 
     public List<AutoJobTask> list() {
-        return new ArrayList<>(memoryTaskContainer.values());
+        List<AutoJobTask> tasks = memoryTaskContainer
+                .values()
+                .stream()
+                .distinct()
+                .collect(Collectors.toList());
+        if (finishedTaskCache != null) {
+            tasks.addAll(finishedTaskCache.values());
+        }
+        return tasks;
     }
 
     public int size() {
-        return memoryTaskContainer.size() + (finishedTaskCache == null ? 0 : finishedTaskCache.size());
+        return size.get() + (finishedTaskCache == null ? 0 : finishedTaskCache.size());
     }
 
     public LocalCacheManager<String, AutoJobTask> getFinishedTaskCache() {
@@ -140,13 +213,13 @@ public class MemoryTaskContainer implements WithDaemonThread {
                     for (Map.Entry<String, AutoJobTask> entry : memoryTaskContainer.entrySet()) {
                         AutoJobTask task = entry.getValue();
                         if (task.getIsFinished() != null && task.getIsFinished()) {
-                            memoryTaskContainer.remove(entry.getKey());
                             if (cleanStrategy == CleanStrategy.KEEP_FINISHED_TASK) {
                                 finishedTaskCache.set(entry.getKey(), entry.getValue());
                             }
+                            remove(task);
                         }
                     }
-                }, 1000 - System.currentTimeMillis() % 1000, 1, TimeUnit.MILLISECONDS);
+                }, 0, 1, TimeUnit.MILLISECONDS);
     }
 
     @Setter
@@ -171,9 +244,11 @@ public class MemoryTaskContainer implements WithDaemonThread {
                         .builder()
                         .setExpiringTime(24, TimeUnit.HOURS)
                         .setEntriesExpiration(true)
-                        .setMaxLength(limitSize * 2)
+                        .setMaxLength(limitSize)
                         .setPolicy(ExpirationPolicy.CREATED)
                         .build();
+            } else {
+                container.startWork();
             }
             return container;
         }

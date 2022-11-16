@@ -68,6 +68,11 @@ public class MethodTaskExecutable implements TaskExecutable {
         return task;
     }
 
+    @Override
+    public boolean isExecutable() {
+        return method != null;
+    }
+
     public Throwable getThrowable() {
         return throwable;
     }

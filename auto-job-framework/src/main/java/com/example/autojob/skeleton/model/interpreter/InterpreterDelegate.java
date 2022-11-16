@@ -25,24 +25,46 @@ public class InterpreterDelegate {
         if (o == null || !o.has("type") || !o.has("values")) {
             return null;
         }
-        String typeString = DefaultValueUtil.defaultStringWhenEmpty(type, o.get("type").getAsString().trim().toLowerCase());
+        String typeString = DefaultValueUtil.defaultStringWhenEmpty(type, o
+                .get("type")
+                .getAsString()
+                .trim()
+                .toLowerCase());
         IExpression typeExpression = new TypeInterpreter(typeString);
         switch (typeString) {
             case "string": {
-                return (Attribute) new StringInterpreter(typeExpression, o.get("values").getAsJsonObject().get("value").getAsString(), pos).interpreter();
+                return (Attribute) new StringInterpreter(typeExpression, o
+                        .get("values")
+                        .getAsJsonObject()
+                        .get("value")
+                        .getAsString(), pos).interpreter();
             }
             case "decimal": {
-                return (Attribute) new DecimalInterpreter(typeExpression, o.get("values").getAsJsonObject().get("value").getAsString(), pos).interpreter();
+                return (Attribute) new DecimalInterpreter(typeExpression, o
+                        .get("values")
+                        .getAsJsonObject()
+                        .get("value")
+                        .getAsString(), pos).interpreter();
             }
             case "integer":
             case "long": {
-                return (Attribute) new IntegerInterpreter(typeExpression, o.get("values").getAsJsonObject().get("value").getAsString(), pos).interpreter();
+                return (Attribute) new IntegerInterpreter(typeExpression, o
+                        .get("values")
+                        .getAsJsonObject()
+                        .get("value")
+                        .getAsString(), pos).interpreter();
             }
             case "boolean": {
-                return (Attribute) new BooleanInterpreter(typeExpression, o.get("values").getAsJsonObject().get("value").getAsString(), pos).interpreter();
+                return (Attribute) new BooleanInterpreter(typeExpression, o
+                        .get("values")
+                        .getAsJsonObject()
+                        .get("value")
+                        .getAsString(), pos).interpreter();
             }
             default: {
-                return (Attribute) new ObjectInterpreter(typeExpression, o.get("values").toString(), pos).interpreter();
+                return (Attribute) new ObjectInterpreter(typeExpression, o
+                        .get("values")
+                        .toString(), pos).interpreter();
             }
         }
     }
@@ -55,7 +77,9 @@ public class InterpreterDelegate {
         List<Attribute> attributeList = new LinkedList<>();
         try {
             for (int i = 0; i < attributes.size(); i++) {
-                Attribute attribute = interpreter(attributes.get(i).getAsJsonObject(), i, null);
+                Attribute attribute = interpreter(attributes
+                        .get(i)
+                        .getAsJsonObject(), i, null);
                 if (attribute != null) {
                     attributeList.add(attribute);
                 }
@@ -74,7 +98,7 @@ public class InterpreterDelegate {
         Class<?> methodObjectClass = task.getMethodClass();
         Method method = ObjectUtil.findMethod(task.getMethodName(), task.getParams(), methodObjectClass);
         if (method == null) {
-            return Collections.emptyList();
+            return convertAttributeString(task.getParamsString());
         }
         Class<?>[] attributeClass = method.getParameterTypes();
         JsonArray attributes = JsonUtil.stringToJsonArray(attributeString);
@@ -86,12 +110,16 @@ public class InterpreterDelegate {
         String type = null;
         try {
             for (int i = 0; i < attributes.size(); i++) {
-                if (isObjectType(attributes.get(i).getAsJsonObject())) {
+                if (isObjectType(attributes
+                        .get(i)
+                        .getAsJsonObject())) {
                     type = attributeClass[i].getName();
                 } else {
                     type = null;
                 }
-                Attribute attribute = interpreter(attributes.get(i).getAsJsonObject(), i, type);
+                Attribute attribute = interpreter(attributes
+                        .get(i)
+                        .getAsJsonObject(), i, type);
                 if (attribute != null) {
                     attributeList.add(attribute);
                 }
@@ -103,7 +131,11 @@ public class InterpreterDelegate {
     }
 
     private static boolean isObjectType(JsonObject o) {
-        return "object".equals(o.get("type").getAsString().trim().toLowerCase());
+        return "object".equals(o
+                .get("type")
+                .getAsString()
+                .trim()
+                .toLowerCase());
     }
 
 }

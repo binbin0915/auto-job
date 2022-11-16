@@ -11,6 +11,7 @@ import com.example.autojob.skeleton.model.executor.DefaultMethodObjectFactory;
 import com.example.autojob.skeleton.model.executor.IMethodObjectFactory;
 import com.example.autojob.skeleton.model.interpreter.AutoJobAttributeContext;
 import com.example.autojob.skeleton.model.task.method.MethodTask;
+import com.example.autojob.util.convert.StringUtils;
 
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
@@ -38,6 +39,11 @@ public class AutoJobMethodTaskBuilder {
      * 任务方法名
      */
     private final String methodName;
+
+    /**
+     * 参数字符串
+     */
+    private String paramsString;
 
     /**
      * 任务类型，默认是内存型任务
@@ -68,6 +74,8 @@ public class AutoJobMethodTaskBuilder {
      * 所属
      */
     private Long belongTo;
+
+    private Object[] params;
 
     private boolean isChildTask;
 
@@ -149,6 +157,16 @@ public class AutoJobMethodTaskBuilder {
         return this;
     }
 
+    public AutoJobMethodTaskBuilder setParams(String paramsString) {
+        if (StringUtils.isEmpty(paramsString)) {
+            return this;
+        }
+        AutoJobAttributeContext context = new AutoJobAttributeContext(paramsString);
+        this.params = context.getAttributeEntity();
+        this.paramsString = paramsString;
+        return this;
+    }
+
     /**
      * 添加一个简单触发器，添加多个触发器时前者将被后者覆盖
      *
@@ -222,15 +240,22 @@ public class AutoJobMethodTaskBuilder {
         methodTask.setAlias(taskAlias);
         methodTask.setTrigger(trigger);
         methodTask.setIsChildTask(isChildTask);
+        methodTask.setParamsString(paramsString);
         methodTask.setMethodObjectFactory(methodObjectFactory);
-        methodTask.setParamsString(ATTRIBUTES_BUILDER.getAttributesString());
+        if (StringUtils.isEmpty(methodTask.getParamsString())) {
+            methodTask.setParamsString(ATTRIBUTES_BUILDER.getAttributesString());
+        }
         methodTask.setType(taskType);
         methodTask.setMethodName(methodName);
         methodTask.setMethodClass(taskClass);
         methodTask.setTaskLevel(taskLevel);
         methodTask.setMethodClassName(taskClass.getName());
-        AutoJobAttributeContext context = new AutoJobAttributeContext(methodTask);
-        methodTask.setParams(context.getAttributeEntity());
+        if (params == null) {
+            AutoJobAttributeContext context = new AutoJobAttributeContext(methodTask);
+            methodTask.setParams(context.getAttributeEntity());
+        } else {
+            methodTask.setParams(this.params);
+        }
         if (taskType == AutoJobTask.TaskType.DB_TASK && isSaveWhenDB) {
             AutoJobTriggerEntity triggerEntity = EntityConvertor.trigger2TriggerEntity(trigger);
             AutoJobTaskEntity taskEntity = EntityConvertor.task2TaskEntity(methodTask, triggerEntity.getId());

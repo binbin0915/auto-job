@@ -1,6 +1,8 @@
 package com.example.autojob.skeleton.framework.mq;
 
 
+import java.util.List;
+
 /**
  * @Description
  * @Auther Huang Yongxiang
@@ -30,8 +32,46 @@ public interface IMessageQueueContext<M> {
      */
     void destroy();
 
+    /**
+     * 添加一个消息发布监听器，监听器的操作不会影响消息的正常发布
+     *
+     * @param topic    要添加监听器的主题
+     * @param listener 监听器
+     * @return void
+     * @author Huang Yongxiang
+     * @date 2022/11/7 9:43
+     */
     void addMessagePublishedListener(String topic, MessagePublishedListener<M> listener);
 
+    /**
+     * 移除主题下的所有消息发布监听器
+     *
+     * @param topic 要移除的主题
+     * @return java.util.List<com.example.autojob.skeleton.framework.mq.MessagePublishedListener < M>>
+     * 移除的监听器列表，如果移除失败或不存在，返回空列表
+     * @author Huang Yongxiang
+     * @date 2022/11/7 9:53
+     */
+    List<MessagePublishedListener<M>> removeAllMessagePublishedListener(String topic);
+
+    /**
+     * 添加一个消息过期监听器
+     *
+     * @param topic    主题
+     * @param listener 监听器
+     * @return void
+     * @author Huang Yongxiang
+     * @date 2022/11/7 9:54
+     */
     void addMessageExpiredListener(String topic, MessageExpiredListener<M> listener);
 
+    /**
+     * 移除所有的消息过期监听器
+     *
+     * @param topic 主题
+     * @return java.util.List<com.example.autojob.skeleton.framework.mq.MessageExpiredListener < M>>
+     * @author Huang Yongxiang
+     * @date 2022/11/7 9:55
+     */
+    List<MessageExpiredListener<M>> removeAllMessageExpiredListener(String topic);
 }

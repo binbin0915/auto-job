@@ -18,4 +18,13 @@ public interface TaskExecutable extends Executable {
      * @date 2022/8/2 17:17
      */
     AutoJobTask getAutoJobTask();
+
+    /**
+     * 判断该可执行对象能否被执行
+     *
+     * @return boolean
+     * @author Huang Yongxiang
+     * @date 2022/11/2 17:38
+     */
+    boolean isExecutable();
 }

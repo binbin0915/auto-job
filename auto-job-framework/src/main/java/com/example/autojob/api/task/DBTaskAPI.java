@@ -22,7 +22,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
- * 提供DB任务的一站式API，请从
+ * 提供DB任务的一站式API
  *
  * @Author Huang Yongxiang
  * @Date 2022/10/17 13:51
@@ -95,6 +95,8 @@ public class DBTaskAPI implements AutoJobAPI {
         AutoJobTask task = EntityConvertor.taskEntity2Task(AutoJobMapperHolder.TASK_ENTITY_MAPPER.selectById(taskId));
         if (task instanceof MethodTask) {
             return new AutoJobMethodTaskAttributes((MethodTask) task);
+        } else if (task instanceof ScriptTask) {
+            return new AutoJobScriptTaskAttributes((ScriptTask) task);
         }
         return null;
     }

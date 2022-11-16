@@ -43,8 +43,7 @@ public class MemoryTaskAPI implements AutoJobAPI {
                 .map(task -> {
                     if (task instanceof MethodTask) {
                         return new AutoJobMethodTaskAttributes((MethodTask) task);
-                    }
-                    else if(task instanceof ScriptTask){
+                    } else if (task instanceof ScriptTask) {
                         return new AutoJobScriptTaskAttributes((ScriptTask) task);
                     }
                     return null;
@@ -100,6 +99,8 @@ public class MemoryTaskAPI implements AutoJobAPI {
         AutoJobTask task = container.getById(taskId);
         if (task instanceof MethodTask) {
             return new AutoJobMethodTaskAttributes((MethodTask) task);
+        } else if (task instanceof ScriptTask) {
+            return new AutoJobScriptTaskAttributes((ScriptTask) task);
         }
         return null;
     }

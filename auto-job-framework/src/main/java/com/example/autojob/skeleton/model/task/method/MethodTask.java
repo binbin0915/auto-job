@@ -1,5 +1,6 @@
 package com.example.autojob.skeleton.model.task.method;
 
+import com.example.autojob.skeleton.framework.launcher.AutoJobApplication;
 import com.example.autojob.skeleton.framework.task.AutoJobTask;
 import com.example.autojob.skeleton.model.executor.IMethodObjectFactory;
 import com.example.autojob.skeleton.model.task.TaskExecutable;
@@ -42,6 +43,17 @@ public class MethodTask extends AutoJobTask {
         } catch (Exception e) {
             e.printStackTrace();
             log.error("任务：{}创建可执行对象发生异常：{}", this, e.getMessage());
+            if (type == TaskType.MEMORY_TASk) {
+                AutoJobApplication
+                        .getInstance()
+                        .getMemoryTaskAPI()
+                        .delete(id);
+            } else {
+                AutoJobApplication
+                        .getInstance()
+                        .getDbTaskAPI()
+                        .delete(id);
+            }
         }
         return taskExecutable;
     }

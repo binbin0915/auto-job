@@ -2,6 +2,7 @@ package com.example.autojob.skeleton.db.mapper;
 
 import com.example.autojob.skeleton.db.entity.AutoJobRunLogEntity;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -12,7 +13,7 @@ import java.util.List;
  * @Date 2022/08/17 16:47
  */
 public class AutoJobRunLogEntityMapper extends BaseMapper<AutoJobRunLogEntity> {
-    private static final String ALL_COLUMNS = "id, scheduling_id, task_id, task_type, run_status, schedule_times, message,result, error_stack,write_time, del_flag";
+    private static final String ALL_COLUMNS = "id, scheduling_id, task_id, task_type, run_status, schedule_times, message,result, error_stack,write_timestamp,write_time, del_flag";
 
     private static final String TABLE_NAME = "aj_run_logs";
 
@@ -32,8 +33,16 @@ public class AutoJobRunLogEntityMapper extends BaseMapper<AutoJobRunLogEntity> {
     }
 
     public List<AutoJobRunLogEntity> selectByTaskIdBetween(Date startTime, Date endTime, long taskId) {
-        String condition = " where task_id = ? AND del_flag = 0 AND UNIX_TIMESTAMP( write_time ) >= ? AND UNIX_TIMESTAMP( write_time ) <= ?";
-        return queryList( getSelectExpression() + condition, taskId, startTime.getTime(), endTime.getTime());
+        String condition = " where task_id = ? AND del_flag = 0 AND write_timestamp >= ? AND write_timestamp <= ?";
+        return queryList(getSelectExpression() + condition, taskId, startTime.getTime(), endTime.getTime());
+    }
+
+    public List<AutoJobRunLogEntity> selectBySchedulingId(Long schedulingId) {
+        if (schedulingId == null) {
+            return Collections.emptyList();
+        }
+        String condition = " where scheduling_id = ? and del_flag = 0";
+        return queryList(getSelectExpression() + condition, schedulingId);
     }
 
 

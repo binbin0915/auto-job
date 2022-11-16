@@ -121,16 +121,16 @@ public class AutoJobAnnotationScheduler extends AbstractScheduler {
             else if (null != autoJob) {
                 /*=================基础验证=================>*/
                 if (autoJob.id() != -1 && autoJob.id() < 0) {
-                    throw new IllegalArgumentException("任务的Id必须为非负数");
+                    throw new IllegalArgumentException("任务的Id必须为非负数："+ method);
                 }
                 if (autoJob.asType() == AutoJobTask.TaskType.MEMORY_TASk && autoJob.id() == -1) {
-                    throw new IllegalArgumentException("内存任务必须指定ID");
+                    throw new IllegalArgumentException("内存任务必须指定ID：" + method);
                 }
                 if (autoJob.schedulingStrategy() == SchedulingStrategy.AS_CHILD_TASK && autoJob.id() == -1) {
-                    throw new IllegalArgumentException("子任务必须有给定ID");
+                    throw new IllegalArgumentException("子任务必须有给定ID："+ method);
                 }
                 if (autoJob.schedulingStrategy() == SchedulingStrategy.ONLY_SAVE && autoJob.asType() == AutoJobTask.TaskType.MEMORY_TASk) {
-                    throw new UnsupportedOperationException("内存任务不支持ONLY_SAVE调度策略");
+                    throw new UnsupportedOperationException("内存任务不支持ONLY_SAVE调度策略："+ method);
                 }
                 /*=======================Finished======================<*/
 

@@ -3,7 +3,8 @@ package com.example.autojob.logging.model.memory;
 import java.util.List;
 
 /**
- * @Description
+ * 内存日志缓存的统一接口，内存存储日志在框架内部只做测试使用，建议生产上应该将日志存到数据库
+ *
  * @Author Huang Yongxiang
  * @Date 2022/07/12 16:17
  */

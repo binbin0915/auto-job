@@ -305,7 +305,7 @@ public class MessageQueueContext<M> implements IMessageQueueContext<M>, IProduce
                 .collect(Collectors.toList());
         log.debug("获取到正则主题：{}的匹配主题{}个", regexTopic, topics.size());
         if (topics.size() == 0) {
-            return null;
+            return Collections.emptyList();
         }
         List<M> messages = new LinkedList<>();
         for (String topic : topics) {
@@ -490,6 +490,25 @@ public class MessageQueueContext<M> implements IMessageQueueContext<M>, IProduce
     }
 
     @Override
+    public List<MessagePublishedListener<M>> removeAllMessagePublishedListener(String topic) {
+        if (publishedListenersMap.containsKey(topic)) {
+            return publishedListenersMap.remove(topic);
+        }
+        return null;
+    }
+
+    public boolean removeMessagePublishedListener(String topic, String listenerName) {
+        if (publishedListenersMap.containsKey(topic) && !StringUtils.isEmpty(listenerName)) {
+            return publishedListenersMap
+                    .get(topic)
+                    .removeIf(listener -> listener
+                            .listenerName()
+                            .equals(listenerName));
+        }
+        return false;
+    }
+
+    @Override
     public void addMessageExpiredListener(String topic, MessageExpiredListener<M> listener) {
         if (listener == null) {
             throw new NullPointerException();
@@ -508,6 +527,25 @@ public class MessageQueueContext<M> implements IMessageQueueContext<M>, IProduce
         } else {
             throw new IllegalArgumentException("不存在相关主题：" + topic);
         }
+    }
+
+    public boolean removeMessageExpiredListener(String topic,String listenerName){
+        if (expiredListenersMap.containsKey(topic) && !StringUtils.isEmpty(listenerName)) {
+            return expiredListenersMap
+                    .get(topic)
+                    .removeIf(listener -> listener
+                            .listenerName()
+                            .equals(listenerName));
+        }
+        return false;
+    }
+
+    @Override
+    public List<MessageExpiredListener<M>> removeAllMessageExpiredListener(String topic) {
+        if (expiredListenersMap.containsKey(topic)) {
+            return expiredListenersMap.remove(topic);
+        }
+        return null;
     }
 
 

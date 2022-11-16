@@ -2,6 +2,7 @@ package com.example.autojob.api.task;
 
 import com.example.autojob.skeleton.framework.task.AutoJobTask;
 import com.example.autojob.skeleton.model.executor.IMethodObjectFactory;
+import com.example.autojob.skeleton.model.interpreter.AutoJobAttributeContext;
 import com.example.autojob.skeleton.model.task.method.MethodTask;
 import com.example.autojob.util.bean.ObjectUtil;
 import com.example.autojob.util.convert.StringUtils;
@@ -60,6 +61,8 @@ public class AutoJobMethodTaskAttributes extends AutoJobTaskAttributes {
         methodTask.setId(id);
         methodTask.setAnnotationId(annotationId);
         methodTask.setParamsString(paramsString);
+        AutoJobAttributeContext context = new AutoJobAttributeContext(methodTask);
+        methodTask.setParams(context.getAttributeEntity());
         if (!StringUtils.isEmpty(methodObjectFactory)) {
             methodTask.setMethodObjectFactory((IMethodObjectFactory) ObjectUtil.getClassInstanceObject(ObjectUtil.classPath2Class(methodObjectFactory)));
         }

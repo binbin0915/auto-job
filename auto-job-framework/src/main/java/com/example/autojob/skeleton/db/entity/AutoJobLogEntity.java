@@ -36,6 +36,11 @@ public class AutoJobLogEntity implements Serializable {
     private Long taskId;
 
     /**
+     * 录入时间戳
+     */
+    private Long writeTimestamp;
+
+    /**
      * 写入时间
      */
     private Timestamp writeTime;

@@ -66,6 +66,11 @@ public class AutoJobRunLogEntity implements Serializable {
     private String errorStack;
 
     /**
+     * 录入时间戳
+     */
+    private Long writeTimestamp;
+
+    /**
      * 录入时间
      */
     private Timestamp writeTime;

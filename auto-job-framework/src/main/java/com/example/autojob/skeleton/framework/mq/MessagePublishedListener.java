@@ -7,6 +7,10 @@ package com.example.autojob.skeleton.framework.mq;
  * @Date 2022/11/02 14:52
  * @Email 1158055613@qq.com
  */
-public interface MessagePublishedListener<M> {
+public interface MessagePublishedListener<M> extends IMessageListener {
     void onMessagePublished(M message);
+
+    default String listenerName() {
+        return "defaultMessagePublishedListener";
+    }
 }

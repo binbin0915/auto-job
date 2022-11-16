@@ -47,7 +47,7 @@ public class SyncHelper {
     }
 
     /**
-     * 中断等待一段时间，期间谓词值变为true或者等待时间结束该方法随之跳出，该方法会忽略中断异常
+     * 中断等待一段时间，期间谓词值变为true或者等待时间结束该方法随之跳出，该方法会忽略中断异常，注意调用该方法一定要确保谓词能在期待时间内为true，否则很可能导致程序死等
      *
      * @param predicate 谓词，false时阻塞，反之跳出
      * @param waitTime  等待时长
@@ -56,7 +56,7 @@ public class SyncHelper {
      * @author Huang Yongxiang
      * @date 2022/8/26 14:27
      */
-    public static void aWait(Predicate predicate, long waitTime, TimeUnit unit) {
+    public static void aWaitQuietly(Predicate predicate, long waitTime, TimeUnit unit) {
         if (predicate == null || waitTime <= 0) {
             throw new IllegalArgumentException("等待时间应该为非负数且谓词不能为空");
         }

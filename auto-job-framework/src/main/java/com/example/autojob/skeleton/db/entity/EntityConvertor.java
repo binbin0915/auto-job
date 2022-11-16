@@ -245,6 +245,7 @@ public class EntityConvertor {
             }
         }
         entity.setWriteTime(timestamp);
+        entity.setWriteTimestamp(timestamp == null ? SystemClock.now() : timestamp.getTime());
         return entity;
     }
 
@@ -288,6 +289,7 @@ public class EntityConvertor {
             }
         }
         entity.setWriteTime(timestamp);
+        entity.setWriteTimestamp(timestamp == null ? SystemClock.now() : timestamp.getTime());
         entity.setRunStatus(runLog.getRunStatus());
         return entity;
     }

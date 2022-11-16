@@ -106,6 +106,17 @@ public abstract class AutoJobTask {
     public abstract TaskExecutable getExecutable();
 
     /**
+     * 用于判断某个任务能否被执行
+     *
+     * @return boolean
+     * @author Huang Yongxiang
+     * @date 2022/11/2 17:33
+     */
+    public boolean isExecutable() {
+        return getExecutable() != null && getExecutable().isExecutable();
+    }
+
+    /**
      * 任务需要能够获取对应的后置处理器，自定义后置处理器必须保证能执行父后置处理器的逻辑
      *
      * @return com.example.autojob.skeleton.framework.pool.RunnablePostProcessor

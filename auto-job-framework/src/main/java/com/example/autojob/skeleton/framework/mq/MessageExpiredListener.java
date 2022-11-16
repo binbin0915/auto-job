@@ -7,6 +7,10 @@ package com.example.autojob.skeleton.framework.mq;
  * @Date 2022/11/02 15:18
  * @Email 1158055613@qq.com
  */
-public interface MessageExpiredListener<M> {
+public interface MessageExpiredListener<M> extends IMessageListener {
     void onMessageExpired(M message);
+
+    default String listenerName() {
+        return "defaultMessageExpiredListener";
+    }
 }

@@ -24,9 +24,18 @@ public interface IConsumer<M> {
 
     List<M> takeAllMessageNoBlock(final String topic, final boolean isTakeout);
 
-    List<M> takeMessageByRegexTopicBlock(final String regexTopic,final boolean isTakeout);
+    /**
+     * 取出符合正则表达式的所有主题的第一条消息，该方法为阻塞方法，某个主题如果不存在消息将会阻塞等待
+     *
+     * @param regexTopic 正则表达式
+     * @param isTakeout  是否取出消息
+     * @return java.util.List<M>
+     * @author Huang Yongxiang
+     * @date 2022/11/7 9:58
+     */
+    List<M> takeMessageByRegexTopicBlock(final String regexTopic, final boolean isTakeout);
 
-    List<M> takeMessageByRegexTopicNoBlock(final String regexTopic,final boolean isTakeout);
+    List<M> takeMessageByRegexTopicNoBlock(final String regexTopic, final boolean isTakeout);
 
 
     MessageQueueContext.MessageQueue<MessageQueueContext.MessageEntry<M>> subscriptionMessage(String topic);
@@ -46,5 +55,5 @@ public interface IConsumer<M> {
 
     void unsubscribe(String topic);
 
-    void unsubscribe(String topic,long wait,TimeUnit unit);
+    void unsubscribe(String topic, long wait, TimeUnit unit);
 }

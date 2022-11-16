@@ -35,6 +35,11 @@ public class ScriptTaskExecutable implements TaskExecutable {
     }
 
     @Override
+    public boolean isExecutable() {
+        return true;
+    }
+
+    @Override
     public Object execute(Object... params) throws Exception {
         Process process = null;
         List<String> cmdList = new ArrayList<>();

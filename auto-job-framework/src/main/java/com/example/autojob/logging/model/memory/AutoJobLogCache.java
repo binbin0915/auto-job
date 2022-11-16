@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
- * 任务日志内存缓存，内存Cache推进仅做测试用，实际生成日志应该放到数据库里
+ * 任务日志内存缓存，内存Cache推荐仅做测试用，实际生成日志应该放到数据库里
  *
  * @Author Huang Yongxiang
  * @Date 2022/07/12 15:40

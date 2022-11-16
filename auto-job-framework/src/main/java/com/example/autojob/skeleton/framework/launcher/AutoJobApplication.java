@@ -21,6 +21,7 @@ import com.example.autojob.skeleton.model.tq.AutoJobTaskQueue;
 import com.example.autojob.util.id.SystemClock;
 import com.example.autojob.util.mail.MailHelper;
 import com.example.autojob.util.thread.ScheduleTaskUtil;
+import com.example.autojob.util.thread.SyncHelper;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -116,8 +117,9 @@ public class AutoJobApplication implements Closeable {
 
     public void run() {
         if (status == NO_CREATE) {
-            throw new IllegalStateException("应用还未初始化，请调用AutoJobLauncherBuilder初始化应用");
+            throw new IllegalStateException("应用还未初始化，请先初始化应用");
         }
+        printLogo();
         loaders = loaders
                 .stream()
                 .sorted(new ProcessorComparator())
@@ -170,6 +172,7 @@ public class AutoJobApplication implements Closeable {
                     }
                     return 0;
                 }, 0, TimeUnit.MILLISECONDS);
+        SyncHelper.aWaitQuietly(() -> status == RUNNING);
     }
 
     private AutoJobApplication() {
@@ -278,6 +281,15 @@ public class AutoJobApplication implements Closeable {
         public int compare(AbstractScheduler o1, AbstractScheduler o2) {
             return Integer.compare(o2.getSchedulerLevel(), o1.getSchedulerLevel());
         }
+    }
+
+    private void printLogo() {
+        System.out.println("  _____          __              ____.     ___.     ");
+        System.out.println("  /  _  \\  __ ___/  |_  ____     |    | ____\\_ |__  ");
+        System.out.println(" /  /_\\  \\|  |  \\   __\\/  _ \\    |    |/  _ \\| __ \\ ");
+        System.out.println("/    |    \\  |  /|  | (  <_> )\\__|    (  <_> ) \\_\\ \\");
+        System.out.println("\\____|__  /____/ |__|  \\____/\\________|\\____/|___  /");
+        System.out.println("        \\/                                       \\/ ");
     }
 
 }

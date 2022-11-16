@@ -15,4 +15,8 @@ public interface WithDaemonThread {
      * @date 2022/8/8 11:05
      */
     void startWork();
+
+    default void endWork(){
+
+    }
 }

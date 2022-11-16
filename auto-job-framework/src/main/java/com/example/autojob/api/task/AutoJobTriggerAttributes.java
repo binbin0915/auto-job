@@ -74,7 +74,7 @@ public class AutoJobTriggerAttributes {
         childTask = trigger.getChildTask();
         cycle = trigger.getCycle();
         maximumExecutionTime = trigger.getMaximumExecutionTime();
-        lastTriggeringTime = trigger.getLastRunTime();
+        lastRunTime = trigger.getLastRunTime();
         isPause = trigger.getIsPause();
     }
 

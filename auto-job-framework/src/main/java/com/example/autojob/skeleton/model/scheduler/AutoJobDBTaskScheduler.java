@@ -43,11 +43,13 @@ public class AutoJobDBTaskScheduler extends AbstractScheduler implements WithDae
 
     @Override
     public void startWork() {
+        //log.warn("DB调度器已启动");
         ScheduleTaskUtil
                 .build(true, "DBTaskScheduler")
                 .EFixedRateTask(() -> {
                     try {
                         List<AutoJobTaskEntity> taskEntities = AutoJobMapperHolder.TASK_ENTITY_MAPPER.selectNearTask(5, TimeUnit.SECONDS);
+                        //log.warn("执行DB调度器");
                         if (taskEntities == null || taskEntities.size() == 0) {
                             return;
                         }
@@ -61,6 +63,7 @@ public class AutoJobDBTaskScheduler extends AbstractScheduler implements WithDae
                                     .getTrigger()
                                     .getIsPause()) {
                                 try {
+                                    //log.info("注册DB任务：{}", task.getId());
                                     register.registerTask(task);
                                 } catch (AutoJobRegisterRefusedException e) {
                                     AutoJobMapperHolder.TRIGGER_ENTITY_MAPPER.pauseTaskById(task.getId());
@@ -70,7 +73,7 @@ public class AutoJobDBTaskScheduler extends AbstractScheduler implements WithDae
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-                }, 1000 - System.currentTimeMillis() % 1000, 5, TimeUnit.SECONDS);
+                }, 0, 5, TimeUnit.SECONDS);
     }
 
     @Override

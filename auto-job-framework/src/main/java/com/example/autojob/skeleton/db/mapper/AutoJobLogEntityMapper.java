@@ -2,6 +2,7 @@ package com.example.autojob.skeleton.db.mapper;
 
 import com.example.autojob.skeleton.db.entity.AutoJobLogEntity;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -15,7 +16,7 @@ public class AutoJobLogEntityMapper extends BaseMapper<AutoJobLogEntity> {
     /**
      * 所有列
      */
-    public static final String ALL_COLUMNS = "id, scheduling_id, task_id, write_time, log_level, message, del_flag";
+    public static final String ALL_COLUMNS = "id, scheduling_id, task_id, write_timestamp,write_time, log_level, message, del_flag";
     /**
      * 表名
      */
@@ -37,8 +38,16 @@ public class AutoJobLogEntityMapper extends BaseMapper<AutoJobLogEntity> {
     }
 
     public List<AutoJobLogEntity> selectByTaskIdBetween(Date startTime, Date endTime, long taskId) {
-        String condition = " where task_id = ? AND del_flag = 0 AND UNIX_TIMESTAMP( write_time ) >= ? AND UNIX_TIMESTAMP( write_time ) <= ?";
-        return queryList( getSelectExpression() + condition, taskId, startTime.getTime(), endTime.getTime());
+        String condition = " where task_id = ? AND del_flag = 0 AND write_timestamp >= ? AND write_timestamp <= ?";
+        return queryList(getSelectExpression() + condition, taskId, startTime.getTime(), endTime.getTime());
+    }
+
+    public List<AutoJobLogEntity> selectBySchedulingId(Long schedulingId) {
+        if (schedulingId == null) {
+            return Collections.emptyList();
+        }
+        String condition = " where scheduling_id = ? and del_flag = 0";
+        return queryList(getSelectExpression() + condition, schedulingId);
     }
 
 
