@@ -57,7 +57,7 @@ autoJob:
     enable: true
     auth:
       sender: "15756481826@163.com"
-      receiver: "2213809350@qq.com"
+      receiver: "1158055613@qq.com"
       token: "LXZYEPEDLJCEWASU"
       type: 163Mail
       customize:
@@ -72,12 +72,12 @@ autoJob:
     taskLog:
       memory:
         enable: false
-        length: 100
+        length: 1000
         defaultExpireTime: 3
     runLog:
       memory:
         enable: false
-        length: 100
+        length: 1000
         defaultExpireTime: 3
   cluster:
     enable: false

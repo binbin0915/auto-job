@@ -1,7 +1,7 @@
 package com.example.spring;
 
 import com.example.autojob.skeleton.annotation.AutoJobScan;
-import com.example.autojob.skeleton.framework.launcher.AutoJobLauncherBuilder;
+import com.example.autojob.skeleton.framework.launcher.AutoJobBootstrap;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -12,7 +12,7 @@ public class AutoJobSpringApplication {
         SpringApplication.run(AutoJobSpringApplication.class, args);
         System.out.println("==================================>Spring应用已启动完成");
         //可以通过任意方式启动
-        new AutoJobLauncherBuilder(AutoJobSpringApplication.class)
+        new AutoJobBootstrap(AutoJobSpringApplication.class)
                 .withAutoScanProcessor()
                 .build()
                 .run();
