@@ -72,6 +72,11 @@ public class AutoJobScriptTaskAttributes extends AutoJobTaskAttributes {
         isScriptFile = task.isScriptFile();
         isNeedWrite = task.isNeedWrite();
         isCmd = task.isCmd();
+        if (task.getType() != null) {
+            type = task
+                    .getType()
+                    .toString();
+        }
         isWrote = task.isWrote();
     }
 

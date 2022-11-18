@@ -23,11 +23,12 @@ public class DataSourceHolder {
 
     public DataSourceHolder() {
         try {
-            InputStream in = JdbcUtils.class.getClassLoader().getResourceAsStream("druid.properties.bak");
+            InputStream in = JdbcUtils.class.getClassLoader().getResourceAsStream("druid.properties");
             Properties properties = new Properties();
             properties.load(in);
             dataSource = DruidDataSourceFactory.createDataSource(properties);
         } catch (Exception e) {
+            e.printStackTrace();
             throw new RuntimeException("druid连接池初始化失败...");
         }
 

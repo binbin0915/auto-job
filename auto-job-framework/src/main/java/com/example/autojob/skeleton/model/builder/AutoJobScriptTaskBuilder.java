@@ -101,7 +101,7 @@ public class AutoJobScriptTaskBuilder {
         return this;
     }
 
-    public AutoJobScriptTaskBuilder setParams(Object... params) {
+    public AutoJobScriptTaskBuilder setParams(String... params) {
         this.params = params;
         return this;
     }
@@ -178,6 +178,7 @@ public class AutoJobScriptTaskBuilder {
         scriptTask.setAlias(taskAlias);
         scriptTask.setIsChildTask(isChildTask);
         scriptTask.setBelongTo(belongTo);
+        scriptTask.setType(taskType);
         scriptTask.setTaskLevel(taskLevel);
         if (params != null) {
             scriptTask.setParams(params);
@@ -259,4 +260,5 @@ public class AutoJobScriptTaskBuilder {
         build(scriptTask);
         return scriptTask;
     }
+
 }

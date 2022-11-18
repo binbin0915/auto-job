@@ -55,7 +55,7 @@
     </Appenders>
     <!-- Loggers支持配置多个Logger，可引用不同的目标Appender，也可根据业务需求定制特定要求的Appender -->
     <Loggers>
-        <Root level="debug">
+        <Root level="info">
             <AppenderRef ref="Console"/>
             <AppenderRef ref="file_info"/>
             <AppenderRef ref="file_error"/>

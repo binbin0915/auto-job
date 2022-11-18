@@ -265,6 +265,4 @@ public class AutoJobMethodTaskBuilder {
         }
         return methodTask;
     }
-
-
 }

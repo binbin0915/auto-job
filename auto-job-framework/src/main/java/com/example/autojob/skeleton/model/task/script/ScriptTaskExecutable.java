@@ -3,14 +3,17 @@ package com.example.autojob.skeleton.model.task.script;
 import com.example.autojob.logging.model.producer.AutoJobLogHelper;
 import com.example.autojob.skeleton.framework.task.AutoJobTask;
 import com.example.autojob.skeleton.model.task.TaskExecutable;
+import com.example.autojob.util.convert.StringUtils;
+import com.example.autojob.util.thread.SyncHelper;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.IOUtils;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -63,12 +66,19 @@ public class ScriptTaskExecutable implements TaskExecutable {
         }
         Process finalProcess = process;
         if (process != null) {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(finalProcess.getInputStream(), "GBK"));
             Thread thread = new Thread(() -> {
-                try {
-                    logHelper.info(IOUtils.toString(new InputStreamReader(finalProcess.getInputStream(), "GBK")));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                do {
+                    try {
+                        SyncHelper.sleepQuietly(1, TimeUnit.MILLISECONDS);
+                        String log = reader.readLine();
+                        if (!StringUtils.isEmpty(log)) {
+                            logHelper.info(log);
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                } while (finalProcess.isAlive());
             });
             thread.setName(String.format("%d-scriptTaskLogThread", scriptTask.getId()));
             thread.start();

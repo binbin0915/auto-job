@@ -227,10 +227,11 @@ public class ScriptTask extends AutoJobTask {
         String path;
         if (index != -1) {
             path = fatherPath
-                    .concat(".")
+                    .concat(File.separator)
                     .concat(scriptFilename);
         } else {
             path = fatherPath
+                    .concat(File.separator)
                     .concat(this.scriptFilename)
                     .concat(".")
                     .concat(DefaultValueUtil
@@ -260,5 +261,6 @@ public class ScriptTask extends AutoJobTask {
     public boolean isCmd() {
         return isCmd;
     }
+
 
 }
