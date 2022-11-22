@@ -23,6 +23,7 @@ import java.util.concurrent.TimeUnit;
  * 该类支持子方法、子线程日志捕获
  * <p>为了保证项目统一使用slf4j logger，该类允许设置对slf4j logger进行代理，为了能真实记录原log输出位置，将会在原日志上增加
  * $Actual-Location - [fileName:lineNum]$</p>
+ * 在与Spring集成使用时强烈建议在任务方法内部重新new该对象，防止Spring在AutoJob上下文初始化前调用该类的实例化方法导致报错，请参考{@link #AutoJobLogHelper(Logger)}
  *
  * @Author Huang Yongxiang
  * @Date 2022/08/05 14:33
@@ -32,13 +33,11 @@ public class AutoJobLogHelper implements IAutoJobLogProducer<AutoJobLog> {
 
     private volatile Logger slf4jLogger;
 
-    private final MessageProducer<AutoJobLog> producer;
+    private MessageProducer<AutoJobLog> producer;
 
 
     public AutoJobLogHelper() {
-        this.producer = new MessageProducer<>(AutoJobLogContainer
-                .getInstance()
-                .getMessageQueueContext(AutoJobLog.class));
+        this(null);
     }
 
     public AutoJobLogHelper(Logger slf4jLogger) {
@@ -46,6 +45,9 @@ public class AutoJobLogHelper implements IAutoJobLogProducer<AutoJobLog> {
         this.producer = new MessageProducer<>(AutoJobLogContainer
                 .getInstance()
                 .getMessageQueueContext(AutoJobLog.class));
+        if (producer.getMessageQueueContext() == null) {
+            throw new IllegalStateException("AutoJob上下文尚未初始化");
+        }
     }
 
     /**
@@ -198,6 +200,7 @@ public class AutoJobLogHelper implements IAutoJobLogProducer<AutoJobLog> {
 
     @Override
     public void produce(MessageProducer<AutoJobLog> producer, String topic, AutoJobLog autoJobLog) {
+
         if (producer != null && autoJobLog != null) {
             if (!producer.hasTopic(topic)) {
                 producer.registerMessageQueue(topic);

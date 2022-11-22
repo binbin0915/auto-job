@@ -394,7 +394,7 @@ public class AutoJobBootstrap {
                                 .getFastPoolMaxThreadCount() + config
                                 .getExecutorPoolConfig()
                                 .getSlowPoolMaxCoreThreadCount())
-                        .setAllowMaxMessageCountPerQueue(10000)
+                        .setAllowMaxMessageCountPerQueue(Integer.MAX_VALUE)
                         .build());
         /*=======================Finished======================<*/
 
