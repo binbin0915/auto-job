@@ -54,7 +54,7 @@ autoJob:
           retryCount: 3
           interval: 0.12
   emailAlert:
-    enable: true
+    enable: false
     auth:
       sender: "15756481826@163.com"
       receiver: "1158055613@qq.com"

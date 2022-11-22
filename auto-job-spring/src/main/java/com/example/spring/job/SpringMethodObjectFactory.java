@@ -1,6 +1,7 @@
 package com.example.spring.job;
 
 import com.example.autojob.skeleton.model.executor.IMethodObjectFactory;
+import com.example.autojob.util.bean.ObjectUtil;
 import com.example.spring.util.SpringUtil;
 
 /**
@@ -10,6 +11,10 @@ import com.example.spring.util.SpringUtil;
  */
 public class SpringMethodObjectFactory implements IMethodObjectFactory {
     public Object createMethodObject(Class<?> methodClass) {
-        return SpringUtil.getBean(methodClass);
+        Object bean = SpringUtil.getBean(methodClass);
+        if (bean == null) {
+            return ObjectUtil.getClassInstance(methodClass);
+        }
+        return bean;
     }
 }
