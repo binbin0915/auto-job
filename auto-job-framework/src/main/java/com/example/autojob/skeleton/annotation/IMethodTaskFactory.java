@@ -1,7 +1,7 @@
 package com.example.autojob.skeleton.annotation;
 
+import com.example.autojob.skeleton.framework.config.AutoJobConfigHolder;
 import com.example.autojob.skeleton.model.task.method.MethodTask;
-import com.example.autojob.util.io.PropertiesHolder;
 
 /**
  * 任务工厂
@@ -10,5 +10,5 @@ import com.example.autojob.util.io.PropertiesHolder;
  * @Date 2022/07/18 12:53
  */
 public interface IMethodTaskFactory {
-    MethodTask newTask(PropertiesHolder propertiesHolder, Class<?> methodClass, String methodName);
+    MethodTask newTask(AutoJobConfigHolder configHolder, Class<?> methodClass, String methodName);
 }

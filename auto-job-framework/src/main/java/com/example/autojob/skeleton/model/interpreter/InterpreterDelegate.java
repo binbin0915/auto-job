@@ -1,10 +1,8 @@
 package com.example.autojob.skeleton.model.interpreter;
 
-import com.example.autojob.skeleton.framework.task.AutoJobTask;
-import com.example.autojob.util.bean.ObjectUtil;
 import com.example.autojob.util.convert.DefaultValueUtil;
-import com.example.autojob.util.json.JsonUtil;
 import com.example.autojob.util.convert.StringUtils;
+import com.example.autojob.util.json.JsonUtil;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import lombok.extern.slf4j.Slf4j;
@@ -90,17 +88,11 @@ public class InterpreterDelegate {
         return attributeList;
     }
 
-    public static List<Attribute> convertAttributeString(AutoJobTask task) {
-        if (StringUtils.isEmpty(task.getParamsString())) {
-            return null;
+    public static List<Attribute> convertAttributeString(Method target, String attributeString) {
+        if (target == null) {
+            return convertAttributeString(attributeString);
         }
-        String attributeString = task.getParamsString();
-        Class<?> methodObjectClass = task.getMethodClass();
-        Method method = ObjectUtil.findMethod(task.getMethodName(), task.getParams(), methodObjectClass);
-        if (method == null) {
-            return convertAttributeString(task.getParamsString());
-        }
-        Class<?>[] attributeClass = method.getParameterTypes();
+        Class<?>[] attributeClass = target.getParameterTypes();
         JsonArray attributes = JsonUtil.stringToJsonArray(attributeString);
         if (attributeClass.length != attributes.size()) {
             log.error("获取参数失败，参数列表个数不匹配");

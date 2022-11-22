@@ -3,7 +3,8 @@ package com.example.autojob.skeleton.model.alert;
 import com.example.autojob.skeleton.enumerate.AlertEventLevel;
 
 /**
- * @Description 报警邮件构建者对象
+ * 报警邮件构建者对象
+ *
  * @Author Huang Yongxiang
  * @Date 2022/07/28 16:11
  */
@@ -62,12 +63,23 @@ public class AlertMailBuilder {
     }
 
     public AlertMailBuilder addContentTitle(String contentTitle, int level) {
-        builder.append(String.format("<h%d>", level)).append(contentTitle).append(String.format("</h%d>", level));
+        builder
+                .append(String.format("<h%d>", level))
+                .append(contentTitle)
+                .append(String.format("</h%d>", level));
         return this;
     }
 
     public AlertMailBuilder addHyperlinks(String content, String linkTo) {
-        builder.append("<a ").append("src=").append("\"").append(linkTo).append("\"").append(">").append(content).append("</a>");
+        builder
+                .append("<a ")
+                .append("src=")
+                .append("\"")
+                .append(linkTo)
+                .append("\"")
+                .append(">")
+                .append(content)
+                .append("</a>");
         return this;
     }
 

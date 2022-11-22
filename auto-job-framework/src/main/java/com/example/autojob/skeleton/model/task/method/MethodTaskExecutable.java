@@ -25,7 +25,7 @@ public class MethodTaskExecutable implements TaskExecutable {
 
     public MethodTaskExecutable(MethodTask task) {
         if (task == null || task.getMethodClass() == null || StringUtils.isEmpty(task.getMethodName())) {
-            throw new NullPointerException();
+            throw new NullPointerException("方法型任务缺少类路径？方法名？");
         }
         IMethodObjectFactory methodObjectFactory = task.getMethodObjectFactory() == null ? new DefaultMethodObjectFactory() : task.getMethodObjectFactory();
         if (task.getParams() != null) {
@@ -36,7 +36,7 @@ public class MethodTaskExecutable implements TaskExecutable {
         if (this.method == null) {
             throw new IllegalArgumentException("无指定方法");
         }
-        this.methodObject = methodObjectFactory.createMethodObject(task.getMethodClassName());
+        this.methodObject = methodObjectFactory.createMethodObject(task.getMethodClass());
         this.task = task;
     }
 

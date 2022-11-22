@@ -21,10 +21,20 @@ import com.example.autojob.skeleton.model.alert.handler.TaskRunErrorAlertEventHa
 public class AlertEventHandlerLoader implements IAutoJobLoader {
     @Override
     public void load() {
-        TaskEventHandlerDelegate.getInstance().addHandler(TaskRunErrorEvent.class,new TaskRunErrorEventHandler());
-        AlertEventHandlerDelegate.getInstance().addHandler(TaskRunErrorAlertEvent.class, new TaskRunErrorAlertEventHandler());
-        AlertEventHandlerDelegate.getInstance().addHandler(ClusterOpenProtectedModelAlertEvent.class, new ClusterOpenProtectedModelEventHandler());
-        AlertEventHandlerDelegate.getInstance().addHandler(ClusterCloseProtectedModelEvent.class, new ClusterCloseProtectedModelEventHandler());
-        AlertEventHandlerDelegate.getInstance().addHandler(TaskRefuseHandleEvent.class, new TaskRefuseHandleEventHandler());
+        TaskEventHandlerDelegate
+                .getInstance()
+                .addHandler(TaskRunErrorEvent.class, new TaskRunErrorEventHandler());
+        AlertEventHandlerDelegate
+                .getInstance()
+                .addHandler(TaskRunErrorAlertEvent.class, new TaskRunErrorAlertEventHandler());
+        AlertEventHandlerDelegate
+                .getInstance()
+                .addHandler(ClusterOpenProtectedModelAlertEvent.class, new ClusterOpenProtectedModelEventHandler());
+        AlertEventHandlerDelegate
+                .getInstance()
+                .addHandler(ClusterCloseProtectedModelEvent.class, new ClusterCloseProtectedModelEventHandler());
+        AlertEventHandlerDelegate
+                .getInstance()
+                .addHandler(TaskRefuseHandleEvent.class, new TaskRefuseHandleEventHandler());
     }
 }

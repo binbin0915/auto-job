@@ -7,5 +7,5 @@ package com.example.autojob.skeleton.model.executor;
  * @Date 2022/07/14 14:34
  */
 public interface IMethodObjectFactory {
-    Object createMethodObject(String classPath);
+    Object createMethodObject(Class<?> methodClass);
 }

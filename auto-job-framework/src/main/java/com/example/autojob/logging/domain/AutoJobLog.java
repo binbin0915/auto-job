@@ -4,7 +4,7 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 
 /**
- * 任务的执行日志
+ * 任务的运行日志
  *
  * @Auther Huang Yongxiang
  * @Date 2022/01/13 13:25

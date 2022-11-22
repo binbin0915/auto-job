@@ -18,5 +18,7 @@ public class TaskEventHandlerLoader implements IAutoJobLoader {
                 .addHandler(TaskEvent.class, AutoJobLogContext
                         .getInstance()
                         .getLogManager());
+
     }
+
 }

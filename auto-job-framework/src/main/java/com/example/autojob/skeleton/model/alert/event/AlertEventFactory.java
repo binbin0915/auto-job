@@ -20,7 +20,9 @@ public class AlertEventFactory implements IAutoJobFactory {
      */
     public static ClusterNode getLocalhostNode() {
         ClusterNode node = new ClusterNode();
-        node.setHost(InetUtil.getLocalhostIp()).setPort(InetUtil.getPort());
+        node
+                .setHost(InetUtil.getLocalhostIp())
+                .setPort(InetUtil.getPort());
         return node;
     }
 

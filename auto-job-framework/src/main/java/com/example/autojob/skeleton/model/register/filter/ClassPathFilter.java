@@ -1,7 +1,6 @@
 package com.example.autojob.skeleton.model.register.filter;
 
 import com.example.autojob.skeleton.framework.task.AutoJobTask;
-import com.example.autojob.skeleton.framework.launcher.AutoJobApplication;
 import com.example.autojob.skeleton.model.register.AbstractRegisterFilter;
 import com.example.autojob.skeleton.model.task.method.MethodTask;
 import com.example.autojob.util.convert.RegexUtil;
@@ -14,13 +13,6 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class ClassPathFilter extends AbstractRegisterFilter {
-
-    public ClassPathFilter() {
-        super(AutoJobApplication
-                .getInstance()
-                .getConfigHolder()
-                .getAutoJobConfig());
-    }
 
     @Override
     public void doHandle(AutoJobTask task) {

@@ -1,5 +1,6 @@
 package com.example.autojob.skeleton.model.register;
 
+import com.example.autojob.skeleton.annotation.AutoJobRegisterPreProcessorScan;
 import com.example.autojob.skeleton.annotation.ProcessorLevel;
 import com.example.autojob.skeleton.framework.launcher.AutoJobApplication;
 import com.example.autojob.skeleton.framework.processor.IAutoJobLoader;
@@ -8,6 +9,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -22,8 +26,23 @@ public class AutoJobRegisterLoader implements IAutoJobLoader {
 
     @Override
     public void load() {
-        IAutoJobRegister autoJobRegister = AutoJobApplication.getInstance().getRegister();
-        Reflections reflections = new Reflections(Scanners.SubTypes);
+        IAutoJobRegister autoJobRegister = AutoJobApplication
+                .getInstance()
+                .getRegister();
+        Class<?> application = AutoJobApplication
+                .getInstance()
+                .getApplication();
+        AutoJobRegisterPreProcessorScan scan = application.getDeclaredAnnotation(AutoJobRegisterPreProcessorScan.class);
+        Reflections reflections = null;
+        if (scan == null) {
+            reflections = new Reflections(new String[]{AutoJobRegister.class.getPackage().getName()}, Scanners.SubTypes);
+        } else {
+            List<String> patternList = new ArrayList<>(Arrays.asList(scan.value()));
+            patternList.add(AutoJobRegister.class
+                    .getPackage()
+                    .getName());
+            reflections = new Reflections(patternList.toArray(), Scanners.SubTypes);
+        }
         Set<Class<? extends AbstractRegisterHandler>> classes = reflections.getSubTypesOf(AbstractRegisterHandler.class);
         Set<Class<? extends AbstractRegisterFilter>> filterClasses = reflections.getSubTypesOf(AbstractRegisterFilter.class);
         AbstractRegisterHandler.Builder handlerBuilder = AbstractRegisterHandler.builder();

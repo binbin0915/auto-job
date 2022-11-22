@@ -10,5 +10,14 @@ import java.util.List;
  * @see ILogSaveStrategyDelegate
  */
 public interface IAutoJobLogSaveStrategy<L> {
+    /**
+     * 执行日志保存
+     *
+     * @param taskPath 任务ID
+     * @param logList  日待保存的志列表
+     * @return void
+     * @author Huang Yongxiang
+     * @date 2022/11/20 22:58
+     */
     void doHandle(String taskPath, List<L> logList);
 }

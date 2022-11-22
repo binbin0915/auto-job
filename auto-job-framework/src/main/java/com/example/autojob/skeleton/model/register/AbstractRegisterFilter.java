@@ -1,10 +1,12 @@
 package com.example.autojob.skeleton.model.register;
 
+import com.example.autojob.skeleton.framework.launcher.AutoJobApplication;
 import com.example.autojob.skeleton.framework.task.AutoJobTask;
 import com.example.autojob.skeleton.framework.config.AutoJobConfig;
 
 /**
- * @Description 注册过滤器，AutoJob会自动注册被Spring管理的该类的子类对象
+ * 注册过滤器，AutoJob会自动注册该类的子类对象
+ *
  * @Author Huang Yongxiang
  * @Date 2022/07/11 16:37
  */
@@ -13,8 +15,11 @@ public abstract class AbstractRegisterFilter {
     protected AutoJobConfig config;
 
 
-    protected AbstractRegisterFilter(AutoJobConfig config) {
-        this.config = config;
+    protected AbstractRegisterFilter() {
+        this.config = AutoJobApplication
+                .getInstance()
+                .getConfigHolder()
+                .getAutoJobConfig();
     }
 
     private void next(AbstractRegisterFilter handler) {

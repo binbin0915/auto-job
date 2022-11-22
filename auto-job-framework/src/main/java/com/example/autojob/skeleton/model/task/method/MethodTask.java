@@ -9,7 +9,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Method型任务
+ * Method型任务，一个Method型任务代表Java中的一个方法，强烈建议任务方法不要重载，因为很可能会在参数注入时找不到目标方法
  *
  * @Author Huang Yongxiang
  * @Date 2022/08/02 17:43

@@ -252,7 +252,7 @@ public class ObjectUtil {
             try {
                 return clazz.newInstance();
             } catch (InstantiationException | IllegalAccessException e) {
-                logger.error("创建Instance时发生异常：{}", e.getMessage());
+                e.printStackTrace();
             }
         }
         return null;
@@ -263,7 +263,7 @@ public class ObjectUtil {
             try {
                 return clazz.newInstance();
             } catch (InstantiationException | IllegalAccessException e) {
-                logger.error("创建Instance时发生异常：{}", e.getMessage());
+                e.printStackTrace();
             }
         }
         return null;
@@ -276,7 +276,7 @@ public class ObjectUtil {
         try {
             return Class.forName(className);
         } catch (ClassNotFoundException e) {
-            logger.error("不存在类：{}", className);
+            e.printStackTrace();
         }
         return null;
     }

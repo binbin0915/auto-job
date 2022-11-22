@@ -10,11 +10,10 @@ import com.example.autojob.util.bean.ObjectUtil;
  */
 public class DefaultMethodObjectFactory implements IMethodObjectFactory {
     @Override
-    public Object createMethodObject(String classPath) {
+    public Object createMethodObject(Class<?> methodClass) {
         try {
-            Class<?> clazz = ObjectUtil.classPath2Class(classPath);
-            if (clazz != null) {
-                return ObjectUtil.getClassInstance(clazz);
+            if (methodClass != null) {
+                return ObjectUtil.getClassInstance(methodClass);
             }
         } catch (Exception ignored) {
 

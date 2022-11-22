@@ -130,6 +130,7 @@ public class AutoJobBootstrap {
         AutoJobConfig config = configHolder.getAutoJobConfig();
         this.runningContext = AutoJobApplication.getInstance();
         this.runningContext.setConfigHolder(configHolder);
+        this.runningContext.setApplication(applicationEntrance);
 
         /*=================调度组件配置=================>*/
         this.runningContext.setMemoryTaskContainer(MemoryTaskContainer

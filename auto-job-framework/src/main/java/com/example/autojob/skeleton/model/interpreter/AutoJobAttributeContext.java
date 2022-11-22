@@ -2,12 +2,15 @@ package com.example.autojob.skeleton.model.interpreter;
 
 import com.example.autojob.skeleton.model.builder.AttributesBuilder;
 import com.example.autojob.skeleton.framework.task.AutoJobTask;
+import com.example.autojob.util.bean.ObjectUtil;
 import com.example.autojob.util.convert.RegexUtil;
 import lombok.extern.slf4j.Slf4j;
 
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -18,25 +21,34 @@ import java.util.stream.Collectors;
 @Slf4j
 public class AutoJobAttributeContext {
     private final String attributeString;
-    private AutoJobTask task;
+    private Method targetMethod;
+    private static final Pattern pattern = Pattern.compile("\\{(((\\d+)|((-?\\d+)(\\.\\d+))|(true|false)|('.*'))(,)?)" + "*}");
 
     public AutoJobAttributeContext(String attributeString) {
         this.attributeString = attributeString;
     }
 
     public AutoJobAttributeContext(AutoJobTask task) {
-        this.task = task;
         this.attributeString = task.getParamsString();
+        this.targetMethod = ObjectUtil.findMethod(task.getMethodName(), task.getMethodClass());
+        if (isSimpleAttribute()) {
+            task.setParamsString(convertSimple());
+        }
     }
 
     public boolean isSimpleAttribute() {
-        return RegexUtil.isMatch(attributeString, "\\{(((\\d+)|((-?\\d+)(\\.\\d+))|(true|false)|(\\'.*\\')){1}(,)?)*\\}");
+        return pattern
+                .matcher(attributeString)
+                .matches();
     }
 
     private String convertSimple() {
         if (isSimpleAttribute()) {
             //去掉首尾花括号，分割参数
-            String[] attributes = attributeString.trim().substring(1, attributeString.length() - 1).split(",");
+            String[] attributes = attributeString
+                    .trim()
+                    .substring(1, attributeString.length() - 1)
+                    .split(",");
             AttributesBuilder attributesBuilder = AttributesBuilder.getInstance();
             attributesBuilder.clear();
             for (String params : attributes) {
@@ -64,11 +76,8 @@ public class AutoJobAttributeContext {
 
     public List<Attribute> convert() {
         try {
-            if (task != null) {
-                if (isSimpleAttribute()) {
-                    task.setParamsString(convertSimple());
-                }
-                return InterpreterDelegate.convertAttributeString(task);
+            if (targetMethod != null) {
+                return InterpreterDelegate.convertAttributeString(targetMethod, attributeString);
             } else {
                 return InterpreterDelegate.convertAttributeString(isSimpleAttribute() ? convertSimple() : attributeString);
             }
@@ -87,7 +96,11 @@ public class AutoJobAttributeContext {
      */
     public Object[] getAttributeEntity() {
         List<Attribute> attributeList = convert();
-        return attributeList.stream().map(Attribute::getValue).collect(Collectors.toList()).toArray(new Object[]{});
+        return attributeList
+                .stream()
+                .map(Attribute::getValue)
+                .collect(Collectors.toList())
+                .toArray(new Object[]{});
     }
 
 

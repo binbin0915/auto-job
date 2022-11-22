@@ -44,6 +44,7 @@ import java.util.stream.Collectors;
 @Getter
 @Slf4j
 public class AutoJobApplication implements Closeable {
+    private Class<?> application;
     /**
      * 内存任务容器
      */
