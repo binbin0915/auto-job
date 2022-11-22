@@ -56,9 +56,9 @@ autoJob:
   emailAlert:
     enable: false
     auth:
-      sender: "15756481826@163.com"
-      receiver: "1158055613@qq.com"
-      token: "LXZYEPEDLJCEWASU"
+      sender: "your email address"
+      receiver: "receivers"
+      token: "smtp password"
       type: 163Mail
       customize:
         smtpAddress:
