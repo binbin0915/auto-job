@@ -1056,7 +1056,7 @@ public class MemoryTaskAPI implements AutoJobAPI {
 
 ```java
 @AutoJobRPCClient("MemoryTaskAPI") //声明该接口是一个RPC客户端
-public class MemoryTaskAPIClient{
+public interface MemoryTaskAPIClient{
     //方法名同服务对外提供方法名相同
     Integer count();
 }
