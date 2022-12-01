@@ -255,7 +255,7 @@ class param{
 如上方法：`exampleMethod1`，使用SIMPLE型参数：
 
 ```java
-MethodTask task = new AutoJobMethodTaskBuilder(Jobs.class, "hello") 
+MethodTask task = new AutoJobMethodTaskBuilder(Jobs.class, "exampleMethod1") 
           .setTaskId(IdGenerator.getNextIdAsLong())
           .setTaskAlias("测试任务")
     	  .setParams("{'我是字符串参数',12,12.5,true}")
@@ -268,7 +268,7 @@ MethodTask task = new AutoJobMethodTaskBuilder(Jobs.class, "hello")
 使用FULL型参数
 
 ```java
-MethodTask task = new AutoJobMethodTaskBuilder(Jobs.class, "hello")
+MethodTask task = new AutoJobMethodTaskBuilder(Jobs.class, "exampleMethod1")
                 .setTaskId(IdGenerator.getNextIdAsLong())
                 .setTaskAlias("测试任务")
                 .setParams("[{\"values\":{\"value\":\"字符串参数\"},\"type\":\"string\"},{\"values\":{\"value\":12},\"type\":\"integer\"},{\"values\":{\"value\":12.5},\"type\":\"decimal\"},{\"values\":{\"value\":false},\"type\":\"boolean\"}]")
