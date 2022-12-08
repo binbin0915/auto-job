@@ -5,6 +5,7 @@ import com.example.autojob.logging.domain.AutoJobRunLog;
 import com.example.autojob.logging.model.AutoJobLogContainer;
 import com.example.autojob.logging.model.factory.AutoJobRunLogFactory;
 import com.example.autojob.logging.model.handler.AutoJobLogHandler;
+import com.example.autojob.skeleton.framework.config.TimeConstant;
 import com.example.autojob.skeleton.framework.mq.MessagePublishedListener;
 import com.example.autojob.skeleton.framework.mq.MessageQueueContext;
 import com.example.autojob.skeleton.framework.task.AutoJobTask;
@@ -13,9 +14,9 @@ import com.example.autojob.skeleton.lifecycle.event.TaskEvent;
 import com.example.autojob.skeleton.lifecycle.event.imp.TaskAfterRunEvent;
 import com.example.autojob.skeleton.lifecycle.event.imp.TaskBeforeRunEvent;
 import com.example.autojob.skeleton.lifecycle.event.imp.TaskFinishedEvent;
+import com.example.autojob.util.id.SystemClock;
 import com.example.autojob.util.json.JsonUtil;
 import com.example.autojob.util.thread.ScheduleTaskUtil;
-import com.example.autojob.util.thread.SyncHelper;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
@@ -49,20 +50,26 @@ public class AutoJobLogConsumer implements ITaskEventHandler<TaskEvent> {
     public void doHandle(TaskEvent event) {
 
         if (event instanceof TaskBeforeRunEvent) {
-            AutoJobLogHandler lastHandler = logHandlerMap.get(event
+            AutoJobLogHandler handler = logHandlerMap.get(event
                     .getTask()
                     .getId());
-            //log.info("等待上次调度日志保存");
-            SyncHelper.aWaitQuietly(() -> lastHandler == null || lastHandler.isFinished(), 10, TimeUnit.SECONDS);
-            //log.info("等待结束");
-            AutoJobLogHandler handler = new AutoJobLogHandler(event.getTask(), logSaveStrategyDelegate, runLogSaveStrategyDelegate);
-            logHandlerMap.put(event
+            if (handler == null) {
+                handler = new AutoJobLogHandler(event.getTask(), logSaveStrategyDelegate, runLogSaveStrategyDelegate);
+                logHandlerMap.put(event
+                        .getTask()
+                        .getId(), handler);
+            } else {
+                handler.refresh();
+            }
+            if (!event
                     .getTask()
-                    .getId(), handler);
-            saveLogScheduler.EOneTimeTask(() -> {
-                handler.saveSchedulingRecord();
-                return null;
-            }, 0, TimeUnit.MILLISECONDS);
+                    .getIsChildTask()) {
+                AutoJobLogHandler finalHandler = handler;
+                saveLogScheduler.EOneTimeTask(() -> {
+                    finalHandler.saveSchedulingRecord();
+                    return null;
+                }, 0, TimeUnit.MILLISECONDS);
+            }
             logMessageQueueContext.addMessagePublishedListener(event
                     .getTask()
                     .getId() + "", new HandleMessageListener(handler, event.getTask()));
@@ -103,6 +110,12 @@ public class AutoJobLogConsumer implements ITaskEventHandler<TaskEvent> {
                         .getStartRunTime());
                 return null;
             }, 0, TimeUnit.MILLISECONDS);
+            if (task
+                    .getTrigger()
+                    .nextTriggeringTime() - SystemClock.now() > TimeConstant.A_MINUTE * 30) {
+                logHandlerMap.remove(task.getId());
+            }
+
             logMessageQueueContext.removeMessagePublishedListener(task.getId() + "", LISTENER_PREFIX + task.getId());
         }
 

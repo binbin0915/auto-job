@@ -35,7 +35,7 @@ public class AutoJobLogHandler implements WithDaemonThread {
     /**
      * 调度ID
      */
-    private final long schedulingId;
+    private long schedulingId;
     /**
      * 任务ID
      */
@@ -43,11 +43,15 @@ public class AutoJobLogHandler implements WithDaemonThread {
     /**
      * 调度记录
      */
-    private final AutoJobSchedulingRecord record;
+    private AutoJobSchedulingRecord record;
     /**
      * 运行日志
      */
     private final List<AutoJobRunLog> runLogs = new ArrayList<>();
+    /**
+     * 处理的任务
+     */
+    private final AutoJobTask handleTask;
     /**
      * 任务日志
      */
@@ -78,6 +82,7 @@ public class AutoJobLogHandler implements WithDaemonThread {
         taskId = task.getId();
         saveCycle = 5000;
         maxBufferLength = 10;
+        handleTask = task;
         this.logSaveStrategyDelegate = logSaveStrategyDelegate;
         this.runLogSaveStrategyDelegate = runLogSaveStrategyDelegate;
         startWork();
@@ -171,6 +176,12 @@ public class AutoJobLogHandler implements WithDaemonThread {
     public AutoJobLogHandler setMaxBufferLength(int maxBufferLength) {
         this.maxBufferLength = maxBufferLength;
         return this;
+    }
+
+    public void refresh() {
+        schedulingId = IdGenerator.getNextIdAsLong();
+        record = new AutoJobSchedulingRecord(handleTask);
+        record.setSchedulingId(schedulingId);
     }
 
     @Override
