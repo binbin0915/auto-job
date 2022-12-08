@@ -77,11 +77,12 @@ public class AutoJobAttributeContext {
     public List<Attribute> convert() {
         try {
             if (targetMethod != null) {
-                return InterpreterDelegate.convertAttributeString(targetMethod, attributeString);
+                return InterpreterDelegate.convertAttributeString(targetMethod, isSimpleAttribute() ? convertSimple() : attributeString);
             } else {
                 return InterpreterDelegate.convertAttributeString(isSimpleAttribute() ? convertSimple() : attributeString);
             }
         } catch (Exception e) {
+            e.printStackTrace();
             log.error("参数转化失败：{}", e.getMessage());
         }
         return Collections.emptyList();
