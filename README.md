@@ -133,7 +133,7 @@ public class AutoJobMainApplication {
 
 **任务报警：**框架支持邮件报警，目前原生支持QQ邮箱、163邮箱、GMail等，同时也支持自定义的邮箱smtp服务器。
 
-![1668580284754](C:\Users\鲸哥\AppData\Roaming\Typora\typora-user-images\1668580284754.png)
+![1668580284754](https://gitee.com/hyxl-520/auto-job/raw/master/doc/%E9%82%AE%E4%BB%B6%E6%8A%A5%E8%AD%A6.png)
 
 目前系统提供：任务失败报警、任务被拒报警、节点开启保护模式报警、节点关闭保护模式报警，当然用户也可非常简单的进行邮件报警的拓展。
 
@@ -451,7 +451,7 @@ public static void main(String[] args) {
 
 ## 九、框架架构
 
-<img src="D:\work\个人\笔记\架构图-v0.9.1.jpg">
+<img src="https://gitee.com/hyxl-520/auto-job/raw/master/doc/%E6%9E%B6%E6%9E%84%E5%9B%BE-v0.9.1.jpg">
 
 框架架构图的左部分的组件是框架的核心组件。
 
@@ -477,7 +477,7 @@ public static void main(String[] args) {
 
 生命周期处理器也可以理解成生命周期钩子，具体来说是一个任务的生命周期钩子，具体看下面的生命周期事件图
 
-<img src="D:\work\个人\笔记\生命周期图.jpg">
+<img src="https://gitee.com/hyxl-520/auto-job/raw/master/doc/%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E5%9B%BE.jpg">
 
 要使用一个生命周期钩子也十分简单，下面来看一个示列：
 
