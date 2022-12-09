@@ -2,7 +2,6 @@ package com.example.autojob.util.thread;
 
 import com.example.autojob.util.convert.StringUtils;
 import com.example.autojob.util.cron.util.CronSequenceGenerator;
-import com.example.autojob.util.id.SystemClock;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
@@ -162,7 +161,6 @@ public class TimerThreadPoolExecutorHelper implements ThreadPoolExecutorHelper {
             if (unit != null && keepAliveTime > 0) {
                 this.keepAliveTime = unit.toMillis(keepAliveTime);
             }
-            refresh();
         }
 
 
@@ -267,7 +265,7 @@ public class TimerThreadPoolExecutorHelper implements ThreadPoolExecutorHelper {
     }
 
     public static void main(String[] args) {
-        TimerEntry timerEntry = new TimerEntry("0 12 15 * * ?", 0, 1, -1, null);
+        TimerEntry timerEntry = new TimerEntry("0 33 16 * * ?", 0, 1, -1, null);
         timerEntry.setTriggerListener((cronExpression, threadPoolExecutor1) -> {
             System.out.println("触发成功，" + threadPoolExecutor1.getCorePoolSize() + ";" + threadPoolExecutor1.getMaximumPoolSize());
         });
