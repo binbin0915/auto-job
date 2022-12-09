@@ -1,7 +1,10 @@
 package com.example.spring.controller;
 
-import com.example.autojob.api.task.*;
-import com.example.autojob.skeleton.framework.launcher.AutoJobApplication;
+import com.example.autojob.api.task.AutoJobAPI;
+import com.example.autojob.api.task.AutoJobMethodTaskAttributes;
+import com.example.autojob.api.task.AutoJobTaskAttributes;
+import com.example.autojob.api.task.params.MethodTaskEditParams;
+import com.example.autojob.skeleton.framework.boot.AutoJobApplication;
 import com.example.autojob.skeleton.model.builder.AutoJobMethodTaskBuilder;
 import com.example.autojob.skeleton.model.task.method.MethodTask;
 import com.example.autojob.util.bean.ObjectUtil;
@@ -78,5 +81,23 @@ public class TestController {
         master.insertNewMessage("totalNum", count);
         return master.toString();
     }
+
+    @PostMapping(value = "/edit_method_task", produces = "application/json;charset=UTF-8")
+    public String editMethodTask(@RequestBody(required = false) MethodTaskEditParams params, @RequestParam(required = false, value = "TASK_ID") Long taskId) {
+        if (params == null || ObjectUtil.isNull(params) || taskId == null) {
+            return MessageMaster.DefaultMessage.EMPTY_PARAMS.toString();
+        }
+        AutoJobAPI autoJobAPI = AutoJobApplication
+                .getInstance()
+                .getMatchedAPI(taskId);
+        if (autoJobAPI == null) {
+            return MessageMaster.getMessage(MessageMaster.Code.BAD_REQUEST, "不存在任务：" + taskId);
+        }
+        if (autoJobAPI.editTask(taskId, params)) {
+            return MessageMaster.getMessage(MessageMaster.Code.OK, "修改成功");
+        }
+        return MessageMaster.getMessage(MessageMaster.Code.ERROR, "修改失败");
+    }
+
 
 }

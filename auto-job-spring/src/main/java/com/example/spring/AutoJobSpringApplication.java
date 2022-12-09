@@ -2,7 +2,7 @@ package com.example.spring;
 
 import com.example.autojob.skeleton.annotation.AutoJobRegisterPreProcessorScan;
 import com.example.autojob.skeleton.annotation.AutoJobScan;
-import com.example.autojob.skeleton.framework.launcher.AutoJobBootstrap;
+import com.example.autojob.skeleton.framework.boot.AutoJobBootstrap;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
