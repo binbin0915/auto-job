@@ -1,6 +1,5 @@
 package com.example.autojob.util.thread;
 
-import com.example.autojob.util.id.SystemClock;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
@@ -25,7 +24,7 @@ public class ScheduleTaskUtil {
     public static ScheduleTaskUtil build() {
         ScheduleTaskUtil scheduleTaskUtil = new ScheduleTaskUtil();
         scheduleTaskUtil.executorService = Executors.newSingleThreadScheduledExecutor(runnable -> {
-            Thread thread = new Thread(runnable, DEFAULT_THREAD_NAME + SystemClock.now());
+            Thread thread = new Thread(runnable, DEFAULT_THREAD_NAME + System.currentTimeMillis());
 
             thread.setDaemon(true);
             return thread;

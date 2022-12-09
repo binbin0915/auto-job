@@ -2,7 +2,7 @@ package com.example.autojob.logging.model.producer;
 
 import com.example.autojob.logging.domain.AutoJobLog;
 import com.example.autojob.logging.model.AutoJobLogContainer;
-import com.example.autojob.skeleton.framework.launcher.AutoJobApplication;
+import com.example.autojob.skeleton.framework.boot.AutoJobApplication;
 import com.example.autojob.skeleton.framework.mq.MessageProducer;
 import com.example.autojob.skeleton.framework.task.AutoJobTask;
 import com.example.autojob.skeleton.framework.task.TaskRunningContext;

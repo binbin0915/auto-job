@@ -6,10 +6,11 @@ import com.example.autojob.skeleton.lang.WithDaemonThread;
 import com.example.autojob.skeleton.model.executor.AutoJobTaskExecutorPool;
 import com.example.autojob.skeleton.model.register.IAutoJobRegister;
 import com.example.autojob.skeleton.model.tq.AutoJobTimeWheel;
-import com.example.autojob.util.id.SystemClock;
+import com.example.autojob.util.convert.DateUtils;
 import com.example.autojob.util.thread.ScheduleTaskUtil;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -42,16 +43,18 @@ public class AutoJobTimeWheelScheduler extends AbstractScheduler implements With
     public void startWork() {
         Runnable start = () -> {
             try {
-                int second = (int) ((SystemClock.now() / 1000) % 60);
-                //log.info("时间轮下标：{}", second);
+                int second = (int) ((System.currentTimeMillis() / 1000) % 60);
+                log.info("时间轮下标：{}", second);
                 List<AutoJobTask> tasks = timeWheel.getSecondTasks(second);
                 //当前时间前3S的任务也会被执行，防止任务周期过短导致的missFire
                 for (int i = 1; i <= 3; i++) {
-                    tasks.addAll(timeWheel.getSecondTasks((int) (((SystemClock.now() - 1000 * i) / 1000) % 60)));
+                    tasks.addAll(timeWheel.getSecondTasks((int) (((System.currentTimeMillis() - 1000 * i) / 1000) % 60)));
                 }
                 if (tasks.size() > 0) {
                     tasks.forEach(item -> {
-                        //log.warn("任务：{}时间轮触发成功", item.getId());
+                        log.warn("任务：{}时间轮触发成功，{}", item.getId(), DateUtils.formatDateTime(new Date(item
+                                .getTrigger()
+                                .getTriggeringTime())));
                         if (item.getType() == AutoJobTask.TaskType.DB_TASK && lock(item.getId())) {
                             submitTask(item);
                         } else if (item.getType() == AutoJobTask.TaskType.MEMORY_TASk) {
@@ -80,9 +83,9 @@ public class AutoJobTimeWheelScheduler extends AbstractScheduler implements With
                             .getTrigger()
                             .isNearTriggeringTime(ADVANCE_TIME)) {
                         if (timeWheel.joinTask(headTask)) {
-                            //log.warn("任务：{}，启动时间：{}调度进时间轮成功", headTask.getId(), DateUtils.formatDate(new Date(headTask
-                            //        .getTrigger()
-                            //        .getTriggeringTime()), "yyyy-MM-dd HH:mm:ss,SSS"));
+                            log.warn("任务：{}，启动时间：{}调度进时间轮成功", headTask.getId(), DateUtils.formatDate(new Date(headTask
+                                    .getTrigger()
+                                    .getTriggeringTime()), "yyyy-MM-dd HH:mm:ss,SSS"));
                         }
                         register.takeTask();
                     }

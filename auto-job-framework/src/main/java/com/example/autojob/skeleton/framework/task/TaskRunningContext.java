@@ -1,13 +1,12 @@
 package com.example.autojob.skeleton.framework.task;
 
-import com.example.autojob.skeleton.lang.WithDaemonThread;
 import com.example.autojob.skeleton.db.mapper.AutoJobMapperHolder;
 import com.example.autojob.skeleton.db.mapper.TransactionEntry;
 import com.example.autojob.skeleton.framework.config.AutoJobConfigHolder;
+import com.example.autojob.skeleton.lang.WithDaemonThread;
 import com.example.autojob.skeleton.model.executor.AutoJobTaskExecutorPool;
 import com.example.autojob.skeleton.model.register.IAutoJobRegister;
 import com.example.autojob.skeleton.model.scheduler.AbstractScheduler;
-import com.example.autojob.util.id.SystemClock;
 import com.example.autojob.util.thread.SyncHelper;
 import lombok.extern.slf4j.Slf4j;
 
@@ -84,7 +83,11 @@ public class TaskRunningContext extends AbstractScheduler implements WithDaemonT
     }
 
     public static boolean deleteNoIDDBTasks() {
-        List<Long> ids = annotationDBTask.values().stream().map(AutoJobTask::getId).collect(Collectors.toList());
+        List<Long> ids = annotationDBTask
+                .values()
+                .stream()
+                .map(AutoJobTask::getId)
+                .collect(Collectors.toList());
         TransactionEntry deleteTasks = (connection) -> AutoJobMapperHolder.TASK_ENTITY_MAPPER.deleteTasksByIds(ids);
         TransactionEntry deleteTriggers = connection -> AutoJobMapperHolder.TRIGGER_ENTITY_MAPPER.deleteByTaskIds(ids);
         return AutoJobMapperHolder.TASK_ENTITY_MAPPER.doTransaction(new TransactionEntry[]{deleteTriggers, deleteTasks});
@@ -181,12 +184,21 @@ public class TaskRunningContext extends AbstractScheduler implements WithDaemonT
                 try {
                     SyncHelper.sleepQuietly(1, TimeUnit.MILLISECONDS);
                     for (Map.Entry<Long, AutoJobTask> entry : runningTask.entrySet()) {
-                        if (entry.getValue().getTrigger().getStartRunTime() == 0) {
+                        if (entry
+                                .getValue()
+                                .getTrigger()
+                                .getStartRunTime() == 0) {
                             continue;
                         }
-                        Long maximumExecutionTime = entry.getValue().getTrigger().getMaximumExecutionTime();
+                        Long maximumExecutionTime = entry
+                                .getValue()
+                                .getTrigger()
+                                .getMaximumExecutionTime();
                         if (maximumExecutionTime != null && maximumExecutionTime > 0) {
-                            long runTime = SystemClock.now() - entry.getValue().getTrigger().getStartRunTime();
+                            long runTime = System.currentTimeMillis() - entry
+                                    .getValue()
+                                    .getTrigger()
+                                    .getStartRunTime();
                             if (runTime > maximumExecutionTime) {
                                 log.info("任务：{}已执行{}ms，最长运行时间：{}，尝试进行停止", entry.getKey(), runTime, maximumExecutionTime);
                                 if (stopRunningTask(entry.getKey())) {

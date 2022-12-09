@@ -151,6 +151,6 @@ public class MethodTaskFactory implements IAutoJobFactory {
      * @date 2022/8/23 17:43
      */
     public static boolean connectRunNowTask(MethodTask task, int repeatTimes, long cycle, TimeUnit cycleUnit) {
-        return connectSimpleTriggerTask(task, DateUtils.parseDateToStr("yyyy-MM-dd HH:mm:ss", new Date(SystemClock.now() + 5000)), repeatTimes, cycle, cycleUnit);
+        return connectSimpleTriggerTask(task, DateUtils.parseDateToStr("yyyy-MM-dd HH:mm:ss", new Date(System.currentTimeMillis() + 5000)), repeatTimes, cycle, cycleUnit);
     }
 }

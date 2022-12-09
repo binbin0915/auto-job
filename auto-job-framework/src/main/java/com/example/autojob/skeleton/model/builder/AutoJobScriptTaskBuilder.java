@@ -6,7 +6,7 @@ import com.example.autojob.skeleton.db.entity.EntityConvertor;
 import com.example.autojob.skeleton.db.mapper.AutoJobMapperHolder;
 import com.example.autojob.skeleton.db.mapper.TransactionEntry;
 import com.example.autojob.skeleton.enumerate.ScriptType;
-import com.example.autojob.skeleton.framework.launcher.AutoJobApplication;
+import com.example.autojob.skeleton.framework.boot.AutoJobApplication;
 import com.example.autojob.skeleton.framework.task.AutoJobTask;
 import com.example.autojob.skeleton.framework.task.AutoJobTrigger;
 import com.example.autojob.skeleton.model.task.script.ScriptTask;

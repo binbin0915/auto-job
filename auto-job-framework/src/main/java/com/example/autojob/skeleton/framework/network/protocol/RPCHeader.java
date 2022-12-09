@@ -1,11 +1,10 @@
 package com.example.autojob.skeleton.framework.network.protocol;
 
+import com.example.autojob.skeleton.framework.boot.AutoJobApplication;
 import com.example.autojob.skeleton.framework.config.ClusterConfig;
-import com.example.autojob.skeleton.framework.launcher.AutoJobApplication;
 import com.example.autojob.skeleton.framework.network.enums.ReqType;
 import com.example.autojob.util.convert.StringUtils;
 import com.example.autojob.util.id.IdGenerator;
-import com.example.autojob.util.id.SystemClock;
 import com.example.autojob.util.servlet.InetUtil;
 import lombok.Data;
 
@@ -54,7 +53,7 @@ public class RPCHeader implements Serializable {
         this.token = config.getClusterToken();
         this.randomKey = StringUtils.getRandomStr(16);
         this.sendPort = InetUtil.getPort();
-        this.sendTime = SystemClock.now();
+        this.sendTime = System.currentTimeMillis();
         this.sendIp = InetUtil.getLocalhostIp();
         this.reqId = IdGenerator.getNextIdAsLong();
     }

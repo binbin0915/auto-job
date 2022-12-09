@@ -2,7 +2,6 @@ package com.example.autojob.skeleton.model.handler;
 
 import com.example.autojob.logging.model.producer.AutoJobLogHelper;
 import com.example.autojob.skeleton.db.mapper.AutoJobMapperHolder;
-import com.example.autojob.skeleton.framework.launcher.AutoJobApplication;
 import com.example.autojob.skeleton.framework.processor.IAutoJobEnd;
 import com.example.autojob.skeleton.framework.task.AutoJobTask;
 import com.example.autojob.skeleton.framework.task.TaskRunningContext;
@@ -22,12 +21,14 @@ public class DefaultEndProcessor implements IAutoJobEnd {
         AutoJobLogHelper logger = AutoJobLogHelper.getInstance();
         //退出前释放该节点持有的任务锁
         logger.info("释放{}个DB任务锁成功", TaskRunningContext.unlock());
-        //对于注解扫描的无ID的DB任务，如果是单机环境下直接删除，下次重新扫描
-        if (!AutoJobApplication.getInstance().getConfigHolder().getAutoJobConfig().getEnableCluster() && TaskRunningContext.deleteNoIDDBTasks()) {
-            logger.info("成功删除无ID的DB任务");
-        }
         /*=================将正在运行的DB任务运行态更新为结束态=================>*/
-        List<Long> ids = TaskRunningContext.getRunningTask().values().stream().filter(item -> item.getType() == AutoJobTask.TaskType.DB_TASK).map(AutoJobTask::getId).collect(Collectors.toList());
+        List<Long> ids = TaskRunningContext
+                .getRunningTask()
+                .values()
+                .stream()
+                .filter(item -> item.getType() == AutoJobTask.TaskType.DB_TASK)
+                .map(AutoJobTask::getId)
+                .collect(Collectors.toList());
         if (ids.size() > 0) {
             int count = AutoJobMapperHolder.TRIGGER_ENTITY_MAPPER.updateOperatingStatuses(false, ids);
             logger.info("更新{}个任务的运行状态为结束态", count);

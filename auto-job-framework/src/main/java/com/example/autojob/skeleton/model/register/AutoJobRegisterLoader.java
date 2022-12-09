@@ -2,7 +2,7 @@ package com.example.autojob.skeleton.model.register;
 
 import com.example.autojob.skeleton.annotation.AutoJobRegisterPreProcessorScan;
 import com.example.autojob.skeleton.annotation.ProcessorLevel;
-import com.example.autojob.skeleton.framework.launcher.AutoJobApplication;
+import com.example.autojob.skeleton.framework.boot.AutoJobApplication;
 import com.example.autojob.skeleton.framework.processor.IAutoJobLoader;
 import com.example.autojob.util.bean.ObjectUtil;
 import lombok.extern.slf4j.Slf4j;

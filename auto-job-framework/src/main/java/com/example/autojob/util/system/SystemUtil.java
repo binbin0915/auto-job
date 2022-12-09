@@ -19,8 +19,6 @@ public class SystemUtil {
 
     /**
      * 获取cpu使用率
-     *
-     * @return
      */
     public static double getSystemCpuLoad() {
         return operatingSystemMXBean.getSystemCpuLoad();
@@ -28,8 +26,6 @@ public class SystemUtil {
 
     /**
      * 获取cpu数量
-     *
-     * @return
      */
     public static int getSystemCpuCount() {
         return Runtime.getRuntime().availableProcessors();
@@ -37,6 +33,7 @@ public class SystemUtil {
 
     public static void main(String[] args) {
         double use = 0.0;
+        System.out.println(getSystemCpuCount());
         do {
             try {
                 Thread.sleep(1000);

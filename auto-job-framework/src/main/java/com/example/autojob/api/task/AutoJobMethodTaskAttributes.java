@@ -21,15 +21,15 @@ public class AutoJobMethodTaskAttributes extends AutoJobTaskAttributes {
     /**
      * 运行方法名
      */
-    public String methodName;
+    private String methodName;
     /**
      * 参数字符串
      */
-    public String paramsString;
+    private String paramsString;
     /**
      * 任务运行类工厂
      */
-    public String methodObjectFactory;
+    private String methodObjectFactory;
 
 
     public AutoJobMethodTaskAttributes(MethodTask task) {

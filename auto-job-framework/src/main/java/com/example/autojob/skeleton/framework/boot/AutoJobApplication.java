@@ -1,5 +1,6 @@
-package com.example.autojob.skeleton.framework.launcher;
+package com.example.autojob.skeleton.framework.boot;
 
+import com.example.autojob.api.task.AutoJobAPI;
 import com.example.autojob.api.task.DBTaskAPI;
 import com.example.autojob.api.task.MemoryTaskAPI;
 import com.example.autojob.logging.model.AutoJobLogContext;
@@ -13,6 +14,7 @@ import com.example.autojob.skeleton.framework.network.AutoJobNetWorkManager;
 import com.example.autojob.skeleton.framework.processor.IAutoJobEnd;
 import com.example.autojob.skeleton.framework.processor.IAutoJobLoader;
 import com.example.autojob.skeleton.framework.processor.IAutoJobProcessor;
+import com.example.autojob.skeleton.framework.task.AutoJobTask;
 import com.example.autojob.skeleton.framework.task.TaskRunningContext;
 import com.example.autojob.skeleton.model.executor.AutoJobTaskExecutorPool;
 import com.example.autojob.skeleton.model.register.IAutoJobRegister;
@@ -141,7 +143,7 @@ public class AutoJobApplication implements Closeable {
                             throw new IllegalStateException("应用已在运行");
                         }
                         log.info("==================================>AutoJob starting");
-                        long start = SystemClock.now();
+                        long start = System.currentTimeMillis();
                         //执行所有启动器
                         for (IAutoJobLoader loader : loaders) {
                             loader.load();
@@ -164,9 +166,9 @@ public class AutoJobApplication implements Closeable {
                                     .getClass()
                                     .getName());
                         }
-                        log.info("AutoJob成功执行：{}个加载器，{}个调度器，共计用时：{}ms", loaders.size(), schedulers.size(), SystemClock.now() - start);
+                        log.info("AutoJob成功执行：{}个加载器，{}个调度器，共计用时：{}ms", loaders.size(), schedulers.size(), System.currentTimeMillis() - start);
                         status = RUNNING;
-                        log.info("==================================>AutoJob started in {} ms", SystemClock.now() - start);
+                        log.info("==================================>AutoJob started in {} ms", System.currentTimeMillis() - start);
                     } catch (Exception e) {
                         log.error("AutoJob start failed:{}", e.getMessage());
                         e.printStackTrace();
@@ -215,7 +217,7 @@ public class AutoJobApplication implements Closeable {
         try {
             AutoJobLogHelper logger = AutoJobLogHelper.getInstance();
             logger.info("==================================>AutoJob ending");
-            long start = SystemClock.now();
+            long start = System.currentTimeMillis();
             //执行所有的关闭处理器
             for (IAutoJobEnd end : ends) {
                 end.end();
@@ -239,13 +241,21 @@ public class AutoJobApplication implements Closeable {
                         .getClass()
                         .getName());
             }
-            logger.info("AutoJob成功执行：{}个关闭处理器，摧毁：{}个调度器，共计用时：{}ms", ends.size(), schedulers.size(), SystemClock.now() - start);
+            logger.info("AutoJob成功执行：{}个关闭处理器，摧毁：{}个调度器，共计用时：{}ms", ends.size(), schedulers.size(), System.currentTimeMillis() - start);
         } catch (Exception e) {
             e.printStackTrace();
             throw new IOException(e.getMessage());
         } finally {
             status = CLOSE;
         }
+    }
+
+    public AutoJobAPI getMatchedAPI(long taskId) {
+        AutoJobTask.TaskType taskType = memoryTaskAPI.getTaskType(taskId);
+        if (taskType == null) {
+            return null;
+        }
+        return taskType == AutoJobTask.TaskType.MEMORY_TASk ? memoryTaskAPI : dbTaskAPI;
     }
 
     private static class InstanceHolder {

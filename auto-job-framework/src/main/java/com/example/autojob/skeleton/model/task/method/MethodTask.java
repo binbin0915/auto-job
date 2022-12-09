@@ -1,6 +1,6 @@
 package com.example.autojob.skeleton.model.task.method;
 
-import com.example.autojob.skeleton.framework.launcher.AutoJobApplication;
+import com.example.autojob.skeleton.framework.boot.AutoJobApplication;
 import com.example.autojob.skeleton.framework.task.AutoJobTask;
 import com.example.autojob.skeleton.model.executor.IMethodObjectFactory;
 import com.example.autojob.skeleton.model.task.TaskExecutable;

@@ -1,6 +1,6 @@
 package com.example.autojob.skeleton.annotation;
 
-import com.example.autojob.skeleton.framework.launcher.AutoJobApplication;
+import com.example.autojob.skeleton.framework.boot.AutoJobApplication;
 import com.example.autojob.util.io.PropertiesHolder;
 
 /**

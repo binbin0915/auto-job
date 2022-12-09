@@ -359,7 +359,6 @@ public class ObjectUtil {
      * @author Huang Yongxiang
      * @date 2022/1/26 11:10
      */
-    @SuppressWarnings("unchecked")
     public static <T> T mergeObject(T object1, T object2, String... ignoreFieldsName) {
         if (object1 == null || object2 == null) {
             throw new NullPointerException("比较属性失败");

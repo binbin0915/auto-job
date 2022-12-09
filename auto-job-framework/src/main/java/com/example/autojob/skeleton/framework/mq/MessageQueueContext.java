@@ -164,7 +164,7 @@ public class MessageQueueContext<M> implements IMessageQueueContext<M>, IProduce
         MessageEntry<M> messageEntry = new MessageEntry<>();
         messageEntry.setMessageId(IdGenerator.getNextIdAsLong());
         messageEntry.setMessage(message);
-        messageEntry.setExpiringTime(unit.toMillis(expiringTime) + SystemClock.now());
+        messageEntry.setExpiringTime(unit.toMillis(expiringTime) + System.currentTimeMillis());
         if (messageQueues
                 .get(topic)
                 .publishMessage(messageEntry)) {
@@ -195,7 +195,7 @@ public class MessageQueueContext<M> implements IMessageQueueContext<M>, IProduce
         MessageEntry<M> messageEntry = new MessageEntry<>();
         messageEntry.setMessageId(IdGenerator.getNextIdAsLong());
         messageEntry.setMessage(message);
-        messageEntry.setExpiringTime(unit.toMillis(expiringTime) + SystemClock.now());
+        messageEntry.setExpiringTime(unit.toMillis(expiringTime) + System.currentTimeMillis());
         try {
             if (messageQueues
                     .get(topic)
@@ -613,7 +613,7 @@ public class MessageQueueContext<M> implements IMessageQueueContext<M>, IProduce
         MessageEntry<M> messageEntry = new MessageEntry<>();
         messageEntry.setMessageId(IdGenerator.getNextIdAsLong());
         messageEntry.setMessage(message);
-        messageEntry.setExpiringTime(defaultExpiringTime > 0 ? defaultExpiringTime + SystemClock.now() : -1);
+        messageEntry.setExpiringTime(defaultExpiringTime > 0 ? defaultExpiringTime + System.currentTimeMillis() : -1);
         if (messageQueues
                 .get(topic)
                 .publishMessage(messageEntry)) {
@@ -636,7 +636,7 @@ public class MessageQueueContext<M> implements IMessageQueueContext<M>, IProduce
             MessageEntry<M> messageEntry = new MessageEntry<>();
             messageEntry.setMessageId(IdGenerator.getNextIdAsLong());
             messageEntry.setMessage(message);
-            messageEntry.setExpiringTime(defaultExpiringTime > 0 ? defaultExpiringTime + SystemClock.now() : -1);
+            messageEntry.setExpiringTime(defaultExpiringTime > 0 ? defaultExpiringTime + System.currentTimeMillis() : -1);
             if (messageQueues
                     .get(topic)
                     .publishMessageSync(messageEntry)) {
@@ -663,7 +663,7 @@ public class MessageQueueContext<M> implements IMessageQueueContext<M>, IProduce
                         .iterator(); it.hasNext(); ) {
                     MessageEntry<M> message = it.next();
                     //如果达到过期时间则通知其过期
-                    if (message.expiringTime >= 0 && message.expiringTime <= SystemClock.now()) {
+                    if (message.expiringTime >= 0 && message.expiringTime <= System.currentTimeMillis()) {
                         try {
                             log.debug("messageId：{}，消息内容：{},已过期", message.messageId, message.message);
                             expire(it);
@@ -698,7 +698,7 @@ public class MessageQueueContext<M> implements IMessageQueueContext<M>, IProduce
                                 .iterator(); it.hasNext(); ) {
                             MessageEntry<M> message = it.next();
                             //如果达到过期时间则通知其过期
-                            if (message.expiringTime >= 0 && message.expiringTime <= SystemClock.now()) {
+                            if (message.expiringTime >= 0 && message.expiringTime <= System.currentTimeMillis()) {
                                 try {
                                     log.debug("messageId：{}已过期", message.messageId);
                                     expire(it);

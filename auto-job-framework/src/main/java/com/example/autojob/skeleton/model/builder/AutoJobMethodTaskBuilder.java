@@ -5,6 +5,7 @@ import com.example.autojob.skeleton.db.entity.AutoJobTriggerEntity;
 import com.example.autojob.skeleton.db.entity.EntityConvertor;
 import com.example.autojob.skeleton.db.mapper.AutoJobMapperHolder;
 import com.example.autojob.skeleton.db.mapper.TransactionEntry;
+import com.example.autojob.skeleton.enumerate.SchedulingStrategy;
 import com.example.autojob.skeleton.framework.task.AutoJobTask;
 import com.example.autojob.skeleton.framework.task.AutoJobTrigger;
 import com.example.autojob.skeleton.model.executor.DefaultMethodObjectFactory;
@@ -71,6 +72,11 @@ public class AutoJobMethodTaskBuilder {
     private AutoJobTrigger trigger;
 
     /**
+     * 调度策略
+     */
+    private SchedulingStrategy schedulingStrategy;
+
+    /**
      * 所属
      */
     private Long belongTo;
@@ -116,6 +122,11 @@ public class AutoJobMethodTaskBuilder {
 
     public AutoJobMethodTaskBuilder setMethodObjectFactory(IMethodObjectFactory methodObjectFactory) {
         this.methodObjectFactory = methodObjectFactory;
+        return this;
+    }
+
+    public AutoJobMethodTaskBuilder setSchedulingStrategy(SchedulingStrategy schedulingStrategy) {
+        this.schedulingStrategy = schedulingStrategy;
         return this;
     }
 
@@ -234,12 +245,12 @@ public class AutoJobMethodTaskBuilder {
 
     public MethodTask build() {
         MethodTask methodTask = new MethodTask();
-        methodTask.setAnnotationId(taskId);
         methodTask.setId(taskId);
         methodTask.setBelongTo(belongTo);
         methodTask.setAlias(taskAlias);
         methodTask.setTrigger(trigger);
         methodTask.setIsChildTask(isChildTask);
+        methodTask.setSchedulingStrategy(schedulingStrategy);
         methodTask.setParamsString(paramsString);
         methodTask.setMethodObjectFactory(methodObjectFactory);
         if (StringUtils.isEmpty(methodTask.getParamsString())) {

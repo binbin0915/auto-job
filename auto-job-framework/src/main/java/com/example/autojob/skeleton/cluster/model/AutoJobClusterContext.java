@@ -3,7 +3,7 @@ package com.example.autojob.skeleton.cluster.model;
 import com.example.autojob.skeleton.framework.config.ClusterConfig;
 import com.example.autojob.skeleton.lang.AbstractLifeCycleHook;
 import com.example.autojob.skeleton.lang.WithDaemonThread;
-import com.example.autojob.skeleton.framework.launcher.AutoJobApplication;
+import com.example.autojob.skeleton.framework.boot.AutoJobApplication;
 import com.example.autojob.skeleton.model.alert.AlertEventHandlerDelegate;
 import com.example.autojob.skeleton.model.alert.event.AlertEventFactory;
 import com.example.autojob.util.convert.StringUtils;

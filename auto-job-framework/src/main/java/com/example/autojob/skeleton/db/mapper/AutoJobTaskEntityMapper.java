@@ -1,9 +1,10 @@
 package com.example.autojob.skeleton.db.mapper;
 
+import com.example.autojob.api.task.params.MethodTaskEditParams;
+import com.example.autojob.api.task.params.TaskEditParams;
 import com.example.autojob.skeleton.db.entity.AutoJobTaskEntity;
 import com.example.autojob.skeleton.db.entity.AutoJobTriggerEntity;
 import com.example.autojob.util.bean.ObjectUtil;
-import com.example.autojob.util.id.SystemClock;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -84,7 +85,7 @@ public class AutoJobTaskEntityMapper extends BaseMapper<AutoJobTaskEntity> {
      */
     public List<AutoJobTaskEntity> selectNearTask(long nearTime, TimeUnit unit) {
         String sql = getSelectExpression() + " where (id in (SELECT task_id FROM `aj_trigger` where next_triggering_time >= ? and next_triggering_time <= ? and del_flag = 0 and is_pause = 0) or is_child_task = 1) and del_flag = 0 and status = 1";
-        return queryList(sql, SystemClock.now(), SystemClock.now() + unit.toMillis(nearTime));
+        return queryList(sql, System.currentTimeMillis(), System.currentTimeMillis() + unit.toMillis(nearTime));
     }
 
 
@@ -99,6 +100,11 @@ public class AutoJobTaskEntityMapper extends BaseMapper<AutoJobTaskEntity> {
     public AutoJobTaskEntity selectChildTask(long taskId) {
         String condition = " where is_child_task = 1 and del_flag = 0 and id = ? and status = 1";
         return queryOne(getSelectExpression() + condition, taskId);
+    }
+
+    public List<AutoJobTaskEntity> selectChildTasks(List<Long> taskIds) {
+        String condition = " where is_child_task = 1 and del_flag = 0 and status = 1 and id in (" + this.idRepeat(taskIds) + ") ";
+        return queryList(getSelectExpression() + condition);
     }
 
     /**
@@ -151,12 +157,20 @@ public class AutoJobTaskEntityMapper extends BaseMapper<AutoJobTaskEntity> {
         return queryOne(getSelectExpression() + condition, taskId, taskId);
     }
 
-    public int updateById(AutoJobTaskEntity task, long taskId) {
-        if (task == null) {
+    public int updateById(TaskEditParams editParams, long taskId) {
+        if (editParams == null) {
             return -1;
         }
-        task.setId(null);
-        return updateEntity(task, "id = ?", taskId);
+        AutoJobTaskEntity entity = new AutoJobTaskEntity();
+        entity.setAlias(editParams.getAlias());
+        entity.setBelongTo(editParams.getBelongTo());
+        entity.setTaskLevel(editParams.getTaskLevel());
+        if (editParams instanceof MethodTaskEditParams) {
+            MethodTaskEditParams methodTaskEditParams = (MethodTaskEditParams) editParams;
+            entity.setMethodObjectFactory(methodTaskEditParams.getMethodObjectFactory());
+            entity.setParams(methodTaskEditParams.getParamsString());
+        }
+        return updateEntity(entity, "id = ?", taskId);
     }
 
 

@@ -3,7 +3,6 @@ package com.example.autojob.skeleton.framework.task;
 import com.example.autojob.skeleton.framework.config.TimeConstant;
 import com.example.autojob.util.convert.StringUtils;
 import com.example.autojob.util.cron.util.CronUtil;
-import com.example.autojob.util.id.SystemClock;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -155,14 +154,14 @@ public class AutoJobTrigger {
      * @date 2022/8/11 14:58
      */
     public void start() {
-        startRunTime = SystemClock.now();
+        startRunTime = System.currentTimeMillis();
     }
 
     public void finished() {
         if (startRunTime < 0) {
             throw new UnsupportedOperationException("本次调度未记录启动时间");
         }
-        lastRunTime = SystemClock.now() - startRunTime;
+        lastRunTime = System.currentTimeMillis() - startRunTime;
         //startRunTime = -1;
     }
 
@@ -182,7 +181,7 @@ public class AutoJobTrigger {
     }
 
     public boolean isReachTriggerTime() {
-        long in = triggeringTime - SystemClock.now();
+        long in = triggeringTime - System.currentTimeMillis();
         return Math.abs(in) <= 1000;
     }
 
@@ -198,7 +197,7 @@ public class AutoJobTrigger {
         if (isReachTriggerTime()) {
             return true;
         }
-        return SystemClock.now() >= triggeringTime - mills;
+        return System.currentTimeMillis() >= triggeringTime - mills;
     }
 
 
@@ -240,7 +239,7 @@ public class AutoJobTrigger {
                     .next(cronExpression, new Date())
                     .getTime();
         } else {
-            next = SystemClock.now() + cycle;
+            next = System.currentTimeMillis() + cycle;
         }
         return next - next % 1000;
     }

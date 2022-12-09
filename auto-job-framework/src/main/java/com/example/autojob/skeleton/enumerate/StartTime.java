@@ -1,7 +1,6 @@
 package com.example.autojob.skeleton.enumerate;
 
 import com.example.autojob.skeleton.framework.config.TimeConstant;
-import com.example.autojob.util.id.SystemClock;
 
 /**
  * 提供部分默认启动时间
@@ -13,32 +12,32 @@ public enum StartTime {
     /**
      * 现在
      */
-    NOW(SystemClock.now() + 5000),
+    NOW(System.currentTimeMillis() + 5000),
 
     /**
      * 稍后一分钟
      */
-    THEN_ONE_MINUTE(SystemClock.now() + TimeConstant.A_MINUTE),
+    THEN_ONE_MINUTE(System.currentTimeMillis() + TimeConstant.A_MINUTE),
 
     /**
      * 稍后三分钟
      */
-    THEN_THREE_MINUTES(SystemClock.now() + TimeConstant.A_MINUTE * 3),
+    THEN_THREE_MINUTES(System.currentTimeMillis() + TimeConstant.A_MINUTE * 3),
 
     /**
      * 稍后五分钟
      */
-    THEN_FIVE_MINUTES(SystemClock.now() + TimeConstant.A_MINUTE * 5),
+    THEN_FIVE_MINUTES(System.currentTimeMillis() + TimeConstant.A_MINUTE * 5),
 
     /**
      * 稍后半小时
      */
-    THEN_HALF_HOUR(SystemClock.now() + TimeConstant.A_MINUTE * 30),
+    THEN_HALF_HOUR(System.currentTimeMillis() + TimeConstant.A_MINUTE * 30),
 
     /**
      * 稍后一个小时
      */
-    THEN_HOUR(SystemClock.now() + TimeConstant.A_HOUR),
+    THEN_HOUR(System.currentTimeMillis() + TimeConstant.A_HOUR),
 
     /**
      * empty

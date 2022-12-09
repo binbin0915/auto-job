@@ -6,7 +6,7 @@ import com.example.autojob.skeleton.framework.network.protocol.RPCProtocol;
 import com.example.autojob.skeleton.framework.network.protocol.RPCRequest;
 import com.example.autojob.skeleton.framework.network.protocol.RPCResponse;
 import com.example.autojob.skeleton.framework.pool.AbstractAutoJobPool;
-import com.example.autojob.util.thread.ThreadPoolExecutorHelper;
+import com.example.autojob.util.thread.FlowThreadPoolExecutorHelper;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.extern.slf4j.Slf4j;
@@ -19,7 +19,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class RPCServerHandler extends SimpleChannelInboundHandler<RPCProtocol<RPCRequest>> {
-    private static final ThreadPoolExecutorHelper executorHelper = ThreadPoolExecutorHelper
+    private static final FlowThreadPoolExecutorHelper executorHelper = FlowThreadPoolExecutorHelper
             .classicBuilder()
             .setAllowMaxCoreThreadCount(20)
             .setAllowMinCoreThreadCount(1)
@@ -38,8 +38,8 @@ public class RPCServerHandler extends SimpleChannelInboundHandler<RPCProtocol<RP
     protected void channelRead0(ChannelHandlerContext ctx, RPCProtocol<RPCRequest> msg) throws Exception {
         RPCServiceHandler handler = new RPCServiceHandler(msg);
         RPCProtocol<RPCResponse> response = new RPCProtocol<>();
-        RPCResponse result = (RPCResponse) executorHelper
-                .submit(handler, true)
+        RPCResponse result = executorHelper
+                .submit(handler)
                 .get();
         RPCHeader header = new RPCHeader(ReqType.RESPONSE);
         header.setReqId(msg

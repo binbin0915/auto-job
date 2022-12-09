@@ -1,4 +1,4 @@
-package com.example.autojob.skeleton.framework.launcher;
+package com.example.autojob.skeleton.framework.boot;
 
 import com.example.autojob.api.task.DBTaskAPI;
 import com.example.autojob.api.task.MemoryTaskAPI;
@@ -24,7 +24,6 @@ import com.example.autojob.skeleton.framework.container.MemoryTaskContainer;
 import com.example.autojob.skeleton.framework.mq.ExpirationListenerPolicy;
 import com.example.autojob.skeleton.framework.mq.MessageQueueContext;
 import com.example.autojob.skeleton.framework.network.AutoJobNetWorkManager;
-import com.example.autojob.skeleton.framework.pool.AbstractAutoJobPool;
 import com.example.autojob.skeleton.framework.pool.DefaultRefuseHandler;
 import com.example.autojob.skeleton.framework.processor.*;
 import com.example.autojob.skeleton.framework.task.TaskRunningContext;
@@ -38,7 +37,8 @@ import com.example.autojob.skeleton.model.scheduler.*;
 import com.example.autojob.skeleton.model.tq.AutoJobTaskQueue;
 import com.example.autojob.util.bean.ObjectUtil;
 import com.example.autojob.util.mail.MailHelper;
-import com.example.autojob.util.thread.ThreadPoolExecutorHelper;
+import com.example.autojob.util.thread.FlowThreadPoolExecutorHelper;
+import com.example.autojob.util.thread.TimerThreadPoolExecutorHelper;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.sql.DataSource;
@@ -338,6 +338,14 @@ public class AutoJobBootstrap {
         return this;
     }
 
+    /**
+     * 设置执行池，默认使用的是根据流量调整的动态线程池，为了适应业务，你可以考虑使用基于时间调整的动态线程池，参照{@link TimerThreadPoolExecutorHelper}
+     *
+     * @param executorPool 执行池
+     * @return com.example.autojob.skeleton.framework.launcher.AutoJobBootstrap
+     * @author Huang Yongxiang
+     * @date 2022/12/7 16:03
+     */
     public AutoJobBootstrap setExecutorPool(AutoJobTaskExecutorPool executorPool) {
         if (executorPool == null) {
             throw new NullPointerException();
@@ -411,14 +419,8 @@ public class AutoJobBootstrap {
     }
 
     protected void createDefaultScheduler() {
-        if (configHolder
-                .getAutoJobConfig()
-                .getEnableAnnotation()) {
-            AutoJobAnnotationScheduler annotationScheduler = new AutoJobAnnotationScheduler(this.runningContext.getExecutorPool(), this.runningContext.getRegister(), configHolder);
-            annotationScheduler.scan(autoJobScanner);
-            addScheduler(annotationScheduler);
-        }
         this
+                .addScheduler(createScheduler(AutoJobAnnotationScheduler.class))
                 .addScheduler(createScheduler(AutoJobRunSuccessScheduler.class))
                 .addScheduler(createScheduler(AutoJobRunErrorScheduler.class))
                 .addScheduler(createScheduler(AutoJobDBTaskScheduler.class))
@@ -464,7 +466,7 @@ public class AutoJobBootstrap {
                 .getAutoJobConfig()
                 .getExecutorPoolConfig();
         /*=================fast pool自动装配=================>*/
-        ThreadPoolExecutorHelper fastPool = ThreadPoolExecutorHelper
+        FlowThreadPoolExecutorHelper fastPool = FlowThreadPoolExecutorHelper
                 .classicBuilder()
                 .setAllowUpdate(config.getEnableFastPoolUpdate())
                 .setAllowMaxCoreThreadCount(config.getFastPoolMaxCoreThreadCount())
@@ -474,31 +476,29 @@ public class AutoJobBootstrap {
                 .setAllowMaxThreadCount(config.getFastPoolMaxThreadCount())
                 .setAllowMinThreadCount(config.getFastPoolMinThreadCount())
                 .setTrafficListenerCycle((config.getFastPoolTrafficUpdateCycle()).longValue())
-                .setThreadFactory(new AbstractAutoJobPool.NamedThreadFactory("TaskExecutorPool-fastPool"))
                 .setQueueLength(1)
-                .setUpdateType(ThreadPoolExecutorHelper.UpdateType.USE_FLOW)
+                .setUpdateType(FlowThreadPoolExecutorHelper.UpdateType.USE_FLOW)
                 .setUpdateThreshold(config.getFastPoolAdjustedThreshold())
                 .build();
         /*=======================Finished======================<*/
 
         /*=================end pool自动装配=================>*/
-        ThreadPoolExecutorHelper slowPool = ThreadPoolExecutorHelper
+        FlowThreadPoolExecutorHelper slowPool = FlowThreadPoolExecutorHelper
                 .classicBuilder()
                 .setAllowUpdate(config.getEnableSlowPoolUpdate())
                 .setAllowMaxCoreThreadCount(config.getSlowPoolMaxCoreThreadCount())
                 .setAllowMinCoreThreadCount(config.getSlowPoolMinCoreThreadCount())
-                .setThreadFactory(new AbstractAutoJobPool.NamedThreadFactory("TaskExecutorPool-slowPool-"))
                 .setCoreThreadCount(config.getSlowPoolInitialCoreThreadCount())
                 .setMaxThreadCount(config.getSlowPoolInitialThreadCount())
                 .setAllowMaxThreadCount(config.getSlowPoolMaxThreadCount())
                 .setAllowMinThreadCount(config.getSlowPoolMinThreadCount())
                 .setTrafficListenerCycle((config.getSlowPoolTrafficUpdateCycle()).longValue())
                 .setQueueLength(1)
-                .setUpdateType(ThreadPoolExecutorHelper.UpdateType.USE_FLOW)
+                .setUpdateType(FlowThreadPoolExecutorHelper.UpdateType.USE_FLOW)
                 .setUpdateThreshold(config.getSlowPoolAdjustedThreshold())
                 .build();
         /*=======================Finished======================<*/
-        return new AutoJobTaskExecutorPool(config.getFastPoolMaxThreadCount() + config.getSlowPoolMaxCoreThreadCount(), config.getQueueLength(), new DefaultRefuseHandler(), fastPool, slowPool);
+        return new AutoJobTaskExecutorPool(new DefaultRefuseHandler(), fastPool, slowPool);
     }
 
     /**

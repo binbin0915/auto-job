@@ -4,7 +4,7 @@ import com.example.autojob.skeleton.cluster.model.AutoJobTaskTransferManager;
 import com.example.autojob.skeleton.db.mapper.AutoJobMapperHolder;
 import com.example.autojob.skeleton.framework.config.AutoJobConfigHolder;
 import com.example.autojob.skeleton.framework.container.MemoryTaskContainer;
-import com.example.autojob.skeleton.framework.launcher.AutoJobApplication;
+import com.example.autojob.skeleton.framework.boot.AutoJobApplication;
 import com.example.autojob.skeleton.framework.task.AutoJobTask;
 import com.example.autojob.skeleton.lifecycle.ITaskEventHandler;
 import com.example.autojob.skeleton.lifecycle.TaskEventFactory;
@@ -74,7 +74,7 @@ public class AutoJobRunErrorScheduler extends AbstractScheduler implements ITask
                     .getErrorRetryCount()) {
                 task
                         .getTrigger()
-                        .setTriggeringTime((long) (SystemClock.now() + configHolder
+                        .setTriggeringTime((long) (System.currentTimeMillis() + configHolder
                                 .getAutoJobConfig()
                                 .getErrorRetryInterval() * 60 * 1000));
                 log.warn("任务{}完成失败，{}min后{}第{}次重试", task.getId(), configHolder
@@ -108,7 +108,7 @@ public class AutoJobRunErrorScheduler extends AbstractScheduler implements ITask
                     task.setIsFinished(true);
                     task
                             .getRunResult()
-                            .setFinishedTime(SystemClock.now());
+                            .setFinishedTime(System.currentTimeMillis());
                     TaskEventManager
                             .getInstance()
                             .publishTaskEvent(TaskEventFactory.newErrorEvent(task), TaskErrorEvent.class, true);

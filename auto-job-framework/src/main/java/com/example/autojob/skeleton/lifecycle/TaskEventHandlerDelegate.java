@@ -38,7 +38,7 @@ public class TaskEventHandlerDelegate extends AbstractEventHandlerDelegate<TaskE
     @Override
     @SuppressWarnings("unchecked")
     public void doHandle(TaskEvent event, boolean isAllowBubbling) {
-        long start = SystemClock.now();
+        long start = System.currentTimeMillis();
         if (isAllowBubbling) {
             parentHandler
                     .stream()

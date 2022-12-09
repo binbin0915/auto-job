@@ -3,7 +3,7 @@ package com.example.autojob.skeleton.db.mapper;
 import com.example.autojob.skeleton.db.AutoJobSQLException;
 import com.example.autojob.skeleton.db.DataSourceHolder;
 import com.example.autojob.skeleton.db.TransactionManager;
-import com.example.autojob.skeleton.framework.launcher.AutoJobApplication;
+import com.example.autojob.skeleton.framework.boot.AutoJobApplication;
 import com.example.autojob.util.convert.DateUtils;
 import com.example.autojob.util.convert.DefaultValueUtil;
 import com.example.autojob.util.convert.StringUtils;

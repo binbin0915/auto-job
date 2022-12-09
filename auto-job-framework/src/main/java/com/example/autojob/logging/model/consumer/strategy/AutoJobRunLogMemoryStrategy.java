@@ -3,7 +3,7 @@ package com.example.autojob.logging.model.consumer.strategy;
 import com.example.autojob.logging.domain.AutoJobRunLog;
 import com.example.autojob.logging.model.consumer.IAutoJobLogSaveStrategy;
 import com.example.autojob.logging.model.memory.AutoJobRunLogCache;
-import com.example.autojob.skeleton.framework.launcher.AutoJobApplication;
+import com.example.autojob.skeleton.framework.boot.AutoJobApplication;
 
 import java.util.List;
 

@@ -5,7 +5,7 @@ import com.example.autojob.skeleton.db.entity.EntityConvertor;
 import com.example.autojob.skeleton.db.mapper.AutoJobMapperHolder;
 import com.example.autojob.skeleton.framework.config.AutoJobConfigHolder;
 import com.example.autojob.skeleton.framework.container.MemoryTaskContainer;
-import com.example.autojob.skeleton.framework.launcher.AutoJobApplication;
+import com.example.autojob.skeleton.framework.boot.AutoJobApplication;
 import com.example.autojob.skeleton.framework.task.AutoJobTask;
 import com.example.autojob.skeleton.lifecycle.ITaskEventHandler;
 import com.example.autojob.skeleton.lifecycle.TaskEventFactory;
@@ -19,7 +19,11 @@ import com.example.autojob.util.id.SystemClock;
 import com.example.autojob.util.thread.ScheduleTaskUtil;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * 运行成功调度器
@@ -53,23 +57,7 @@ public class AutoJobRunSuccessScheduler extends AbstractScheduler implements ITa
             if (task
                     .getTrigger()
                     .hasChildTask()) {
-                task
-                        .getTrigger()
-                        .getChildTask()
-                        .forEach(item -> {
-                            AutoJobTask childTask = container.getById(item);
-                            if (childTask != null) {
-                                submitTask(childTask);
-                            } else {
-                                AutoJobTaskEntity entity = AutoJobMapperHolder.TASK_ENTITY_MAPPER.selectChildTask(item);
-                                if (entity != null) {
-                                    childTask = EntityConvertor.taskEntity2Task(entity);
-                                    if (childTask != null) {
-                                        submitTask(childTask);
-                                    }
-                                }
-                            }
-                        });
+                findChildTask(task).forEach(this::submitTask);
             }
             return null;
         }, 0, TimeUnit.MILLISECONDS);
@@ -79,9 +67,6 @@ public class AutoJobRunSuccessScheduler extends AbstractScheduler implements ITa
         if (!task.getIsChildTask() && task
                 .getTrigger()
                 .refresh()) {
-            //log.warn("任务：{}的执行时间已刷新，将于{}执行", task.getId(), DateUtils.formatDateTime(new Date(task
-            //        .getTrigger()
-            //        .getTriggeringTime())));
             if (task.getType() == AutoJobTask.TaskType.MEMORY_TASk) {
                 if (task
                         .getTrigger()
@@ -122,12 +107,37 @@ public class AutoJobRunSuccessScheduler extends AbstractScheduler implements ITa
             }
             task
                     .getRunResult()
-                    .setFinishedTime(SystemClock.now());
+                    .setFinishedTime(System.currentTimeMillis());
             task.setIsFinished(true);
             TaskEventManager
                     .getInstance()
                     .publishTaskEvent(TaskEventFactory.newFinishedEvent(event.getTask()), TaskFinishedEvent.class, true);
         }
+    }
+
+    private List<AutoJobTask> findChildTask(AutoJobTask parent) {
+        if (parent
+                .getTrigger()
+                .hasChildTask()) {
+            List<Long> childTaskIds = parent
+                    .getTrigger()
+                    .getChildTask();
+            if (parent.getType() == AutoJobTask.TaskType.MEMORY_TASk) {
+                return childTaskIds
+                        .stream()
+                        .map(container::getById)
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toList());
+            } else {
+                List<AutoJobTaskEntity> entities = AutoJobMapperHolder.TASK_ENTITY_MAPPER.selectChildTasks(childTaskIds);
+                return entities
+                        .stream()
+                        .filter(Objects::nonNull)
+                        .map(EntityConvertor::taskEntity2Task)
+                        .collect(Collectors.toList());
+            }
+        }
+        return Collections.emptyList();
     }
 
 

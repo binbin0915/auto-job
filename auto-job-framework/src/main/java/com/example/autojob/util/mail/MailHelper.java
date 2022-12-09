@@ -51,7 +51,7 @@ public class MailHelper {
      * 允许的发送间隔
      */
     private final long interval = 5000;
-    private long lastSendTime = SystemClock.now() - interval;
+    private long lastSendTime = System.currentTimeMillis() - interval;
 
     public MailHelper(String username, String password, String receiveMail, MailType mailType) {
         this.username = username;
@@ -86,8 +86,8 @@ public class MailHelper {
     }
 
     public boolean sendMail(String title, String body) {
-        SyncHelper.aWaitQuietly(() -> SystemClock.now() >= lastSendTime + interval);
-        lastSendTime = SystemClock.now();
+        SyncHelper.aWaitQuietly(() -> System.currentTimeMillis() >= lastSendTime + interval);
+        lastSendTime = System.currentTimeMillis();
         switch (mailType) {
             case GMAIL: {
                 return sendMailGmail(title, body);
@@ -314,13 +314,15 @@ public class MailHelper {
         try {
             Message message = new MimeMessage(session);
             message.setFrom(new InternetAddress(username));
-            Arrays.stream(receiveMailAddress).forEach(item -> {
-                try {
-                    message.addRecipient(Message.RecipientType.TO, new InternetAddress(item));
-                } catch (MessagingException e) {
-                    e.printStackTrace();
-                }
-            });
+            Arrays
+                    .stream(receiveMailAddress)
+                    .forEach(item -> {
+                        try {
+                            message.addRecipient(Message.RecipientType.TO, new InternetAddress(item));
+                        } catch (MessagingException e) {
+                            e.printStackTrace();
+                        }
+                    });
             message.setSubject(title + "(" + MailHelper.getTitleTimeFormat(null) + ")");
             message.setContent(body, "text/html;" + "charset=utf-8");
             Transport.send(message);

@@ -77,7 +77,7 @@ public class DefaultRunnablePostProcessor implements RunnablePostProcessor {
                 TaskEventManager
                         .getInstance()
                         .publishTaskEventSync(TaskEventFactory.newBeforeRunEvent(autoJobTask), TaskBeforeRunEvent.class, true);
-                logHelper.info("Auto-Job-Start=========================>任务：{}即将开始执行", autoJobTask.getAnnotationId() != null ? autoJobTask.getAnnotationId() : autoJobTask.getId());
+                logHelper.info("Auto-Job-Start=========================>任务：{}即将开始执行", autoJobTask.getId());
             }
         }
     }
@@ -114,7 +114,7 @@ public class DefaultRunnablePostProcessor implements RunnablePostProcessor {
                     AutoJobMapperHolder.TRIGGER_ENTITY_MAPPER.updateOperatingStatus(false, autoJobTask.getId());
                 }
                 /*=======================Finished======================<*/
-                logHelper.info("Auto-Job-End=========================>任务：{}执行完成", autoJobTask.getAnnotationId() != null ? autoJobTask.getAnnotationId() : autoJobTask.getId());
+                logHelper.info("Auto-Job-End=========================>任务：{}执行完成", autoJobTask.getId());
                 TaskEventManager
                         .getInstance()
                         .publishTaskEventSync(TaskEventFactory.newAfterRunEvent(autoJobTask), TaskAfterRunEvent.class, true);

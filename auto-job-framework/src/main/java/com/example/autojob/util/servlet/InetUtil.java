@@ -1,6 +1,6 @@
 package com.example.autojob.util.servlet;
 
-import com.example.autojob.skeleton.framework.launcher.AutoJobApplication;
+import com.example.autojob.skeleton.framework.boot.AutoJobApplication;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.Inet4Address;

@@ -8,7 +8,7 @@ import com.example.autojob.logging.model.consumer.DefaultRunLogSaveStrategyDeleg
 import com.example.autojob.logging.model.consumer.ILogSaveStrategyDelegate;
 import com.example.autojob.skeleton.db.entity.EntityConvertor;
 import com.example.autojob.skeleton.db.mapper.AutoJobMapperHolder;
-import com.example.autojob.skeleton.framework.launcher.AutoJobApplication;
+import com.example.autojob.skeleton.framework.boot.AutoJobApplication;
 import com.example.autojob.skeleton.framework.task.AutoJobTask;
 import com.example.autojob.skeleton.lang.WithDaemonThread;
 import com.example.autojob.util.id.IdGenerator;
@@ -186,15 +186,15 @@ public class AutoJobLogHandler implements WithDaemonThread {
 
     @Override
     public void startWork() {
-        AtomicLong lastSaveTime = new AtomicLong(SystemClock.now());
+        AtomicLong lastSaveTime = new AtomicLong(System.currentTimeMillis());
         Thread thread = new Thread(() -> {
             try {
                 while (!isFinished) {
                     SyncHelper.sleepQuietly(1, TimeUnit.SECONDS);
-                    if (SystemClock.now() - lastSaveTime.get() >= saveCycle || logs.size() >= maxBufferLength) {
+                    if (System.currentTimeMillis() - lastSaveTime.get() >= saveCycle || logs.size() >= maxBufferLength) {
                         //log.info("自动日志保存：{}条", logs.size());
                         saveLogs();
-                        lastSaveTime.set(SystemClock.now());
+                        lastSaveTime.set(System.currentTimeMillis());
                     }
                 }
             } catch (Exception e) {

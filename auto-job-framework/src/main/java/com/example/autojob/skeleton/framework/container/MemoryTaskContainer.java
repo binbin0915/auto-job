@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 public class MemoryTaskContainer implements WithDaemonThread {
     private final Map<String, AutoJobTask> memoryTaskContainer = new ConcurrentHashMap<>();
     private final AtomicInteger size = new AtomicInteger(0);
+    private static final String ANNOTATION_PREFIX = "AT_";
     private LocalCacheManager<String, AutoJobTask> finishedTaskCache;
     private CleanStrategy cleanStrategy;
     private int limitSize;
@@ -55,7 +56,7 @@ public class MemoryTaskContainer implements WithDaemonThread {
             flag = true;
         }
         if (task.getAnnotationId() != null && !memoryTaskContainer.containsKey(task.getAnnotationId() + "")) {
-            memoryTaskContainer.put(task.getAnnotationId() + "", task);
+            memoryTaskContainer.put(ANNOTATION_PREFIX + task.getAnnotationId(), task);
             flag = true;
         }
         if (!StringUtils.isEmpty(task.getAlias()) && !memoryTaskContainer.containsKey(task.getAlias())) {
@@ -76,7 +77,7 @@ public class MemoryTaskContainer implements WithDaemonThread {
     }
 
     public AutoJobTask getByAnnotationId(long annotationId) {
-        return memoryTaskContainer.get(annotationId + "");
+        return memoryTaskContainer.get(ANNOTATION_PREFIX + annotationId);
     }
 
     /**
@@ -157,7 +158,7 @@ public class MemoryTaskContainer implements WithDaemonThread {
             return null;
         }
         memoryTaskContainer.remove(task.getAlias());
-        memoryTaskContainer.remove(task.getAnnotationId() + "");
+        memoryTaskContainer.remove(ANNOTATION_PREFIX + task.getAnnotationId());
         if (size.get() > 0) {
             size.addAndGet(-1);
         }

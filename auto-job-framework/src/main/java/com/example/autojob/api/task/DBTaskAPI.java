@@ -1,12 +1,14 @@
 package com.example.autojob.api.task;
 
+import com.example.autojob.api.task.params.TaskEditParams;
+import com.example.autojob.api.task.params.TriggerEditParams;
 import com.example.autojob.skeleton.annotation.AutoJobRPCService;
 import com.example.autojob.skeleton.db.entity.AutoJobTaskEntity;
 import com.example.autojob.skeleton.db.entity.AutoJobTriggerEntity;
 import com.example.autojob.skeleton.db.entity.EntityConvertor;
 import com.example.autojob.skeleton.db.mapper.AutoJobMapperHolder;
 import com.example.autojob.skeleton.db.mapper.TransactionEntry;
-import com.example.autojob.skeleton.framework.launcher.AutoJobApplication;
+import com.example.autojob.skeleton.framework.boot.AutoJobApplication;
 import com.example.autojob.skeleton.framework.task.AutoJobTask;
 import com.example.autojob.skeleton.framework.task.AutoJobTrigger;
 import com.example.autojob.skeleton.model.builder.AutoJobTriggerFactory;
@@ -102,14 +104,14 @@ public class DBTaskAPI implements AutoJobAPI {
     }
 
     @Override
-    public Boolean editTrigger(Long taskId, AutoJobTriggerAttributes triggerAttributes) {
-        if (ObjectUtil.isNull(triggerAttributes)) {
+    public Boolean editTrigger(Long taskId, TriggerEditParams triggerEditParams) {
+        if (ObjectUtil.isNull(triggerEditParams)) {
             return null;
         }
         if (pause(taskId)) {
             boolean flag = false;
             try {
-                flag = AutoJobMapperHolder.TRIGGER_ENTITY_MAPPER.updateByTaskId(EntityConvertor.trigger2TriggerEntity(triggerAttributes.convert()), taskId) >= 0;
+                flag = AutoJobMapperHolder.TRIGGER_ENTITY_MAPPER.updateByTaskId(triggerEditParams, taskId) >= 0;
             } finally {
                 unpause(taskId);
             }
@@ -122,24 +124,17 @@ public class DBTaskAPI implements AutoJobAPI {
      * 修改DB任务信息，任务ID，注解ID和任务类型不允许修改
      *
      * @param taskId         任务ID
-     * @param taskAttributes 要修改的内容
+     * @param taskEditParams 要修改的内容
      * @return java.lang.Boolean
      * @author Huang Yongxiang
      * @date 2022/10/27 17:52
      */
     @Override
-    public Boolean editTask(Long taskId, AutoJobTaskAttributes taskAttributes) {
-        if (pause(taskId) && !ObjectUtil.isNull(taskAttributes)) {
+    public Boolean editTask(Long taskId, TaskEditParams taskEditParams) {
+        if (pause(taskId) && !ObjectUtil.isNull(taskEditParams)) {
             boolean flag = false;
             try {
-                AutoJobTask task = taskAttributes.convert();
-                task.setId(null);
-                task.setType(null);
-                task.setAnnotationId(null);
-                if (ObjectUtil.isNull(task)) {
-                    return false;
-                }
-                flag = AutoJobMapperHolder.TASK_ENTITY_MAPPER.updateById(EntityConvertor.task2TaskEntity(task, null), taskId) >= 0;
+                flag = AutoJobMapperHolder.TASK_ENTITY_MAPPER.updateById(taskEditParams, taskId) >= 0;
             } finally {
                 unpause(taskId);
             }

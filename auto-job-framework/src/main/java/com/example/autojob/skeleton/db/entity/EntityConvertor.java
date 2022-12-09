@@ -76,7 +76,7 @@ public class EntityConvertor {
         entity.setTriggerId(triggerId);
         entity.setRunLock(0);
         entity.setStatus(1);
-        entity.setCreateTime(new Timestamp(SystemClock.now()));
+        entity.setCreateTime(new Timestamp(System.currentTimeMillis()));
         entity.setAlias(task.getAlias());
         entity.setIsChildTask(task.getIsChildTask() != null && task.getIsChildTask() ? 1 : 0);
         entity.setTaskLevel(task.getTaskLevel());
@@ -195,7 +195,7 @@ public class EntityConvertor {
         }
         entity.setIsRun(DefaultValueUtil.defaultValue(trigger.getIsRunning(), false) ? 1 : 0);
         entity.setMaximumExecutionTime(trigger.getMaximumExecutionTime());
-        entity.setCreateTime(new Timestamp(SystemClock.now()));
+        entity.setCreateTime(new Timestamp(System.currentTimeMillis()));
         entity.setCronExpression(trigger.getCronExpression());
         entity.setCycle(trigger.getCycle());
         entity.setIsPause(trigger.getIsPause() != null && trigger.getIsPause() ? 1 : 0);
@@ -234,7 +234,7 @@ public class EntityConvertor {
         entity.setMessage(log.getMessage());
         Timestamp timestamp = null;
         if (StringUtils.isEmpty(log.getInputTime())) {
-            timestamp = new Timestamp(SystemClock.now());
+            timestamp = new Timestamp(System.currentTimeMillis());
         } else {
             try {
                 timestamp = new Timestamp(DateUtils
@@ -245,7 +245,7 @@ public class EntityConvertor {
             }
         }
         entity.setWriteTime(timestamp);
-        entity.setWriteTimestamp(timestamp == null ? SystemClock.now() : timestamp.getTime());
+        entity.setWriteTimestamp(timestamp == null ? System.currentTimeMillis() : timestamp.getTime());
         return entity;
     }
 
@@ -278,7 +278,7 @@ public class EntityConvertor {
         entity.setResult(runLog.getRunResult());
         Timestamp timestamp = null;
         if (StringUtils.isEmpty(runLog.getWriteTime())) {
-            timestamp = new Timestamp(SystemClock.now());
+            timestamp = new Timestamp(System.currentTimeMillis());
         } else {
             try {
                 timestamp = new Timestamp(DateUtils
@@ -289,7 +289,7 @@ public class EntityConvertor {
             }
         }
         entity.setWriteTime(timestamp);
-        entity.setWriteTimestamp(timestamp == null ? SystemClock.now() : timestamp.getTime());
+        entity.setWriteTimestamp(timestamp == null ? System.currentTimeMillis() : timestamp.getTime());
         entity.setRunStatus(runLog.getRunStatus());
         return entity;
     }

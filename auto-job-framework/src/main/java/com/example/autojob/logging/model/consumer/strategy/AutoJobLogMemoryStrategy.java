@@ -3,7 +3,7 @@ package com.example.autojob.logging.model.consumer.strategy;
 import com.example.autojob.logging.domain.AutoJobLog;
 import com.example.autojob.logging.model.consumer.IAutoJobLogSaveStrategy;
 import com.example.autojob.logging.model.memory.AutoJobLogCache;
-import com.example.autojob.skeleton.framework.launcher.AutoJobApplication;
+import com.example.autojob.skeleton.framework.boot.AutoJobApplication;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;

@@ -1,5 +1,8 @@
 package com.example.autojob.api.task;
 
+import com.example.autojob.api.task.params.TaskEditParams;
+import com.example.autojob.api.task.params.TriggerEditParams;
+import com.example.autojob.skeleton.framework.task.AutoJobTask;
 import com.example.autojob.skeleton.framework.task.TaskRunningContext;
 
 import java.util.List;
@@ -65,23 +68,23 @@ public interface AutoJobAPI {
      * 对任务的调度信息进行编辑
      *
      * @param taskId            任务ID
-     * @param triggerAttributes 调度器信息，存在属性将会作为修改项
+     * @param triggerEditParams 调度器信息，存在属性将会作为修改项
      * @return boolean
      * @author Huang Yongxiang
      * @date 2022/10/14 14:04
      */
-    Boolean editTrigger(Long taskId, AutoJobTriggerAttributes triggerAttributes);
+    Boolean editTrigger(Long taskId, TriggerEditParams triggerEditParams);
 
     /**
      * 对任务的基本信息进行编辑
      *
      * @param taskId         任务Id
-     * @param taskAttributes 任务信息，存在的属性会作为修改项
+     * @param taskEditParams 任务信息，存在的属性会作为修改项
      * @return boolean
      * @author Huang Yongxiang
      * @date 2022/10/17 14:33
      */
-    Boolean editTask(Long taskId, AutoJobTaskAttributes taskAttributes);
+    Boolean editTask(Long taskId, TaskEditParams taskEditParams);
 
     /**
      * 停止一个任务的后续调度
@@ -122,6 +125,22 @@ public interface AutoJobAPI {
      * @date 2022/10/14 14:06
      */
     Boolean isExist(Long taskId);
+
+    /**
+     * 获取任务类型
+     *
+     * @param taskId 任务ID
+     * @return AutoJobTask.TaskType
+     * @author Huang Yongxiang
+     * @date 2022/12/2 11:45
+     */
+    default AutoJobTask.TaskType getTaskType(Long taskId) {
+        AutoJobTaskAttributes taskAttributes = find(taskId);
+        if (taskAttributes == null) {
+            return null;
+        }
+        return AutoJobTask.TaskType.convert(taskAttributes.type);
+    }
 
     /**
      * 判断一个任务是否正在运行

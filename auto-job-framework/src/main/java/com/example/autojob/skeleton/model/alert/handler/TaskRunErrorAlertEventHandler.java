@@ -1,7 +1,7 @@
 package com.example.autojob.skeleton.model.alert.handler;
 
 import com.example.autojob.skeleton.framework.config.AutoJobConfig;
-import com.example.autojob.skeleton.framework.launcher.AutoJobApplication;
+import com.example.autojob.skeleton.framework.boot.AutoJobApplication;
 import com.example.autojob.skeleton.model.alert.AlertMail;
 import com.example.autojob.skeleton.model.alert.AlertMailFactory;
 import com.example.autojob.skeleton.model.alert.IAlertEventHandler;

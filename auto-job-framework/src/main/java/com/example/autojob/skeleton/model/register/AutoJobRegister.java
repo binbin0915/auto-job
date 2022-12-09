@@ -3,7 +3,7 @@ package com.example.autojob.skeleton.model.register;
 import com.example.autojob.skeleton.lang.AbstractLifeCycleHook;
 import com.example.autojob.skeleton.framework.config.AutoJobConfig;
 import com.example.autojob.skeleton.framework.task.AutoJobTask;
-import com.example.autojob.skeleton.framework.launcher.AutoJobApplication;
+import com.example.autojob.skeleton.framework.boot.AutoJobApplication;
 import com.example.autojob.skeleton.lifecycle.TaskEventFactory;
 import com.example.autojob.skeleton.lifecycle.event.imp.TaskBeforeRegisterEvent;
 import com.example.autojob.skeleton.lifecycle.event.imp.TaskRegisteredEvent;

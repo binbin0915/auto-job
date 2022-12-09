@@ -5,6 +5,7 @@ import com.example.autojob.skeleton.annotation.FactoryAutoJob;
 import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Set;
@@ -34,6 +35,18 @@ public class AutoJobScanner {
         scannedMethods.addAll(methodReflections.getMethodsAnnotatedWith(AutoJob.class));
         scannedMethods.addAll(methodReflections.getMethodsAnnotatedWith(FactoryAutoJob.class));
         return scannedMethods;
+    }
+
+    public Set<Method> scanMethods(Class<? extends Annotation> type) {
+        return methodReflections.getMethodsAnnotatedWith(type);
+    }
+
+    public Set<Method> scanFactoryMethods() {
+        return methodReflections.getMethodsAnnotatedWith(AutoJob.class);
+    }
+
+    public Set<Method> scanAutoJobMethods() {
+        return methodReflections.getMethodsAnnotatedWith(AutoJob.class);
     }
 
     public Set<Class<?>> scanClasses() {

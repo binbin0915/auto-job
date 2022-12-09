@@ -1,5 +1,6 @@
 package com.example.autojob.skeleton.db.mapper;
 
+import com.example.autojob.api.task.params.TriggerEditParams;
 import com.example.autojob.skeleton.db.entity.AutoJobTriggerEntity;
 import com.example.autojob.util.bean.ObjectUtil;
 import com.example.autojob.util.id.SystemClock;
@@ -96,20 +97,18 @@ public class AutoJobTriggerEntityMapper extends BaseMapper<AutoJobTriggerEntity>
         return updateBatch(getDeleteExpression() + condition, new Object[][]{});
     }
 
-    public int updateByTaskId(AutoJobTriggerEntity trigger, long taskId) {
-        if (trigger == null || ObjectUtil.isNull(trigger)) {
+    public int updateByTaskId(TriggerEditParams triggerEditParams, long taskId) {
+        if (triggerEditParams == null || ObjectUtil.isNull(triggerEditParams)) {
             return 0;
         }
         AutoJobTriggerEntity updateEntity = new AutoJobTriggerEntity();
         //以下字段支持修改
-        updateEntity.setCronExpression(trigger.getCronExpression());
-        updateEntity.setRepeatTimes(trigger.getRepeatTimes());
-        updateEntity.setCycle(trigger.getCycle());
-        updateEntity.setChildTasksId(trigger.getChildTasksId());
-        updateEntity.setMaximumExecutionTime(trigger.getMaximumExecutionTime());
-        updateEntity.setIsPause(trigger.getIsPause());
-        updateEntity.setDelFlag(trigger.getDelFlag());
-        return updateEntity(trigger, "task_id = ?", taskId);
+        updateEntity.setCronExpression(triggerEditParams.getCronExpression());
+        updateEntity.setRepeatTimes(triggerEditParams.getRepeatTimes());
+        updateEntity.setCycle(triggerEditParams.getCycle());
+        updateEntity.setChildTasksId(triggerEditParams.getChildTasksId());
+        updateEntity.setMaximumExecutionTime(triggerEditParams.getMaximumExecutionTime());
+        return updateEntity(updateEntity, "task_id = ?", taskId);
     }
 
     /**
@@ -123,7 +122,7 @@ public class AutoJobTriggerEntityMapper extends BaseMapper<AutoJobTriggerEntity>
      */
     public List<AutoJobTriggerEntity> selectNearTrigger(long nearTime, TimeUnit unit) {
         String condition = "  where next_triggering_time > ? and next_triggering_time < ? and finished_times< repeat_times and del_flag = 0 and is_pause = 0";
-        return queryList(getSelectExpression() + condition, SystemClock.now(), SystemClock.now() + unit.toMillis(nearTime));
+        return queryList(getSelectExpression() + condition, System.currentTimeMillis(), System.currentTimeMillis() + unit.toMillis(nearTime));
     }
 
 

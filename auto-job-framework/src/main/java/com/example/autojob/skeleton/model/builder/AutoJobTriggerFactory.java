@@ -27,6 +27,6 @@ public class AutoJobTriggerFactory implements IAutoJobFactory {
     }
 
     public static AutoJobTrigger newDelayTrigger(long delay, TimeUnit unit) {
-        return new AutoJobTrigger(SystemClock.now() + unit.toMillis(delay), 0, 0);
+        return new AutoJobTrigger(System.currentTimeMillis() + unit.toMillis(delay), 0, 0);
     }
 }

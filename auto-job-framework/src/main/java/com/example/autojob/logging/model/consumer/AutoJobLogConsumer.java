@@ -14,7 +14,6 @@ import com.example.autojob.skeleton.lifecycle.event.TaskEvent;
 import com.example.autojob.skeleton.lifecycle.event.imp.TaskAfterRunEvent;
 import com.example.autojob.skeleton.lifecycle.event.imp.TaskBeforeRunEvent;
 import com.example.autojob.skeleton.lifecycle.event.imp.TaskFinishedEvent;
-import com.example.autojob.util.id.SystemClock;
 import com.example.autojob.util.json.JsonUtil;
 import com.example.autojob.util.thread.ScheduleTaskUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -112,7 +111,7 @@ public class AutoJobLogConsumer implements ITaskEventHandler<TaskEvent> {
             }, 0, TimeUnit.MILLISECONDS);
             if (task
                     .getTrigger()
-                    .nextTriggeringTime() - SystemClock.now() > TimeConstant.A_MINUTE * 30) {
+                    .nextTriggeringTime() - System.currentTimeMillis() > TimeConstant.A_MINUTE * 30) {
                 logHandlerMap.remove(task.getId());
             }
 

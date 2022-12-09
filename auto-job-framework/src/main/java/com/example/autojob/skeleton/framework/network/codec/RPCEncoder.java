@@ -1,7 +1,7 @@
 package com.example.autojob.skeleton.framework.network.codec;
 
 import com.example.autojob.skeleton.framework.config.ClusterConfig;
-import com.example.autojob.skeleton.framework.launcher.AutoJobApplication;
+import com.example.autojob.skeleton.framework.boot.AutoJobApplication;
 import com.example.autojob.skeleton.framework.network.protocol.RPCHeader;
 import com.example.autojob.skeleton.framework.network.protocol.RPCProtocol;
 import com.example.autojob.util.json.JsonUtil;

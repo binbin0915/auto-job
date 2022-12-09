@@ -35,14 +35,14 @@ public class TaskEventFactory implements IAutoJobFactory {
     public static TaskBeforeRunEvent newBeforeRunEvent(AutoJobTask task) {
         TaskBeforeRunEvent taskBeforeRunEvent = new TaskBeforeRunEvent(task);
         taskBeforeRunEvent.setMessage(String.format("任务：%d准备启动运行", task.getId()));
-        taskBeforeRunEvent.setStartTime(SystemClock.now());
+        taskBeforeRunEvent.setStartTime(System.currentTimeMillis());
         return taskBeforeRunEvent;
     }
 
     public static TaskAfterRunEvent newAfterRunEvent(AutoJobTask task) {
         TaskAfterRunEvent afterRunEvent = new TaskAfterRunEvent(task);
         afterRunEvent.setMessage(String.format("任务：%d运行完成", task.getId()));
-        afterRunEvent.setEndTime(SystemClock.now());
+        afterRunEvent.setEndTime(System.currentTimeMillis());
         return afterRunEvent;
     }
 

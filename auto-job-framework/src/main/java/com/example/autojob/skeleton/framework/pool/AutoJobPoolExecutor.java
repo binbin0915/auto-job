@@ -18,12 +18,6 @@ public class AutoJobPoolExecutor implements Callable<Object>, RunnablePostProces
     private Throwable throwable;
     private Object result;
     private RunnablePostProcessor runnablePostProcessor;
-    private volatile int status = WAIT;
-    private static final int WAIT = 0;
-    private static final int READY = 1;
-    private static final int RUNNING = 2;
-    private static final int SUCCESS_OVER = 3;
-    private static final int ERROR_OVER = 4;
 
     public AutoJobPoolExecutor(Executable executable) {
         this.executable = executable;
@@ -58,31 +52,14 @@ public class AutoJobPoolExecutor implements Callable<Object>, RunnablePostProces
         return executorName;
     }
 
-    public void setExecutable(Executable executable) {
-        if (status == 2) {
-            throw new IllegalStateException("该执行器正在运行");
-        }
-        this.executable = executable;
-    }
-
-    public void setParams(Object[] params) {
-        this.params = params;
-    }
-
-    public synchronized boolean connect(Executable executable, Object... params) {
+    public boolean connect(Executable executable, Object... params) {
         if (executable == null) {
             log.error("无法建立与执行器{}的连接，可执行对象为null", executorName);
             return false;
         }
-        if (isFreeExecutor() && !isRunning()) {
-            this.executable = executable;
-            this.params = params;
-            if (!isFreeExecutor()) {
-                status = READY;
-                return true;
-            }
-        }
-        return false;
+        this.executable = executable;
+        this.params = params;
+        return true;
     }
 
     @Override
@@ -96,9 +73,6 @@ public class AutoJobPoolExecutor implements Callable<Object>, RunnablePostProces
                 e.printStackTrace();
                 throwable = e;
                 runError(executable, this, throwable, result);
-            } finally {
-                //log.warn("执行器{}已被重置", executorName);
-                reset();
             }
         } else {
             log.error("执行器{}无法执行，因为要执行的可执行对象Executable为null", executorName);
@@ -108,7 +82,6 @@ public class AutoJobPoolExecutor implements Callable<Object>, RunnablePostProces
 
     @Override
     public void beforeRun(final Executable executable, AutoJobPoolExecutor executor, Object... params) {
-        status = RUNNING;
         if (runnablePostProcessor != null) {
             runnablePostProcessor.beforeRun(executable, this, params);
         }
@@ -117,7 +90,6 @@ public class AutoJobPoolExecutor implements Callable<Object>, RunnablePostProces
 
     @Override
     public void afterRun(final Executable executable, AutoJobPoolExecutor executor, Object result) {
-        status = SUCCESS_OVER;
         if (runnablePostProcessor != null) {
             runnablePostProcessor.afterRun(executable, this, result);
         }
@@ -125,40 +97,8 @@ public class AutoJobPoolExecutor implements Callable<Object>, RunnablePostProces
 
     @Override
     public void runError(final Executable executable, AutoJobPoolExecutor executor, Throwable throwable, Object result) {
-        status = ERROR_OVER;
         if (runnablePostProcessor != null) {
             runnablePostProcessor.runError(executable, this, this.throwable, result);
-        }
-    }
-
-    public boolean isFreeExecutor() {
-        return executable == null && status == WAIT;
-    }
-
-    public boolean isRunning() {
-        return status == RUNNING;
-    }
-
-    public boolean isFinished() {
-        return status > 2;
-    }
-
-    public boolean isReady() {
-        return status == READY && executable != null;
-    }
-
-    public boolean isSuccess() {
-        return status == SUCCESS_OVER;
-    }
-
-    public void reset() {
-        if (status > 2) {
-            status = WAIT;
-            executable = null;
-            params = null;
-            throwable = null;
-            result = null;
-            runnablePostProcessor = null;
         }
     }
 }

@@ -1,6 +1,5 @@
 package com.example.autojob.util.thread;
 
-import com.example.autojob.util.id.SystemClock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,7 +52,7 @@ public class TimingThreadPoolExecutor extends ThreadPoolExecutor {
     @Override
     protected void beforeExecute(Thread t, Runnable r) {
         super.beforeExecute(t, r);
-        startTime.set(SystemClock.now());
+        startTime.set(System.currentTimeMillis());
         startCount.incrementAndGet();
         runningCount.set(startCount.get() - callCount.get());
     }
@@ -62,7 +61,7 @@ public class TimingThreadPoolExecutor extends ThreadPoolExecutor {
     protected void afterExecute(Runnable r, Throwable t) {
         super.afterExecute(r, t);
         callCount.incrementAndGet();
-        totalTime.addAndGet(SystemClock.now() - startTime.get());
+        totalTime.addAndGet(System.currentTimeMillis() - startTime.get());
         averageTime.set(totalTime.get() / callCount.get());
         runningCount.set(startCount.get() - callCount.get());
     }

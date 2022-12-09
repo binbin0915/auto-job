@@ -1,5 +1,6 @@
 package com.example.autojob.skeleton.framework.task;
 
+import com.example.autojob.skeleton.enumerate.SchedulingStrategy;
 import com.example.autojob.skeleton.framework.pool.RunnablePostProcessor;
 import com.example.autojob.skeleton.model.task.DefaultRunnablePostProcessor;
 import com.example.autojob.skeleton.model.task.TaskExecutable;
@@ -36,6 +37,10 @@ public abstract class AutoJobTask {
      * 触发器
      */
     protected AutoJobTrigger trigger;
+    /**
+     * 调度策略
+     */
+    protected SchedulingStrategy schedulingStrategy;
     /**
      * 是否已开始
      */

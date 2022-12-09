@@ -1,7 +1,7 @@
 package com.example.autojob.skeleton.framework.network.handler.server;
 
 import com.example.autojob.skeleton.framework.config.ClusterConfig;
-import com.example.autojob.skeleton.framework.launcher.AutoJobApplication;
+import com.example.autojob.skeleton.framework.boot.AutoJobApplication;
 import com.example.autojob.skeleton.framework.network.enums.ReqType;
 import com.example.autojob.skeleton.framework.network.enums.ResponseCode;
 import com.example.autojob.skeleton.framework.network.handler.client.RPCRequestHelper;
