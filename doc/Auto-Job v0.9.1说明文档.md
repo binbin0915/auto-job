@@ -1,4 +1,22 @@
-# Auto-Job v0.9.1说明文档
+# Auto-Job v0.9.2说明文档
+
+## 更新
+
+**2022-11-22：**初版0.9.1
+
+**2022-12-9：**0.9.2
+
+优化API。
+
+核心调度模块停止使用缓存时间戳，解决时间精度低的问题。
+
+重构注解调度器。
+
+重构执行器池，新增基于时间动态调整的线程池封装`TimerThreadPoolExecutorHelper`。
+
+修改已知BUG。
+
+调整项目结构。
 
 ## 一、背景
 
@@ -191,7 +209,7 @@ AutoJobApplication
 ```java
 import com.example.autojob.skeleton.annotation.AutoJobProcessorScan;
 import com.example.autojob.skeleton.annotation.AutoJobScan;
-import com.example.autojob.skeleton.framework.launcher.AutoJobLauncherBuilder;
+import com.example.autojob.skeleton.framework.boot.AutoJobLauncherBuilder;
 
 @AutoJobScan("com.example.autojob.job")
 @AutoJobProcessorScan("com.example.autojob")
@@ -1068,3 +1086,33 @@ System.out.println(client.count()); //像本地方法一样使用
 
 内嵌RPC框架基于netty开发，使用JSON进行序列化和反序列化。基础数据类型仅支持包装类型，即如`int`需要使用`Integer`。集合支持Map和List，支持泛型。目前RPC仅供学习使用。
 
+### 8、使用基于时间动态调整的线程池封装
+
+框架的执行池`AutoJobTaskExecutorPool`是任务执行的地方，其包含一个快池和一个慢池，分别用于执行运行时间短和运行时间长的任务。框架任务执行原生使用的是两个基于流量动态更新的线程池`FlowThreadPoolExecutorHelper`，为了更加适应业务需求，提供基于时间动态调整的线程池`TimerThreadPoolExecutorPool`。
+
+```java
+TimerThreadPoolExecutorHelper.TimerEntry entry = new TimerThreadPoolExecutorHelper.TimerEntry("0 0 7 * * ?", 10, 20, 60, TimeUnit.SECONDS);//配置调整项，<0的项不作调整
+		//添加一个触发监听器
+        entry.setTriggerListener((cronExpression, threadPoolExecutor) -> {
+            System.out.println("日间线程池调整");
+        });
+        TimerThreadPoolExecutorHelper fastPool = TimerThreadPoolExecutorHelper
+                .builder()
+                .setInitialCoreTreadCount(3)
+                .setInitialMaximizeTreadCount(5)
+                .setTaskQueueCapacity(100)
+                .addTimerEntry("0 0 22 * * ?", 0, 1, -1, null)
+                .addTimerEntry(entry)
+                .build();
+        new AutoJobBootstrap(AutoJobSpringApplication.class)
+                .withAutoScanProcessor()
+            	//自定义执行池
+                .setExecutorPool(new AutoJobTaskExecutorPool(null, fastPool, FlowThreadPoolExecutorHelper
+                        .builder()
+                        .build()))
+                .build()
+                .run();
+        System.out.println("==================================>AutoJob应用已启动完成");
+```
+
+如上示列，快池使用基于时间动态调整的线程池封装，其会在每天早上七点将线程池扩容到核心10线程，最大20线程，核心空闲时长更新为60秒，在每晚十点将线程池缩容到核心0线程，最大1线程并且添加了一个触发监听器；慢池使用基于流量调整线程池封装。
