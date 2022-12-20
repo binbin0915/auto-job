@@ -2,7 +2,6 @@ package com.example.autojob.logging.model.producer;
 
 import com.example.autojob.logging.domain.AutoJobLog;
 import com.example.autojob.logging.model.AutoJobLogContainer;
-import com.example.autojob.skeleton.framework.boot.AutoJobApplication;
 import com.example.autojob.skeleton.framework.mq.MessageProducer;
 import com.example.autojob.skeleton.framework.task.AutoJobTask;
 import com.example.autojob.skeleton.framework.task.TaskRunningContext;
@@ -23,7 +22,6 @@ import java.util.concurrent.TimeUnit;
  * 该类支持子方法、子线程日志捕获
  * <p>为了保证项目统一使用slf4j logger，该类允许设置对slf4j logger进行代理，为了能真实记录原log输出位置，将会在原日志上增加
  * $Actual-Location - [fileName:lineNum]$</p>
- * 在与Spring集成使用时强烈建议在任务方法内部重新new该对象，防止Spring在AutoJob上下文初始化前调用该类的实例化方法导致报错，请参考{@link #AutoJobLogHelper(Logger)}
  *
  * @Author Huang Yongxiang
  * @Date 2022/08/05 14:33
@@ -33,7 +31,9 @@ public class AutoJobLogHelper implements IAutoJobLogProducer<AutoJobLog> {
 
     private volatile Logger slf4jLogger;
 
-    private MessageProducer<AutoJobLog> producer;
+    private final MessageProducer<AutoJobLog> producer;
+
+    private AutoJobTask heldTask;
 
 
     public AutoJobLogHelper() {
@@ -50,23 +50,29 @@ public class AutoJobLogHelper implements IAutoJobLogProducer<AutoJobLog> {
         }
     }
 
+    public AutoJobLogHelper(Logger slf4jLogger, AutoJobTask heldTask) {
+        if (heldTask == null) {
+            throw new NullPointerException();
+        }
+        this.slf4jLogger = slf4jLogger;
+        this.heldTask = heldTask;
+        this.producer = new MessageProducer<>(AutoJobLogContainer
+                .getInstance()
+                .getMessageQueueContext(AutoJobLog.class));
+    }
+
     /**
-     * 获取一个日志辅助类单例，注意单例模式下如果使用slf4j logger代理不是线程安全的，如果你需要对slf4j logger进行代理，请优先调用构造方法创建新的一个实例
+     * 获取一个日志辅助类，优先获取当前线程绑定的实例，如果不存在再创建一个新的实例，这是强烈推荐的仔任务方法内使用日志辅助类获取实例的方式
      *
      * @return com.example.autojob.logging.model.producer.AutoJobLogHelper
      * @author Huang Yongxiang
      * @date 2022/8/29 15:46
      */
     public static AutoJobLogHelper getInstance() {
-        AutoJobApplication
-                .getInstance()
-                .getLogContext()
-                .getLogHelper()
-                .setSlf4jProxy(null);
-        return AutoJobApplication
-                .getInstance()
-                .getLogContext()
-                .getLogHelper();
+        AutoJobTask task = TaskRunningContext
+                .getConcurrentThreadTask()
+                .get();
+        return task == null ? new AutoJobLogHelper() : task.getLogHelper();
     }
 
 
@@ -108,11 +114,7 @@ public class AutoJobLogHelper implements IAutoJobLogProducer<AutoJobLog> {
 
     public void debug(String appendLogPattern, Object... appendLogArguments) {
         String message = getLevelMessage("DEBUG", appendLogPattern, appendLogArguments);
-        String id = DefaultValueUtil.chooseString(TaskRunningContext
-                .getContextHolder()
-                .get() == null, null, "" + TaskRunningContext
-                .getContextHolder()
-                .get());
+        String id = getBindingTaskId();
         if (!StringUtils.isEmpty(id)) {
             produce(producer, id, getAutoJobLog(message, "DEBUG"));
         }
@@ -125,11 +127,7 @@ public class AutoJobLogHelper implements IAutoJobLogProducer<AutoJobLog> {
 
     public void info(String appendLogPattern, Object... appendLogArguments) {
         String message = getLevelMessage("INFO", appendLogPattern, appendLogArguments);
-        String id = DefaultValueUtil.chooseString(TaskRunningContext
-                .getContextHolder()
-                .get() == null, null, "" + TaskRunningContext
-                .getContextHolder()
-                .get());
+        String id = getBindingTaskId();
         if (!StringUtils.isEmpty(id)) {
             produce(producer, id, getAutoJobLog(message, "INFO"));
         }
@@ -142,11 +140,7 @@ public class AutoJobLogHelper implements IAutoJobLogProducer<AutoJobLog> {
 
     public void warn(String appendLogPattern, Object... appendLogArguments) {
         String message = getLevelMessage("WARN", appendLogPattern, appendLogArguments);
-        String id = DefaultValueUtil.chooseString(TaskRunningContext
-                .getContextHolder()
-                .get() == null, null, "" + TaskRunningContext
-                .getContextHolder()
-                .get());
+        String id = getBindingTaskId();
         if (!StringUtils.isEmpty(id)) {
             produce(producer, id, getAutoJobLog(message, "WARN"));
         }
@@ -159,11 +153,7 @@ public class AutoJobLogHelper implements IAutoJobLogProducer<AutoJobLog> {
 
     public void error(String appendLogPattern, Object... appendLogArguments) {
         String message = getLevelMessage("ERROR", appendLogPattern, appendLogArguments);
-        String id = DefaultValueUtil.chooseString(TaskRunningContext
-                .getContextHolder()
-                .get() == null, null, "" + TaskRunningContext
-                .getContextHolder()
-                .get());
+        String id = getBindingTaskId();
         if (!StringUtils.isEmpty(id)) {
             produce(producer, id, getAutoJobLog(message, "ERROR"));
         }
@@ -181,18 +171,33 @@ public class AutoJobLogHelper implements IAutoJobLogProducer<AutoJobLog> {
         return String.format("$Actual-Location - [%s:%s]$ - ", stackTraceElement.getFileName(), stackTraceElement.getLineNumber());
     }
 
+    private String getBindingTaskId() {
+        if (heldTask != null && heldTask.getId() != null) {
+            return heldTask.getId() + "";
+        }
+        return DefaultValueUtil.chooseString(TaskRunningContext
+                .getContextHolder()
+                .get() == null, null, "" + TaskRunningContext
+                .getContextHolder()
+                .get());
+    }
+
+    private AutoJobTask getBindingTask() {
+        return heldTask == null ? TaskRunningContext
+                .getConcurrentThreadTask()
+                .get() : heldTask;
+    }
+
     private static String getLevelMessage(String level, String appendLogPattern, Object... appendLogArguments) {
         return String.format("%s - %s - [%s] %s - %s", now(), level, getThreadName(), getLogLocation(), getFormatMessage(appendLogPattern, appendLogArguments));
     }
 
-    private static AutoJobLog getAutoJobLog(String message, String level) {
+    private AutoJobLog getAutoJobLog(String message, String level) {
         AutoJobLog autoJobLog = new AutoJobLog();
         autoJobLog.setId(IdGenerator.getNextIdAsLong());
         autoJobLog.setInputTime(DateUtils.getTime());
         autoJobLog.setLevel(level);
-        autoJobLog.setTaskId((Long) DefaultValueUtil.defaultObjectWhenNull(TaskRunningContext
-                .getContextHolder()
-                .get(), -1L));
+        autoJobLog.setTaskId(Long.parseLong(getBindingTaskId()));
         autoJobLog.setMessage(message);
         return autoJobLog;
     }
@@ -205,9 +210,7 @@ public class AutoJobLogHelper implements IAutoJobLogProducer<AutoJobLog> {
             if (!producer.hasTopic(topic)) {
                 producer.registerMessageQueue(topic);
             }
-            AutoJobTask concurrentTask = TaskRunningContext
-                    .getConcurrentThreadTask()
-                    .get();
+            AutoJobTask concurrentTask = getBindingTask();
             if (concurrentTask != null) {
                 producer.publishMessageBlock(autoJobLog, topic, concurrentTask
                         .getTrigger()

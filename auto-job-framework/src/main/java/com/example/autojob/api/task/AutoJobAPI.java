@@ -2,6 +2,8 @@ package com.example.autojob.api.task;
 
 import com.example.autojob.api.task.params.TaskEditParams;
 import com.example.autojob.api.task.params.TriggerEditParams;
+import com.example.autojob.skeleton.db.mapper.AutoJobMapperHolder;
+import com.example.autojob.skeleton.framework.boot.AutoJobApplication;
 import com.example.autojob.skeleton.framework.task.AutoJobTask;
 import com.example.autojob.skeleton.framework.task.TaskRunningContext;
 
@@ -135,11 +137,18 @@ public interface AutoJobAPI {
      * @date 2022/12/2 11:45
      */
     default AutoJobTask.TaskType getTaskType(Long taskId) {
-        AutoJobTaskAttributes taskAttributes = find(taskId);
-        if (taskAttributes == null) {
-            return null;
+        if (AutoJobApplication
+                .getInstance()
+                .getMemoryTaskContainer()
+                .getById(taskId) != null) {
+            return AutoJobTask.TaskType.MEMORY_TASk;
         }
-        return AutoJobTask.TaskType.convert(taskAttributes.type);
+        if (AutoJobMapperHolder.TASK_ENTITY_MAPPER
+                .selectById(taskId)
+                .getId() != null) {
+            return AutoJobTask.TaskType.DB_TASK;
+        }
+        return null;
     }
 
     /**

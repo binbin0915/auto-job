@@ -5,21 +5,20 @@ import com.example.autojob.api.task.params.ScriptTaskEditParams;
 import com.example.autojob.api.task.params.TaskEditParams;
 import com.example.autojob.api.task.params.TriggerEditParams;
 import com.example.autojob.skeleton.annotation.AutoJobRPCService;
-import com.example.autojob.skeleton.framework.container.MemoryTaskContainer;
 import com.example.autojob.skeleton.framework.boot.AutoJobApplication;
+import com.example.autojob.skeleton.framework.container.MemoryTaskContainer;
 import com.example.autojob.skeleton.framework.task.AutoJobTask;
 import com.example.autojob.skeleton.framework.task.AutoJobTrigger;
 import com.example.autojob.skeleton.model.builder.AutoJobTriggerFactory;
 import com.example.autojob.skeleton.model.executor.IMethodObjectFactory;
+import com.example.autojob.skeleton.model.interpreter.AutoJobAttributeContext;
 import com.example.autojob.skeleton.model.task.method.MethodTask;
 import com.example.autojob.skeleton.model.task.script.ScriptTask;
 import com.example.autojob.util.bean.ObjectUtil;
 import com.example.autojob.util.convert.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -182,9 +181,16 @@ public class MemoryTaskAPI implements AutoJobAPI {
                 task.setAlias(taskEditParams.getAlias());
                 task.setBelongTo(taskEditParams.getBelongTo());
                 task.setTaskLevel(taskEditParams.getTaskLevel());
-                task.setParamsString(((MethodTaskEditParams) taskEditParams).getParamsString());
+                if (!StringUtils.isEmpty(((MethodTaskEditParams) taskEditParams).getParamsString())) {
+                    task.setParamsString(((MethodTaskEditParams) taskEditParams).getParamsString());
+                    task.setParams(new AutoJobAttributeContext(task.getParamsString()).getAttributeEntity());
+                }
+
                 if (!StringUtils.isEmpty(((MethodTaskEditParams) taskEditParams).getMethodObjectFactory())) {
                     Class<IMethodObjectFactory> factoryClass = (Class<IMethodObjectFactory>) ObjectUtil.classPath2Class(((MethodTaskEditParams) taskEditParams).getMethodObjectFactory());
+                    if (factoryClass == null) {
+                        return false;
+                    }
                     task.setMethodObjectFactory(ObjectUtil.getClassInstance(factoryClass));
                 }
                 ObjectUtil.mergeObject(task, edit);
@@ -194,6 +200,9 @@ public class MemoryTaskAPI implements AutoJobAPI {
                 task.setAlias(taskEditParams.getAlias());
                 task.setBelongTo(taskEditParams.getBelongTo());
                 task.setTaskLevel(taskEditParams.getTaskLevel());
+                task.setParams(((ScriptTaskEditParams) taskEditParams)
+                        .getAttributes()
+                        .toArray());
                 ObjectUtil.mergeObject(task, edit);
                 return true;
             }
@@ -228,9 +237,15 @@ public class MemoryTaskAPI implements AutoJobAPI {
         task
                 .getTrigger()
                 .setIsPause(false);
-        task
+        if (task
                 .getTrigger()
-                .refresh();
+                .getTriggeringTime() == null || task
+                .getTrigger()
+                .getTriggeringTime() < System.currentTimeMillis()) {
+            task
+                    .getTrigger()
+                    .refresh();
+        }
         return true;
     }
 
@@ -242,5 +257,54 @@ public class MemoryTaskAPI implements AutoJobAPI {
     @Override
     public Boolean isExist(Long taskId) {
         return container.getById(taskId) != null;
+    }
+
+    public static void main(String[] args) {
+        Map<Integer, String> codes = new HashMap<>(10000);
+        boolean flag = false;
+        int cCount = 0;
+        int loop = 5000000;
+        Map<String, String> cCodes = new HashMap<>();
+        for (int i = 0; i < loop; i++) {
+            String str = randomClassPath(10);
+            //System.out.println(str);
+            int h = str.hashCode();
+            h = Math.abs(h ^ (h >>> 16));
+            if (i % 10000 == 0) {
+                System.out.printf("测试进度：%.4f\n", (i * 100.0 / loop));
+            }
+            if (codes.containsKey(h) && !codes
+                    .get(h)
+                    .equals(str)) {
+                //System.out.printf("发生hash冲突：字符串：%s同%s，冲突hash码：%d\n", str, codes.get(h), h);
+                if (cCodes.size() < 50) {
+                    cCodes.put(codes.get(h), str);
+                }
+                flag = true;
+                cCount++;
+            }
+            codes.put(h, str);
+        }
+        if (!flag) {
+            System.out.println("测试完毕没有发生hash冲突");
+        } else {
+            for (Map.Entry<String, String> entry : cCodes.entrySet()) {
+                System.out.printf("冲突路径：%s和%s\n", entry.getKey(), entry.getValue());
+            }
+            System.out.printf("检测完成，共计测试字符串%d个，冲突%d个，冲突率：%.5f%%\n", codes.size(), cCount, (cCount * 100.0) / codes.size());
+        }
+    }
+
+    static String randomClassPath(int deep) {
+        Random random = new Random();
+        int rDeep = random.nextInt(deep) + 2;
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < rDeep; i++) {
+            builder.append(StringUtils.getRandomStr(random.nextInt(16) + 1));
+            if (i < rDeep - 1) {
+                builder.append(".");
+            }
+        }
+        return builder.toString();
     }
 }

@@ -1,23 +1,22 @@
 package com.example.autojob.skeleton.framework.task;
 
+import com.example.autojob.logging.model.producer.AutoJobLogHelper;
 import com.example.autojob.skeleton.db.mapper.AutoJobMapperHolder;
-import com.example.autojob.skeleton.db.mapper.TransactionEntry;
 import com.example.autojob.skeleton.framework.config.AutoJobConfigHolder;
 import com.example.autojob.skeleton.lang.WithDaemonThread;
 import com.example.autojob.skeleton.model.executor.AutoJobTaskExecutorPool;
 import com.example.autojob.skeleton.model.register.IAutoJobRegister;
 import com.example.autojob.skeleton.model.scheduler.AbstractScheduler;
+import com.example.autojob.util.convert.DefaultValueUtil;
 import com.example.autojob.util.thread.SyncHelper;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 /**
- * 任务运行上下文，提供运行时的任务操作以及对内存任务的一些操作
+ * 任务运行上下文，提供运行时的任务操作
  *
  * @Author Huang Yongxiang
  * @Date 2022/08/04 15:12
@@ -36,10 +35,6 @@ public class TaskRunningContext extends AbstractScheduler implements WithDaemonT
      * 已加锁的DB任务
      */
     private static final Map<Long, Boolean> lockedMap = new ConcurrentHashMap<>();
-    /**
-     * 注解调度DB任务，该部分存放的是没有注解ID的DB任务，这部分任务将会在应用退出前删除
-     */
-    private static final Map<Long, AutoJobTask> annotationDBTask = new ConcurrentHashMap<>();
     /**
      * 正在运行的任务
      */
@@ -80,17 +75,6 @@ public class TaskRunningContext extends AbstractScheduler implements WithDaemonT
     public static void removeRunningTask(AutoJobTask autoJobTask) {
         runningTask.remove(autoJobTask.getId());
         runningThread.remove(autoJobTask.getId());
-    }
-
-    public static boolean deleteNoIDDBTasks() {
-        List<Long> ids = annotationDBTask
-                .values()
-                .stream()
-                .map(AutoJobTask::getId)
-                .collect(Collectors.toList());
-        TransactionEntry deleteTasks = (connection) -> AutoJobMapperHolder.TASK_ENTITY_MAPPER.deleteTasksByIds(ids);
-        TransactionEntry deleteTriggers = connection -> AutoJobMapperHolder.TRIGGER_ENTITY_MAPPER.deleteByTaskIds(ids);
-        return AutoJobMapperHolder.TASK_ENTITY_MAPPER.doTransaction(new TransactionEntry[]{deleteTriggers, deleteTasks});
     }
 
     /**
@@ -148,10 +132,6 @@ public class TaskRunningContext extends AbstractScheduler implements WithDaemonT
         return lockedMap;
     }
 
-    public static Map<Long, AutoJobTask> getAnnotationDBTask() {
-        return annotationDBTask;
-    }
-
     public static Map<Long, AutoJobTask> getRunningTask() {
         return runningTask;
     }
@@ -159,6 +139,7 @@ public class TaskRunningContext extends AbstractScheduler implements WithDaemonT
     public static InheritableThreadLocal<AutoJobTask> getConcurrentThreadTask() {
         return concurrentThreadTask;
     }
+
 
     @Override
     public void execute() {
@@ -200,20 +181,30 @@ public class TaskRunningContext extends AbstractScheduler implements WithDaemonT
                                     .getTrigger()
                                     .getStartRunTime();
                             if (runTime > maximumExecutionTime) {
-                                log.info("任务：{}已执行{}ms，最长运行时间：{}，尝试进行停止", entry.getKey(), runTime, maximumExecutionTime);
+                                DefaultValueUtil
+                                        .defaultValue(entry
+                                                .getValue()
+                                                .getLogHelper(), new AutoJobLogHelper(log))
+                                        .info("任务：{}已执行{}ms，最长运行时间：{}，尝试进行停止", entry.getKey(), runTime, maximumExecutionTime);
                                 if (stopRunningTask(entry.getKey())) {
-                                    log.info("任务{}停止成功", entry.getKey());
+                                    DefaultValueUtil
+                                            .defaultValue(entry
+                                                    .getValue()
+                                                    .getLogHelper(), new AutoJobLogHelper(log)).info("任务{}停止成功", entry.getKey());
+                                } else {
+                                    DefaultValueUtil
+                                            .defaultValue(entry
+                                                    .getValue()
+                                                    .getLogHelper(), new AutoJobLogHelper(log)).info("任务{}停止失败", entry.getKey());
                                 }
                             }
                         }
-
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             } while (!isStop);
-        });
-        stopLongTaskThread.setDaemon(true);
+        }); stopLongTaskThread.setDaemon(true);
         stopLongTaskThread.setName("stopLongTaskThread");
         stopLongTaskThread.start();
     }

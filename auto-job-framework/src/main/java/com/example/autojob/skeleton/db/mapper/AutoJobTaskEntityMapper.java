@@ -1,9 +1,11 @@
 package com.example.autojob.skeleton.db.mapper;
 
 import com.example.autojob.api.task.params.MethodTaskEditParams;
+import com.example.autojob.api.task.params.ScriptTaskEditParams;
 import com.example.autojob.api.task.params.TaskEditParams;
 import com.example.autojob.skeleton.db.entity.AutoJobTaskEntity;
 import com.example.autojob.skeleton.db.entity.AutoJobTriggerEntity;
+import com.example.autojob.skeleton.model.builder.AttributesBuilder;
 import com.example.autojob.util.bean.ObjectUtil;
 
 import java.util.List;
@@ -88,6 +90,18 @@ public class AutoJobTaskEntityMapper extends BaseMapper<AutoJobTaskEntity> {
         return queryList(sql, System.currentTimeMillis(), System.currentTimeMillis() + unit.toMillis(nearTime));
     }
 
+    @Override
+    public List<AutoJobTaskEntity> page(int pageNum, int size) {
+        int skip = (pageNum - 1) * size;
+        String sql = getSelectExpression() + String.format(" where id in ( SELECT max( id ) FROM aj_auto_job WHERE del_flag = 0 GROUP BY annotation_id ) limit %d, %d", skip, size);
+        return queryList(sql);
+    }
+
+    public int count() {
+        String sql = "SELECT count(*) FROM aj_auto_job WHERE id in (SELECT max( id ) FROM aj_auto_job WHERE del_flag = 0 GROUP BY annotation_id)";
+        return conditionalCount(sql);
+    }
+
 
     /**
      * 通过id查询子任务
@@ -169,6 +183,15 @@ public class AutoJobTaskEntityMapper extends BaseMapper<AutoJobTaskEntity> {
             MethodTaskEditParams methodTaskEditParams = (MethodTaskEditParams) editParams;
             entity.setMethodObjectFactory(methodTaskEditParams.getMethodObjectFactory());
             entity.setParams(methodTaskEditParams.getParamsString());
+        }
+        if (editParams instanceof ScriptTaskEditParams && ((ScriptTaskEditParams) editParams).getAttributes() != null) {
+            AttributesBuilder builder = new AttributesBuilder();
+            ((ScriptTaskEditParams) editParams)
+                    .getAttributes()
+                    .forEach(param -> {
+                        builder.addParams(AttributesBuilder.AttributesType.STRING, param);
+                    });
+            entity.setParams(builder.getAttributesString());
         }
         return updateEntity(entity, "id = ?", taskId);
     }

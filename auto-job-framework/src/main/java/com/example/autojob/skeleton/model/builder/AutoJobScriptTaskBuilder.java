@@ -182,6 +182,11 @@ public class AutoJobScriptTaskBuilder {
         scriptTask.setTaskLevel(taskLevel);
         if (params != null) {
             scriptTask.setParams(params);
+            AttributesBuilder attributesBuilder = new AttributesBuilder();
+            for (Object param : params) {
+                attributesBuilder.addParams(AttributesBuilder.AttributesType.STRING, param);
+            }
+            scriptTask.setParamsString(attributesBuilder.getAttributesString());
         }
         if (taskType == AutoJobTask.TaskType.DB_TASK && isSaveWhenDB) {
             if (scriptTask.isNeedWrite()) {

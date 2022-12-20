@@ -51,7 +51,7 @@ public abstract class AutoJobTaskAttributes {
             id = task.getId();
             alias = task.getAlias();
             annotationId = task.getAnnotationId();
-            if(task.getType() != null) {
+            if (task.getType() != null) {
                 type = task
                         .getType()
                         .toString();

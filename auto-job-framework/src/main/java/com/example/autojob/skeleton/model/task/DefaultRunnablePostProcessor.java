@@ -52,6 +52,7 @@ public class DefaultRunnablePostProcessor implements RunnablePostProcessor {
                 autoJobTask
                         .getTrigger()
                         .setIsRunning(true);
+                autoJobTask.setLogHelper(new AutoJobLogHelper(null, autoJobTask));
                 /*=======================Finished======================<*/
                 autoJobTask
                         .getTrigger()
@@ -109,6 +110,7 @@ public class DefaultRunnablePostProcessor implements RunnablePostProcessor {
                 autoJobTask
                         .getRunResult()
                         .setResult(result);
+                autoJobTask.setLogHelper(null);
                 /*=================更新状态=================>*/
                 if (autoJobTask.getType() == AutoJobTask.TaskType.DB_TASK) {
                     AutoJobMapperHolder.TRIGGER_ENTITY_MAPPER.updateOperatingStatus(false, autoJobTask.getId());
@@ -156,6 +158,7 @@ public class DefaultRunnablePostProcessor implements RunnablePostProcessor {
                 autoJobTask
                         .getRunResult()
                         .setThrowable(throwable);
+                autoJobTask.setLogHelper(null);
                 /*=================更新状态=================>*/
                 if (autoJobTask.getType() == AutoJobTask.TaskType.DB_TASK) {
                     AutoJobMapperHolder.TRIGGER_ENTITY_MAPPER.updateOperatingStatus(false, autoJobTask.getId());

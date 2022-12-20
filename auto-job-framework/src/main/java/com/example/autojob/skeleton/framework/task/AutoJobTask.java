@@ -1,5 +1,6 @@
 package com.example.autojob.skeleton.framework.task;
 
+import com.example.autojob.logging.model.producer.AutoJobLogHelper;
 import com.example.autojob.skeleton.enumerate.SchedulingStrategy;
 import com.example.autojob.skeleton.framework.pool.RunnablePostProcessor;
 import com.example.autojob.skeleton.model.task.DefaultRunnablePostProcessor;
@@ -91,6 +92,10 @@ public abstract class AutoJobTask {
      * 是否是子任务
      */
     protected Boolean isChildTask = false;
+    /**
+     * 任务持有的logHelper对象实例
+     */
+    protected AutoJobLogHelper logHelper;
 
     @Override
     public boolean equals(Object o) {

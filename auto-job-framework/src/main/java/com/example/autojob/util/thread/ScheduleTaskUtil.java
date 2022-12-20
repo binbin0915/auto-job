@@ -6,9 +6,10 @@ import java.util.List;
 import java.util.concurrent.*;
 
 /**
- * @Description 异步任务构建器，提供单例模式和多例模式，调用静态方法instance()和使用静态任务执行方法
+ * 异步任务构建器，提供单例模式和多例模式，调用静态方法instance()和使用静态任务执行方法
  * 均是使用的单例对象，单例模式下提交的任务将是串行执行，如果你不能保证你执行的任务都能在可接受的时间内完成，
  * 请优先使用build()方法构建多例来运行
+ *
  * @Auther Huang Yongxiang
  * @Date 2022/03/22 9:39
  */
@@ -107,36 +108,6 @@ public class ScheduleTaskUtil {
             return null;
         }
         return instance().schedule(runnable, delay == 0 ? 1 : delay, unit);
-    }
-
-
-    public static void fixedRateTask(Runnable runnable, long delay, long rate, TimeUnit unit) {
-        if (runnable == null || delay < 0 || unit == null || rate <= 0) {
-            log.error("执行失败，错误参数");
-            return;
-        }
-        instance().scheduleAtFixedRate(runnable, delay == 0 ? 1 : delay, rate, unit);
-    }
-
-    /**
-     * 创建并执行一个周期性操作，该操作首先在给定的初始延迟之后启用，随后在一个执行的终止和下一个执行的开始
-     * 之间具有给定的延迟。如果任务的任何执行遇到异常，则后续执行将被抑制。否则，任务只会通过取消或终止执行
-     * 者来终止
-     *
-     * @param runnable 任务
-     * @param delay    首次延迟
-     * @param nextDaly 上一次执行完与下一次执行开始之间的延迟
-     * @param unit     时间单位
-     * @return void
-     * @author Huang Yongxiang
-     * @date 2022/3/22 10:41
-     */
-    public static void fixedRateDelayTask(Runnable runnable, long delay, long nextDaly, TimeUnit unit) {
-        if (runnable == null || delay < 0 || unit == null || nextDaly <= 0) {
-            log.error("执行失败，错误参数");
-            return;
-        }
-        instance().scheduleWithFixedDelay(runnable, delay, nextDaly, unit);
     }
 
     private static class ThreadHolder {

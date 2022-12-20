@@ -57,7 +57,8 @@ public enum SchedulingStrategy {
             if (!StringUtils.isEmpty(autoJob.cronExpression())) {
                 return new AutoJobTrigger(autoJob.cronExpression(), autoJob.repeatTimes())
                         .setTaskId(taskId)
-                        .setChildTask(childTaskList);
+                        .setChildTask(childTaskList)
+                        .setMaximumExecutionTime(autoJob.maximumExecutionTime());
             }
             if (!StringUtils.isEmpty(autoJob.startTime())) {
                 long triggeringTime = DateUtils
@@ -67,7 +68,9 @@ public enum SchedulingStrategy {
                         .cycleUnit()
                         .toMillis(autoJob.cycle()))
                         .setTaskId(taskId)
-                        .setChildTask(childTaskList);
+                        .setChildTask(childTaskList)
+                        .setMaximumExecutionTime(autoJob.maximumExecutionTime());
+
             }
             if (autoJob.defaultStartTime() != StartTime.EMPTY) {
                 return new AutoJobTrigger(autoJob
@@ -76,7 +79,8 @@ public enum SchedulingStrategy {
                         .cycleUnit()
                         .toMillis(autoJob.cycle()))
                         .setTaskId(taskId)
-                        .setChildTask(childTaskList);
+                        .setChildTask(childTaskList)
+                        .setMaximumExecutionTime(autoJob.maximumExecutionTime());
             }
             long defaultDelay = System.currentTimeMillis() + (long) (AutoJobApplication
                     .getInstance()
@@ -86,7 +90,8 @@ public enum SchedulingStrategy {
 
             return new AutoJobTrigger(defaultDelay, 0, 0L)
                     .setTaskId(taskId)
-                    .setChildTask(childTaskList);
+                    .setChildTask(childTaskList)
+                    .setMaximumExecutionTime(autoJob.maximumExecutionTime());
         }
 
         public AutoJobTrigger createTrigger(long taskId, String startTime, int repeatTimes, long cycle, TimeUnit cycleUnit) {
@@ -126,7 +131,9 @@ public enum SchedulingStrategy {
                     .getConfigHolder()
                     .getAutoJobConfig();
             if (!StringUtils.isEmpty(autoJob.cronExpression())) {
-                return createTrigger(taskId, autoJob.cronExpression(), 0).setChildTask(childTaskList);
+                return createTrigger(taskId, autoJob.cronExpression(), 0)
+                        .setChildTask(childTaskList)
+                        .setMaximumExecutionTime(autoJob.maximumExecutionTime());
             } else if (!StringUtils.isEmpty(autoJob.startTime())) {
                 return createTrigger(taskId, autoJob.startTime(), 0, 0, TimeUnit.MILLISECONDS).setChildTask(childTaskList);
             } else if (autoJob.defaultStartTime() != StartTime.EMPTY) {
@@ -134,12 +141,14 @@ public enum SchedulingStrategy {
                         .defaultStartTime()
                         .valueOf(), 0, 0)
                         .setTaskId(taskId)
-                        .setChildTask(childTaskList);
+                        .setChildTask(childTaskList)
+                        .setMaximumExecutionTime(autoJob.maximumExecutionTime());
             }
 
             return new AutoJobTrigger(System.currentTimeMillis() + (long) (config.getAnnotationDefaultDelayTime() * 60 * 1000), 0, 0)
                     .setTaskId(taskId)
-                    .setChildTask(childTaskList);
+                    .setChildTask(childTaskList)
+                    .setMaximumExecutionTime(autoJob.maximumExecutionTime());
         }
 
         public AutoJobTrigger createTrigger(long taskId, String startTime, int repeatTimes, long cycle, TimeUnit cycleUnit) {
@@ -188,7 +197,8 @@ public enum SchedulingStrategy {
             }
             return new AutoJobTrigger(Long.MAX_VALUE, 0, 0)
                     .setTaskId(taskId)
-                    .setChildTask(childTaskList);
+                    .setChildTask(childTaskList)
+                    .setMaximumExecutionTime(autoJob.maximumExecutionTime());
         }
 
         public AutoJobTrigger createTrigger(long taskId, String startTime, int repeatTimes, long cycle, TimeUnit cycleUnit) {

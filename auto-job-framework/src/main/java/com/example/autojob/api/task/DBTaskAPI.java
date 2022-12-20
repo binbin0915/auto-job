@@ -151,7 +151,32 @@ public class DBTaskAPI implements AutoJobAPI {
 
     @Override
     public Boolean unpause(Long taskId) {
-        return AutoJobMapperHolder.TRIGGER_ENTITY_MAPPER.unpauseTaskById(taskId);
+        AutoJobTask task = EntityConvertor.taskEntity2Task(AutoJobMapperHolder.TASK_ENTITY_MAPPER.selectById(taskId));
+        if (task == null) {
+            return false;
+        }
+        task
+                .getTrigger()
+                .setIsPause(false);
+        TransactionEntry updateTriggeringTime = connection -> {
+            if (task
+                    .getTrigger()
+                    .getTriggeringTime() != null && task
+                    .getTrigger()
+                    .getTriggeringTime() < System.currentTimeMillis() && task
+                    .getTrigger()
+                    .refresh()) {
+                AutoJobMapperHolder.TRIGGER_ENTITY_MAPPER.updateTriggeringTime(taskId, task
+                        .getTrigger()
+                        .getTriggeringTime());
+            }
+            return 1;
+        };
+        TransactionEntry unpause = connection -> {
+            AutoJobMapperHolder.TRIGGER_ENTITY_MAPPER.unpauseTaskById(taskId);
+            return 1;
+        };
+        return AutoJobMapperHolder.TRIGGER_ENTITY_MAPPER.doTransaction(new TransactionEntry[]{updateTriggeringTime, unpause});
     }
 
     @Override

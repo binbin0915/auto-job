@@ -25,7 +25,7 @@ public class AutoJobAnnotationWrapper implements AutoJobWrapper {
         if (autoJob == null) {
             return null;
         }
-        long taskId = autoJob.id() < 0 ? IdGenerator.getNextIdAsLong() : autoJob.id();
+        long taskId = autoJob.id() < 0 || autoJob.asType() == AutoJobTask.TaskType.DB_TASK ? IdGenerator.getNextIdAsLong() : autoJob.id();
 
         return new AutoJobMethodTaskBuilder(method.getDeclaringClass(), method.getName())
                 .setTaskId(taskId)

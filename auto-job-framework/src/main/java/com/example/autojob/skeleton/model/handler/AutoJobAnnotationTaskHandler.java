@@ -19,7 +19,7 @@ import java.util.Set;
  */
 @Slf4j
 public class AutoJobAnnotationTaskHandler extends AbstractAnnotationTaskHandler {
-    private Class<? extends Annotation> type;
+    private final Class<? extends Annotation> type;
 
     public AutoJobAnnotationTaskHandler(AbstractAnnotationFilter filter, AutoJobWrapper wrapper, Class<? extends Annotation> type) {
         super(AbstractAnnotationFilter

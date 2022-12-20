@@ -46,6 +46,10 @@ public abstract class BaseMapper<T> {
 
     public int count() {
         String sql = "select count(id) from " + getTableName() + " where del_flag = 0";
+        return conditionalCount(sql);
+    }
+
+    public int conditionalCount(String sql, Object... params) {
         Connection connection = getConnection();
         try {
             return queryRunner.query(connection, sql, new BaseResultSetHandler<Integer>() {
@@ -56,7 +60,7 @@ public abstract class BaseMapper<T> {
                     }
                     return 0;
                 }
-            });
+            }, params);
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {

@@ -1,8 +1,8 @@
 package com.example.autojob.skeleton.annotation;
 
 import com.example.autojob.skeleton.enumerate.SchedulingStrategy;
-import com.example.autojob.skeleton.framework.task.AutoJobTask;
 import com.example.autojob.skeleton.enumerate.StartTime;
+import com.example.autojob.skeleton.framework.task.AutoJobTask;
 import com.example.autojob.skeleton.model.executor.DefaultMethodObjectFactory;
 import com.example.autojob.skeleton.model.executor.IMethodObjectFactory;
 import com.example.autojob.skeleton.model.task.method.MethodTask;
@@ -45,7 +45,7 @@ public @interface AutoJob {
     /**
      * 最大执行时长，毫秒，超出时系统将会尝试停止，默认是24小时
      */
-    long maximumExecutionTime() default -1;
+    long maximumExecutionTime() default 24 * 60 * 60 * 1000;
 
     /**
      * 方法依赖的类工厂，工厂必须提供无参构造方法
