@@ -8,6 +8,7 @@ import com.example.autojob.util.thread.SyncHelper;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -39,7 +40,11 @@ public class ScriptTaskExecutable implements TaskExecutable {
 
     @Override
     public boolean isExecutable() {
-        return true;
+        if (scriptTask.isCmd()) {
+            return !StringUtils.isEmpty(scriptTask.getCmd());
+        }
+        File file = new File(scriptTask.getPath());
+        return file.exists();
     }
 
     @Override

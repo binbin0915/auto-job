@@ -44,10 +44,24 @@ public enum ScriptType {
         if (StringUtils.isEmpty(suffix)) {
             return null;
         }
-        String trim = suffix.trim().toLowerCase();
+        String trim = suffix
+                .trim()
+                .toLowerCase();
         suffix = trim.charAt(0) == '.' ? trim : "." + trim;
         for (ScriptType type : ScriptType.values()) {
             if (type.suffix.equals(suffix)) {
+                return type;
+            }
+        }
+        return null;
+    }
+
+    public static ScriptType findByName(String name) {
+        if (StringUtils.isEmpty(name)) {
+            return null;
+        }
+        for (ScriptType type : ScriptType.values()) {
+            if (type.name.equals(name)) {
                 return type;
             }
         }

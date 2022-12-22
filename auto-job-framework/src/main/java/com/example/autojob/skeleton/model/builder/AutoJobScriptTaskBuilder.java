@@ -188,14 +188,14 @@ public class AutoJobScriptTaskBuilder {
             }
             scriptTask.setParamsString(attributesBuilder.getAttributesString());
         }
-        if (taskType == AutoJobTask.TaskType.DB_TASK && isSaveWhenDB) {
-            if (scriptTask.isNeedWrite()) {
-                try {
-                    scriptTask.write();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+        if (scriptTask.isNeedWrite()) {
+            try {
+                scriptTask.write();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
+        }
+        if (taskType == AutoJobTask.TaskType.DB_TASK && isSaveWhenDB) {
             AutoJobTriggerEntity triggerEntity = EntityConvertor.trigger2TriggerEntity(trigger);
             AutoJobTaskEntity taskEntity = EntityConvertor.task2TaskEntity(scriptTask, triggerEntity.getId());
             TransactionEntry insertTask = connection -> AutoJobMapperHolder.TASK_ENTITY_MAPPER.insertList(Collections.singletonList(taskEntity));
