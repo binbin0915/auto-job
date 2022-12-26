@@ -5,6 +5,8 @@ import com.example.autojob.util.bean.ObjectUtil;
 import com.example.spring.util.SpringUtil;
 
 /**
+ * Spring容器工厂
+ *
  * @Author Huang Yongxiang
  * @Date 2022/11/18 14:20
  * @Email 1158055613@qq.com
