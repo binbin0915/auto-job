@@ -3,7 +3,6 @@ package com.example.autojob.skeleton.db.mapper;
 import com.example.autojob.api.task.params.TriggerEditParams;
 import com.example.autojob.skeleton.db.entity.AutoJobTriggerEntity;
 import com.example.autojob.util.bean.ObjectUtil;
-import com.example.autojob.util.id.SystemClock;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -44,7 +43,13 @@ public class AutoJobTriggerEntityMapper extends BaseMapper<AutoJobTriggerEntity>
      */
     public boolean pauseTaskById(long taskId) {
         String sql = getUpdateExpression() + " set is_pause = 1 where del_flag = 0 and task_id = ?";
-        return updateOne(sql, taskId) == 1;
+        try {
+            updateOne(sql, taskId);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     /**
@@ -57,7 +62,13 @@ public class AutoJobTriggerEntityMapper extends BaseMapper<AutoJobTriggerEntity>
      */
     public boolean unpauseTaskById(long taskId) {
         String sql = getUpdateExpression() + " set is_pause = 0 where del_flag = 0 and task_id = ?";
-        return updateOne(sql, taskId) == 1;
+        try {
+            updateOne(sql, taskId);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     public boolean updateOperatingStatus(boolean isRunning, long taskId) {

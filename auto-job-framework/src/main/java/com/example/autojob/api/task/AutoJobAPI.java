@@ -5,6 +5,7 @@ import com.example.autojob.api.task.params.TriggerEditParams;
 import com.example.autojob.skeleton.db.mapper.AutoJobMapperHolder;
 import com.example.autojob.skeleton.framework.boot.AutoJobApplication;
 import com.example.autojob.skeleton.framework.task.AutoJobTask;
+import com.example.autojob.skeleton.framework.task.AutoJobTrigger;
 import com.example.autojob.skeleton.framework.task.TaskRunningContext;
 
 import java.util.List;
@@ -76,6 +77,17 @@ public interface AutoJobAPI {
      * @date 2022/10/14 14:04
      */
     Boolean editTrigger(Long taskId, TriggerEditParams triggerEditParams);
+
+    /**
+     * 绑定触发器到指定任务上，原有的触发器将会被覆盖
+     *
+     * @param taskId  任务ID
+     * @param trigger 触发器
+     * @return java.lang.Boolean
+     * @author Huang Yongxiang
+     * @date 2022/12/22 17:26
+     */
+    Boolean bindingTrigger(Long taskId, AutoJobTrigger trigger);
 
     /**
      * 对任务的基本信息进行编辑

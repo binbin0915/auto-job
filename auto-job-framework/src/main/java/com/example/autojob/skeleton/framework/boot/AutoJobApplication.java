@@ -20,7 +20,6 @@ import com.example.autojob.skeleton.model.executor.AutoJobTaskExecutorPool;
 import com.example.autojob.skeleton.model.register.IAutoJobRegister;
 import com.example.autojob.skeleton.model.scheduler.AbstractScheduler;
 import com.example.autojob.skeleton.model.tq.AutoJobTaskQueue;
-import com.example.autojob.util.id.SystemClock;
 import com.example.autojob.util.mail.MailHelper;
 import com.example.autojob.util.thread.ScheduleTaskUtil;
 import com.example.autojob.util.thread.SyncHelper;
@@ -250,6 +249,14 @@ public class AutoJobApplication implements Closeable {
         }
     }
 
+    /**
+     * 通过任务ID获取一个匹配的API
+     *
+     * @param taskId 任务ID
+     * @return com.example.autojob.api.task.AutoJobAPI
+     * @author Huang Yongxiang
+     * @date 2022/12/26 11:08
+     */
     public AutoJobAPI getMatchedAPI(long taskId) {
         AutoJobTask.TaskType taskType = memoryTaskAPI.getTaskType(taskId);
         if (taskType == null) {

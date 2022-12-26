@@ -42,8 +42,9 @@ public class AutoJobMemoryTaskScheduler extends AbstractScheduler {
                 .getMemoryTaskContainer();
         scheduleTaskUtil = ScheduleTaskUtil.build(true, "memoryTaskScheduler");
         scheduleTaskUtil.EFixedRateTask(() -> {
+            //log.info("running");
             List<AutoJobTask> tasks = memoryTaskContainer.getFutureRun(5, TimeUnit.SECONDS);
-            log.debug("查找到{}个Memory任务", tasks.size());
+            //log.info("查找到{}个Memory任务", tasks.size());
             if (tasks.size() > 0) {
                 for (AutoJobTask task : tasks) {
                     if (task.getTrigger() != null && !task

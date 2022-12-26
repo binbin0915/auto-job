@@ -41,8 +41,8 @@ public class MemoryTaskContainer implements WithDaemonThread {
         if (size.get() >= limitSize) {
             throw new AutoJobContainerException("已超出内存任务容器容量：" + limitSize);
         }
-        if (task == null || task.getTrigger() == null || task.getId() == null) {
-            throw new IllegalArgumentException("任务和触发器必须存在");
+        if (task == null || task.getId() == null) {
+            throw new IllegalArgumentException("任务为空或任务ID不存在");
         }
         if (task.getId() == null && StringUtils.isEmpty(task.getAlias()) && task.getAnnotationId() == null) {
             throw new IllegalArgumentException("任务ID、注解ID、任务别名必须存在一个");
@@ -169,6 +169,7 @@ public class MemoryTaskContainer implements WithDaemonThread {
         return memoryTaskContainer
                 .values()
                 .stream()
+                .filter(task -> task.getTrigger() != null)
                 .filter(task -> !task
                         .getTrigger()
                         .getIsPause())

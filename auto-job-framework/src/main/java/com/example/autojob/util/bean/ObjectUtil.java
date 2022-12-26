@@ -161,7 +161,11 @@ public class ObjectUtil {
                     convertResult.put(field.getName(), value);
                     continue;
                 }
-                convertResult.put(field.getName(), value);
+                if (!(value instanceof Collection) && !(value instanceof Number) && !(value instanceof String) && !(value instanceof Boolean)) {
+                    convertResult.put(field.getName(), convertFieldsToString(value, convertColumns));
+                } else {
+                    convertResult.put(field.getName(), value);
+                }
             }
             return convertResult;
         } catch (Exception e) {
@@ -193,7 +197,11 @@ public class ObjectUtil {
                     convertResult.put(field.getName(), String.valueOf(value));
                     continue;
                 }
-                convertResult.put(field.getName(), value);
+                if (!(value instanceof Collection) && !(value instanceof Number) && !(value instanceof String) && !(value instanceof Boolean)) {
+                    convertResult.put(field.getName(), convertFieldsToStringByClass(value, convertColumns));
+                } else {
+                    convertResult.put(field.getName(), value);
+                }
             }
             return convertResult;
         } catch (Exception e) {

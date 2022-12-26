@@ -158,6 +158,11 @@ public class AutoJobTaskEntityMapper extends BaseMapper<AutoJobTaskEntity> {
         return updateOne(getDeleteExpression() + condition);
     }
 
+    public boolean bindingTrigger(long triggerId, long taskId) {
+        String sql = getUpdateExpression() + " set trigger_id = ? where id = ? and del_flag = 0";
+        return updateOne(sql, triggerId, taskId) == 1;
+    }
+
     /**
      * 查询被暂停的任务
      *

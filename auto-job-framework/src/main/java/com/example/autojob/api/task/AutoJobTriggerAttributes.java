@@ -62,6 +62,10 @@ public class AutoJobTriggerAttributes {
      * 是否暂停
      */
     private Boolean isPause = false;
+    /**
+     * 是否正在运行
+     */
+    private Boolean isRunning = false;
 
     public AutoJobTriggerAttributes(AutoJobTrigger trigger) {
         triggeringTime = trigger.getTriggeringTime();
@@ -76,6 +80,7 @@ public class AutoJobTriggerAttributes {
         maximumExecutionTime = trigger.getMaximumExecutionTime();
         lastRunTime = trigger.getLastRunTime();
         isPause = trigger.getIsPause();
+        isRunning = trigger.getIsRunning();
     }
 
     public AutoJobTriggerAttributes() {
@@ -95,6 +100,7 @@ public class AutoJobTriggerAttributes {
         trigger.setLastTriggeringTime(lastTriggeringTime);
         trigger.setIsLastSuccess(isLastSuccess);
         trigger.setCycle(cycle);
+        trigger.setIsRunning(isRunning);
         trigger.setMaximumExecutionTime(maximumExecutionTime);
         return trigger;
     }

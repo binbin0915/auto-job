@@ -3,6 +3,7 @@ package com.example.autojob.api.task;
 import com.example.autojob.api.task.params.TaskEditParams;
 import com.example.autojob.api.task.params.TriggerEditParams;
 import com.example.autojob.skeleton.annotation.AutoJobRPCService;
+import com.example.autojob.skeleton.db.AutoJobSQLException;
 import com.example.autojob.skeleton.db.entity.AutoJobTaskEntity;
 import com.example.autojob.skeleton.db.entity.AutoJobTriggerEntity;
 import com.example.autojob.skeleton.db.entity.EntityConvertor;
@@ -120,6 +121,32 @@ public class DBTaskAPI implements AutoJobAPI {
         return false;
     }
 
+    @Override
+    public Boolean bindingTrigger(Long taskId, AutoJobTrigger trigger) {
+        if (taskId == null || trigger == null) {
+            return false;
+        }
+        try {
+            if (pause(taskId)) {
+                trigger.setTaskId(taskId);
+                AutoJobTriggerEntity entity = EntityConvertor.trigger2TriggerEntity(trigger);
+                TransactionEntry insertTrigger = connection -> AutoJobMapperHolder.TRIGGER_ENTITY_MAPPER.insertList(Collections.singletonList(entity));
+                TransactionEntry bindingTrigger = connection -> {
+                    boolean flag = AutoJobMapperHolder.TASK_ENTITY_MAPPER.bindingTrigger(entity.getId(), taskId);
+                    //绑定失败回滚
+                    if (!flag) {
+                        throw new AutoJobSQLException();
+                    }
+                    return 1;
+                };
+                return AutoJobMapperHolder.TASK_ENTITY_MAPPER.doTransaction(new TransactionEntry[]{insertTrigger, bindingTrigger});
+            }
+        } finally {
+            unpause(taskId);
+        }
+        return false;
+    }
+
     /**
      * 修改DB任务信息，任务ID，注解ID和任务类型不允许修改
      *
@@ -152,7 +179,7 @@ public class DBTaskAPI implements AutoJobAPI {
     @Override
     public Boolean unpause(Long taskId) {
         AutoJobTask task = EntityConvertor.taskEntity2Task(AutoJobMapperHolder.TASK_ENTITY_MAPPER.selectById(taskId));
-        if (task == null) {
+        if (task == null || task.getTrigger() == null) {
             return false;
         }
         task

@@ -15,6 +15,7 @@ import com.example.autojob.skeleton.model.interpreter.AutoJobAttributeContext;
 import com.example.autojob.skeleton.model.task.method.MethodTask;
 import com.example.autojob.skeleton.model.task.script.ScriptTask;
 import com.example.autojob.util.bean.ObjectUtil;
+import com.example.autojob.util.convert.DateUtils;
 import com.example.autojob.util.convert.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 
@@ -156,6 +157,34 @@ public class MemoryTaskAPI implements AutoJobAPI {
         return false;
     }
 
+    @Override
+    public Boolean bindingTrigger(Long taskId, AutoJobTrigger trigger) {
+        if (taskId == null || trigger == null) {
+            return false;
+        }
+        try {
+            if (pause(taskId)) {
+                AutoJobTask task = container.getById(taskId);
+                if (task == null) {
+                    return false;
+                }
+                trigger.setTaskId(taskId);
+                task.setTrigger(trigger);
+                if (trigger.isNearTriggeringTime(5000)) {
+                    AutoJobApplication
+                            .getInstance()
+                            .getRegister()
+                            .registerTask(task);
+                }
+                log.info("任务{}将在{}执行", taskId, DateUtils.formatDateTime(new Date(trigger.getTriggeringTime())));
+                return true;
+            }
+        } finally {
+            unpause(taskId);
+        }
+        return false;
+    }
+
     /**
      * 修改内存任务信息，任务ID，注解ID和任务类型不允许修改
      *
@@ -218,6 +247,9 @@ public class MemoryTaskAPI implements AutoJobAPI {
         if (task == null) {
             return false;
         }
+        if (task.getTrigger() == null) {
+            return true;
+        }
         task
                 .getTrigger()
                 .setIsPause(true);
@@ -231,7 +263,7 @@ public class MemoryTaskAPI implements AutoJobAPI {
     @Override
     public Boolean unpause(Long taskId) {
         AutoJobTask task = container.getById(taskId);
-        if (task == null) {
+        if (task == null || task.getTrigger() == null) {
             return false;
         }
         task

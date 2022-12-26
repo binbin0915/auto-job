@@ -24,9 +24,12 @@ public class DBTaskLoader implements AutoJobTaskLoader {
         List<AutoJobTriggerEntity> triggerEntities = new ArrayList<>();
         List<AutoJobTaskEntity> taskEntities = new ArrayList<>();
         tasks.forEach(task -> {
-            AutoJobTriggerEntity triggerEntity = EntityConvertor.trigger2TriggerEntity(task.getTrigger());
-            triggerEntities.add(triggerEntity);
-            AutoJobTaskEntity taskEntity = EntityConvertor.task2TaskEntity(task, triggerEntity.getId());
+            AutoJobTriggerEntity triggerEntity = null;
+            if (task.getTrigger() != null) {
+                triggerEntity = EntityConvertor.trigger2TriggerEntity(task.getTrigger());
+                triggerEntities.add(triggerEntity);
+            }
+            AutoJobTaskEntity taskEntity = EntityConvertor.task2TaskEntity(task, triggerEntity == null ? null : triggerEntity.getId());
             taskEntities.add(taskEntity);
         });
         TransactionEntry insertTriggers = connection -> AutoJobMapperHolder.TRIGGER_ENTITY_MAPPER.insertList(triggerEntities);

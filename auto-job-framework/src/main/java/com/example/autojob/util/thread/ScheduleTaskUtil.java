@@ -15,7 +15,7 @@ import java.util.concurrent.*;
  */
 @Slf4j
 public class ScheduleTaskUtil {
-    private static final String DEFAULT_THREAD_NAME = "defaultScheduleThread";
+    private static final String DEFAULT_THREAD_NAME = "scheduleThread";
     private ScheduledExecutorService executorService;
 
 
@@ -25,8 +25,13 @@ public class ScheduleTaskUtil {
     public static ScheduleTaskUtil build() {
         ScheduleTaskUtil scheduleTaskUtil = new ScheduleTaskUtil();
         scheduleTaskUtil.executorService = Executors.newSingleThreadScheduledExecutor(runnable -> {
-            Thread thread = new Thread(runnable, DEFAULT_THREAD_NAME + System.currentTimeMillis());
-
+            Thread thread = new Thread(() -> {
+                try {
+                    runnable.run();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }, DEFAULT_THREAD_NAME + System.currentTimeMillis());
             thread.setDaemon(true);
             return thread;
         });
@@ -45,7 +50,13 @@ public class ScheduleTaskUtil {
     public static ScheduleTaskUtil build(boolean isDaemon, String threadName) {
         ScheduleTaskUtil scheduleTaskUtil = new ScheduleTaskUtil();
         scheduleTaskUtil.executorService = Executors.newSingleThreadScheduledExecutor(runnable -> {
-            Thread thread = new Thread(runnable, threadName);
+            Thread thread = new Thread(() -> {
+                try {
+                    runnable.run();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }, threadName);
             thread.setDaemon(isDaemon);
             return thread;
         });
