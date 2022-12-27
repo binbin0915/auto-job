@@ -18,6 +18,8 @@
 
 调整项目结构。
 
+新增Rest接口：链接: https://www.apifox.cn/apidoc/shared-05120000-4d19-4c75-a7f6-dc56105972cb  访问密码 : autojob 
+
 ## 一、背景
 
 生活中，业务上我们会碰到很多有关作业调度的场景，如每周五十二点发放优惠券、或者每天凌晨进行缓存预热、亦或每月定期从第三方系统抽数等等，Spring和java目前也有原生的定时任务支持，但是其都存在一些弊病，如下：
@@ -572,7 +574,7 @@ autoJob:
       length: 100 # 调度队列长度，调度队列用于存放即将执行的任务
     memoryContainer: # 内存型任务容器，存放内存型任务
       length: 200 # 容器容量
-      cleanStrategy: CLEAN_FINISHED # 清理策略，CLEAN_FINISHED-定期清理已经执行完成的任务 KEEP-FINISHED-保留执行完成的任务，会将其移入一个内存Cache，不会占用容器容量
+      cleanStrategy: CLEAN_FINISHED # 清理策略，CLEAN_FINISHED-定期清理已经执行完成的任务 KEEP_FINISHED-保留执行完成的任务，会将其移入一个内存Cache，不会占用容器容量
   annotation:
     enable: true # 是否启用注解扫描，扫描被@AutoJob @FactoryJob的方法并将其包装成可执行任务对象
     defaultDelayTime: 30 # 在未给注解的任务配置调度信息的情况下，默认的任务延迟执行时间：min
