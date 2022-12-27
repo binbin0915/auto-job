@@ -66,6 +66,7 @@ public class AutoJobDBTaskScheduler extends AbstractScheduler implements WithDae
                                     //log.info("注册DB任务：{}", task.getId());
                                     register.registerTask(task);
                                 } catch (AutoJobRegisterRefusedException e) {
+                                    //e.printStackTrace();
                                     AutoJobMapperHolder.TRIGGER_ENTITY_MAPPER.pauseTaskById(task.getId());
                                 }
                             }

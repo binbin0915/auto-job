@@ -14,7 +14,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 /**
- * @Description 统一的事件管理类
+ * 统一的事件管理类
+ *
  * @Auther Huang Yongxiang
  * @Date 2021/12/15 15:26
  */

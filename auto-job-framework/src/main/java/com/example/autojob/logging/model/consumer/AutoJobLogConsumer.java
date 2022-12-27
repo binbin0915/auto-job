@@ -60,15 +60,11 @@ public class AutoJobLogConsumer implements ITaskEventHandler<TaskEvent> {
             } else {
                 handler.refresh();
             }
-            if (!event
-                    .getTask()
-                    .getIsChildTask()) {
-                AutoJobLogHandler finalHandler = handler;
-                saveLogScheduler.EOneTimeTask(() -> {
-                    finalHandler.saveSchedulingRecord();
-                    return null;
-                }, 0, TimeUnit.MILLISECONDS);
-            }
+            AutoJobLogHandler finalHandler = handler;
+            saveLogScheduler.EOneTimeTask(() -> {
+                finalHandler.saveSchedulingRecord();
+                return null;
+            }, 0, TimeUnit.MILLISECONDS);
             logMessageQueueContext.addMessagePublishedListener(event
                     .getTask()
                     .getId() + "", new HandleMessageListener(handler, event.getTask()));

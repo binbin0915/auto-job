@@ -12,7 +12,6 @@ import java.util.Date;
 
 /**
  * 日期工具类 提供常用的日期方法
- *
  */
 public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
 
@@ -52,6 +51,10 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
         return formatDate(new Date(dateTime), pattern);
     }
 
+    public static String formatDateTime(long dateTime) {
+        return formatDateTime(new Date(dateTime));
+    }
+
     /**
      * 得到日期字符串 默认格式（yyyy-MM-dd） pattern可以为："yyyy-MM-dd" "HH:mm:ss" "E"
      */
@@ -66,7 +69,9 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
             if (StringUtils.isBlank(pattern)) {
                 pattern = "yyyy-MM-dd";
             }
-            formatDate = FastDateFormat.getInstance(pattern).format(date);
+            formatDate = FastDateFormat
+                    .getInstance(pattern)
+                    .format(date);
         }
         return formatDate;
     }
@@ -90,7 +95,9 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
      */
     public static String getDate(String pattern) {
 //      return DateFormatUtils.format(new Date(), pattern);
-        return FastDateFormat.getInstance(pattern).format(new Date());
+        return FastDateFormat
+                .getInstance(pattern)
+                .format(new Date());
     }
 
     /**
@@ -106,7 +113,9 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
         calendar.setTime(new Date());
         calendar.add(type, amont);
 //      return DateFormatUtils.format(calendar.getTime(), pattern);
-        return FastDateFormat.getInstance(pattern).format(calendar.getTime());
+        return FastDateFormat
+                .getInstance(pattern)
+                .format(calendar.getTime());
     }
 
 
@@ -213,7 +222,9 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
      */
     public static int getMonthHasDays(Date date) {
 //      String yyyyMM = new SimpleDateFormat("yyyyMM").format(date);
-        String yyyyMM = FastDateFormat.getInstance("yyyyMM").format(date);
+        String yyyyMM = FastDateFormat
+                .getInstance("yyyyMM")
+                .format(date);
         String year = yyyyMM.substring(0, 4);
         String month = yyyyMM.substring(4, 6);
         String day31 = ",01,03,05,07,08,10,12,";
@@ -291,7 +302,9 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
      * @return
      */
     public static Date getServerStartDate() {
-        long time = ManagementFactory.getRuntimeMXBean().getStartTime();
+        long time = ManagementFactory
+                .getRuntimeMXBean()
+                .getStartTime();
         return new Date(time);
     }
 

@@ -3,9 +3,9 @@ package com.example.autojob.skeleton.model.scheduler;
 import com.example.autojob.skeleton.db.entity.AutoJobTaskEntity;
 import com.example.autojob.skeleton.db.entity.EntityConvertor;
 import com.example.autojob.skeleton.db.mapper.AutoJobMapperHolder;
+import com.example.autojob.skeleton.framework.boot.AutoJobApplication;
 import com.example.autojob.skeleton.framework.config.AutoJobConfigHolder;
 import com.example.autojob.skeleton.framework.container.MemoryTaskContainer;
-import com.example.autojob.skeleton.framework.boot.AutoJobApplication;
 import com.example.autojob.skeleton.framework.task.AutoJobTask;
 import com.example.autojob.skeleton.lifecycle.ITaskEventHandler;
 import com.example.autojob.skeleton.lifecycle.TaskEventFactory;
@@ -15,7 +15,6 @@ import com.example.autojob.skeleton.lifecycle.event.imp.TaskRunSuccessEvent;
 import com.example.autojob.skeleton.lifecycle.manager.TaskEventManager;
 import com.example.autojob.skeleton.model.executor.AutoJobTaskExecutorPool;
 import com.example.autojob.skeleton.model.register.IAutoJobRegister;
-import com.example.autojob.util.id.SystemClock;
 import com.example.autojob.util.thread.ScheduleTaskUtil;
 import lombok.extern.slf4j.Slf4j;
 
@@ -57,61 +56,72 @@ public class AutoJobRunSuccessScheduler extends AbstractScheduler implements ITa
             if (task
                     .getTrigger()
                     .hasChildTask()) {
-                findChildTask(task).forEach(this::submitTask);
+                findChildTask(task).forEach(c -> {
+                    if (c.getType() == AutoJobTask.TaskType.MEMORY_TASk || (c.getType() == AutoJobTask.TaskType.DB_TASK && lock(c.getId()))) {
+                        submitTask(c);
+                    }
+                });
             }
             return null;
         }, 0, TimeUnit.MILLISECONDS);
-
-
-        //非子任务尝试刷新下次执行时间
-        if (!task.getIsChildTask() && task
-                .getTrigger()
-                .refresh()) {
-            if (task.getType() == AutoJobTask.TaskType.MEMORY_TASk) {
+        if (!task.getIsChildTask()) {
+            if (task
+                    .getTrigger()
+                    .refresh()) {
+                //log.info("任务{}刷新成功，{}", task.getAlias(), DateUtils.formatDateTime(task
+                //        .getTrigger()
+                //        .getTriggeringTime()));
                 if (task
                         .getTrigger()
                         .isNearTriggeringTime(5000)) {
                     register.registerTask(task);
+                }
+                if (task.getType() == AutoJobTask.TaskType.DB_TASK) {
+                    //异步更新DB任务的状态
+                    childTaskScheduleThread.EOneTimeTask(() -> {
+                        AutoJobMapperHolder.TRIGGER_ENTITY_MAPPER.updateStatus(task
+                                .getTrigger()
+                                .getFinishedTimes(), event.getTriggeringTime(), task
+                                .getTrigger()
+                                .getTriggeringTime(), task
+                                .getTrigger()
+                                .getLastRunTime(), true, task.getId());
+                        return null;
+                    }, 0, TimeUnit.MILLISECONDS);
                 }
             } else {
                 if (task
                         .getTrigger()
-                        .isNearTriggeringTime(5000)) {
-                    register.registerTask(task);
+                        .getIsPause()) {
+                    return;
                 }
+                if (task.getType() == AutoJobTask.TaskType.DB_TASK) {
+                    childTaskScheduleThread.EOneTimeTask(() -> AutoJobMapperHolder.TRIGGER_ENTITY_MAPPER.updateStatus(task
+                            .getTrigger()
+                            .getFinishedTimes(), event.getTriggeringTime(), Long.MAX_VALUE, task
+                            .getTrigger()
+                            .getLastRunTime(), true, task.getId()), 0, TimeUnit.MILLISECONDS);
+                }
+                task
+                        .getRunResult()
+                        .setFinishedTime(System.currentTimeMillis());
+                task.setIsFinished(true);
+                TaskEventManager
+                        .getInstance()
+                        .publishTaskEvent(TaskEventFactory.newFinishedEvent(event.getTask()), TaskFinishedEvent.class, true);
+            }
+        } else {
+            if (task.getType() == AutoJobTask.TaskType.DB_TASK) {
                 //异步更新DB任务的状态
                 childTaskScheduleThread.EOneTimeTask(() -> {
                     AutoJobMapperHolder.TRIGGER_ENTITY_MAPPER.updateStatus(task
                             .getTrigger()
-                            .getFinishedTimes(), event.getTriggeringTime(), task
-                            .getTrigger()
-                            .getTriggeringTime(), task
+                            .getFinishedTimes(), event.getTriggeringTime(), Long.MAX_VALUE, task
                             .getTrigger()
                             .getLastRunTime(), true, task.getId());
                     return null;
                 }, 0, TimeUnit.MILLISECONDS);
             }
-        } else {
-            if (task.getIsChildTask() || task
-                    .getTrigger()
-                    .getIsPause()) {
-                return;
-            }
-            //如果任务已结束
-            if (task.getType() == AutoJobTask.TaskType.DB_TASK) {
-                childTaskScheduleThread.EOneTimeTask(() -> AutoJobMapperHolder.TRIGGER_ENTITY_MAPPER.updateStatus(task
-                        .getTrigger()
-                        .getFinishedTimes(), event.getTriggeringTime(), Long.MAX_VALUE, task
-                        .getTrigger()
-                        .getLastRunTime(), true, task.getId()), 0, TimeUnit.MILLISECONDS);
-            }
-            task
-                    .getRunResult()
-                    .setFinishedTime(System.currentTimeMillis());
-            task.setIsFinished(true);
-            TaskEventManager
-                    .getInstance()
-                    .publishTaskEvent(TaskEventFactory.newFinishedEvent(event.getTask()), TaskFinishedEvent.class, true);
         }
     }
 
@@ -125,7 +135,13 @@ public class AutoJobRunSuccessScheduler extends AbstractScheduler implements ITa
             if (parent.getType() == AutoJobTask.TaskType.MEMORY_TASk) {
                 return childTaskIds
                         .stream()
-                        .map(container::getById)
+                        .map(id -> {
+                            AutoJobTask task = container.getById(id);
+                            if (task == null) {
+                                task = container.getByAnnotationId(id);
+                            }
+                            return task;
+                        })
                         .filter(Objects::nonNull)
                         .collect(Collectors.toList());
             } else {

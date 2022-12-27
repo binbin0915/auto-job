@@ -2,11 +2,14 @@ package com.example.autojob.skeleton.model.scheduler;
 
 import com.example.autojob.skeleton.db.mapper.AutoJobMapperHolder;
 import com.example.autojob.skeleton.db.mapper.AutoJobTaskEntityMapper;
+import com.example.autojob.skeleton.framework.boot.AutoJobApplication;
 import com.example.autojob.skeleton.framework.config.AutoJobConfigHolder;
 import com.example.autojob.skeleton.framework.config.AutoJobExecutorPoolConfig;
-import com.example.autojob.skeleton.framework.boot.AutoJobApplication;
 import com.example.autojob.skeleton.framework.task.AutoJobTask;
 import com.example.autojob.skeleton.framework.task.TaskRunningContext;
+import com.example.autojob.skeleton.lifecycle.TaskEventFactory;
+import com.example.autojob.skeleton.lifecycle.event.imp.TaskMissFireEvent;
+import com.example.autojob.skeleton.lifecycle.manager.TaskEventManager;
 import com.example.autojob.skeleton.model.executor.AutoJobTaskExecutorPool;
 import com.example.autojob.skeleton.model.register.IAutoJobRegister;
 import lombok.extern.slf4j.Slf4j;
@@ -76,20 +79,26 @@ public abstract class AbstractScheduler {
      * @author Huang Yongxiang
      * @date 2022/9/9 9:38
      */
-    public void submitTask(AutoJobTask task, long threshold, TimeUnit unit) {
-        if (task != null && task.getTrigger() != null && !task
+    protected void submitTask(AutoJobTask task, long threshold, TimeUnit unit) {
+        if (task == null || task.getTrigger() == null || task
                 .getTrigger()
-                .getIsPause() && task.getIsAllowRegister() && !task.getIsStart()) {
-            if (task
-                    .getTrigger()
-                    .getLastRunTime() > unit.toMillis(threshold)) {
-                //log.warn("任务：{}已提交slow线程池，上次执行时长：{}ms", task.getId(), task.getTrigger().getLastRunTime());
-                executorPool.submit2SlowPool(task.getExecutable(), task.getRunnablePostProcessor());
-            } else {
-                //log.warn("任务：{}已提交到fast线程池", task.getId());
-                executorPool.submit2FastPool(task.getExecutable(), task.getRunnablePostProcessor());
-            }
+                .getIsPause() || !task.getIsAllowRegister()) {
+            return;
         }
+        if (task.getIsStart()) {
+            TaskEventManager
+                    .getInstance()
+                    .publishTaskEventSync(TaskEventFactory.newTaskMissFireEvent(task), TaskMissFireEvent.class, true);
+            return;
+        }
+        if (task
+                .getTrigger()
+                .getLastRunTime() > unit.toMillis(threshold)) {
+            executorPool.submit2SlowPool(task.getExecutable(), task.getRunnablePostProcessor());
+        } else {
+            executorPool.submit2FastPool(task.getExecutable(), task.getRunnablePostProcessor());
+        }
+
     }
 
     /**
@@ -100,7 +109,7 @@ public abstract class AbstractScheduler {
      * @author Huang Yongxiang
      * @date 2022/9/9 9:40
      */
-    public void submitTask(AutoJobTask task) {
+    protected void submitTask(AutoJobTask task) {
         AutoJobExecutorPoolConfig config = AutoJobApplication
                 .getInstance()
                 .getConfigHolder()

@@ -86,14 +86,14 @@ public class AutoJobTaskEntityMapper extends BaseMapper<AutoJobTaskEntity> {
      * @date 2022/8/26 9:50
      */
     public List<AutoJobTaskEntity> selectNearTask(long nearTime, TimeUnit unit) {
-        String sql = getSelectExpression() + " where (id in (SELECT task_id FROM `aj_trigger` where next_triggering_time >= ? and next_triggering_time <= ? and del_flag = 0 and is_pause = 0) or is_child_task = 1) and del_flag = 0 and status = 1";
+        String sql = getSelectExpression() + " where (id in (SELECT task_id FROM `aj_trigger` where next_triggering_time >= ? and next_triggering_time <= ? and del_flag = 0 and is_pause = 0)) and del_flag = 0 and status = 1";
         return queryList(sql, System.currentTimeMillis(), System.currentTimeMillis() + unit.toMillis(nearTime));
     }
 
     @Override
     public List<AutoJobTaskEntity> page(int pageNum, int size) {
         int skip = (pageNum - 1) * size;
-        String sql = getSelectExpression() + String.format(" where id in ( SELECT max( id ) FROM aj_auto_job WHERE del_flag = 0 GROUP BY annotation_id ) limit %d, %d", skip, size);
+        String sql = getSelectExpression() + String.format(" where id in ( SELECT max( id ) FROM aj_auto_job WHERE del_flag = 0GROUP BY annotation_id ) limit %d, %d", skip, size);
         return queryList(sql);
     }
 
@@ -106,19 +106,27 @@ public class AutoJobTaskEntityMapper extends BaseMapper<AutoJobTaskEntity> {
     /**
      * 通过id查询子任务
      *
-     * @param taskId 任务id
+     * @param id 任务id或版本id
      * @return com.example.autojob.skeleton.db.entity.AutoJobTaskEntity
      * @author Huang Yongxiang
      * @date 2022/8/26 9:50
      */
-    public AutoJobTaskEntity selectChildTask(long taskId) {
-        String condition = " where is_child_task = 1 and del_flag = 0 and id = ? and status = 1";
-        return queryOne(getSelectExpression() + condition, taskId);
+    public AutoJobTaskEntity selectChildTask(long id) {
+        String condition = " where is_child_task = 1 and del_flag = 0 and (id = ? or annotation_id = ?) and status = 1";
+        return queryOne(getSelectExpression() + condition, id, id);
     }
 
-    public List<AutoJobTaskEntity> selectChildTasks(List<Long> taskIds) {
-        String condition = " where is_child_task = 1 and del_flag = 0 and status = 1 and id in (" + this.idRepeat(taskIds) + ") ";
-        return queryList(getSelectExpression() + condition);
+    /**
+     * 批量查询子任务
+     *
+     * @param ids 版本ID或任务ID
+     * @return java.util.List<com.example.autojob.skeleton.db.entity.AutoJobTaskEntity>
+     * @author Huang Yongxiang
+     * @date 2022/12/27 10:48
+     */
+    public List<AutoJobTaskEntity> selectChildTasks(List<Long> ids) {
+        String sql = getSelectExpression() + String.format(" where id in ( select max(id) from %s where (id in (%s) or annotation_id in (%s)) and is_child_task = 1 and del_flag = 0 and status = 1)", getTableName(), idRepeat(ids), idRepeat(ids));
+        return queryList(sql);
     }
 
     /**

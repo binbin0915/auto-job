@@ -7,7 +7,8 @@ import com.example.autojob.util.convert.RegexUtil;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * @Description 类路径过滤器
+ * 类路径过滤器
+ *
  * @Author Huang Yongxiang
  * @Date 2022/07/11 16:48
  */

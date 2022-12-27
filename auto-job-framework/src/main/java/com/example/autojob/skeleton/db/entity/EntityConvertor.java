@@ -15,7 +15,6 @@ import com.example.autojob.util.convert.DateUtils;
 import com.example.autojob.util.convert.DefaultValueUtil;
 import com.example.autojob.util.convert.StringUtils;
 import com.example.autojob.util.id.IdGenerator;
-import com.example.autojob.util.id.SystemClock;
 
 import java.sql.Timestamp;
 import java.text.ParseException;
@@ -107,6 +106,7 @@ public class EntityConvertor {
             }
             task.setBelongTo(entity.getBelongTo());
             task.setAnnotationId(entity.getAnnotationId());
+            task.setIsChildTask(entity.getIsChildTask() != null && entity.getIsChildTask() == 1);
             task.setAlias(entity.getAlias());
             task.setIsAllowRegister(true);
             task.setIsFinished(false);

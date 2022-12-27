@@ -1,12 +1,11 @@
 package com.example.autojob.skeleton.lifecycle;
 
 import com.example.autojob.skeleton.cluster.model.ClusterNode;
-import com.example.autojob.skeleton.lang.IAutoJobFactory;
 import com.example.autojob.skeleton.framework.task.AutoJobTask;
+import com.example.autojob.skeleton.lang.IAutoJobFactory;
 import com.example.autojob.skeleton.lifecycle.event.TaskEvent;
 import com.example.autojob.skeleton.lifecycle.event.imp.*;
 import com.example.autojob.util.convert.DefaultValueUtil;
-import com.example.autojob.util.id.SystemClock;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
@@ -99,6 +98,12 @@ public class TaskEventFactory implements IAutoJobFactory {
         event.setTask(task);
         event.setTransferFrom(transferFrom);
         event.setMessage(String.format("接收到来自节点：%s的转移任务：%d", transferFrom.toString(), task.getId()));
+        return event;
+    }
+
+    public static TaskMissFireEvent newTaskMissFireEvent(AutoJobTask task) {
+        TaskMissFireEvent event = new TaskMissFireEvent(task);
+        event.setMessage(String.format("任务:%d miss fire", task.getId()));
         return event;
     }
 

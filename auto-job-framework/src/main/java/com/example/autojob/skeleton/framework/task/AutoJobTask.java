@@ -31,7 +31,7 @@ public abstract class AutoJobTask {
      */
     protected String alias;
     /**
-     * 注解ID
+     * 注解ID，也可称作版本ID
      */
     protected Long annotationId;
     /**

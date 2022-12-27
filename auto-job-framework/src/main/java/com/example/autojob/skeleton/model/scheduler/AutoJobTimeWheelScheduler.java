@@ -60,7 +60,6 @@ public class AutoJobTimeWheelScheduler extends AbstractScheduler implements With
                         }
                     });
                 }
-
             } catch (Exception e) {
                 e.printStackTrace();
             }

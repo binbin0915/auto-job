@@ -182,7 +182,7 @@ public class MemoryTaskContainer implements WithDaemonThread {
                         .getIsRunning())
                 .filter(task -> task
                         .getTrigger()
-                        .isNearTriggeringTime(unit.toMillis(futureTime)) || task.getIsChildTask())
+                        .isNearTriggeringTime(unit.toMillis(futureTime)))
                 .distinct()
                 .collect(Collectors.toList());
     }

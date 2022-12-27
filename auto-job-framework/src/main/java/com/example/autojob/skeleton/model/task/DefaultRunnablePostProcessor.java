@@ -27,7 +27,6 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class DefaultRunnablePostProcessor implements RunnablePostProcessor {
-    AutoJobLogHelper logHelper = AutoJobLogHelper.getInstance();
 
     @Override
     public void beforeRun(final Executable executable, AutoJobPoolExecutor executor, Object... params) {
@@ -78,7 +77,7 @@ public class DefaultRunnablePostProcessor implements RunnablePostProcessor {
                 TaskEventManager
                         .getInstance()
                         .publishTaskEventSync(TaskEventFactory.newBeforeRunEvent(autoJobTask), TaskBeforeRunEvent.class, true);
-                logHelper.info("Auto-Job-Start=========================>任务：{}即将开始执行", autoJobTask.getId());
+                autoJobTask.getLogHelper().info("Auto-Job-Start=========================>任务：{}即将开始执行", autoJobTask.getId());
             }
         }
     }
@@ -110,13 +109,12 @@ public class DefaultRunnablePostProcessor implements RunnablePostProcessor {
                 autoJobTask
                         .getRunResult()
                         .setResult(result);
-                autoJobTask.setLogHelper(null);
                 /*=================更新状态=================>*/
                 if (autoJobTask.getType() == AutoJobTask.TaskType.DB_TASK) {
                     AutoJobMapperHolder.TRIGGER_ENTITY_MAPPER.updateOperatingStatus(false, autoJobTask.getId());
                 }
                 /*=======================Finished======================<*/
-                logHelper.info("Auto-Job-End=========================>任务：{}执行完成", autoJobTask.getId());
+                autoJobTask.getLogHelper().info("Auto-Job-End=========================>任务：{}执行完成", autoJobTask.getId());
                 TaskEventManager
                         .getInstance()
                         .publishTaskEventSync(TaskEventFactory.newAfterRunEvent(autoJobTask), TaskAfterRunEvent.class, true);
@@ -126,6 +124,7 @@ public class DefaultRunnablePostProcessor implements RunnablePostProcessor {
                 autoJobTask
                         .getTrigger()
                         .setIsRunning(false);
+                autoJobTask.setLogHelper(null);
             }
         }
     }
@@ -158,13 +157,12 @@ public class DefaultRunnablePostProcessor implements RunnablePostProcessor {
                 autoJobTask
                         .getRunResult()
                         .setThrowable(throwable);
-                autoJobTask.setLogHelper(null);
                 /*=================更新状态=================>*/
                 if (autoJobTask.getType() == AutoJobTask.TaskType.DB_TASK) {
                     AutoJobMapperHolder.TRIGGER_ENTITY_MAPPER.updateOperatingStatus(false, autoJobTask.getId());
                 }
                 /*=======================Finished======================<*/
-                logHelper.error("Auto-Job-Error=========================>任务：{}执行异常：{}", autoJobTask.getId(), throwable.toString());
+                autoJobTask.getLogHelper().error("Auto-Job-Error=========================>任务：{}执行异常：{}", autoJobTask.getId(), throwable.toString());
                 TaskEventManager
                         .getInstance()
                         .publishTaskEventSync(TaskEventFactory.newAfterRunEvent(autoJobTask), TaskAfterRunEvent.class, true);
@@ -174,6 +172,7 @@ public class DefaultRunnablePostProcessor implements RunnablePostProcessor {
                 autoJobTask
                         .getTrigger()
                         .setIsRunning(false);
+                autoJobTask.setLogHelper(null);
             }
         }
     }

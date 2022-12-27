@@ -25,8 +25,12 @@ public class AutoJobAnnotationWrapper implements AutoJobWrapper {
         if (autoJob == null) {
             return null;
         }
-        long taskId = autoJob.id() < 0 || autoJob.asType() == AutoJobTask.TaskType.DB_TASK ? IdGenerator.getNextIdAsLong() : autoJob.id();
-
+        long taskId;
+        if (autoJob.id() < 0 || autoJob.asType() == AutoJobTask.TaskType.DB_TASK) {
+            taskId = IdGenerator.getNextIdAsLong();
+        } else {
+            taskId = autoJob.id();
+        }
         return new AutoJobMethodTaskBuilder(method.getDeclaringClass(), method.getName())
                 .setTaskId(taskId)
                 .setTaskAlias(DefaultValueUtil.chooseString("Default".equals(autoJob.alias()), method.getName(), autoJob.alias()))
@@ -39,7 +43,7 @@ public class AutoJobAnnotationWrapper implements AutoJobWrapper {
                 .setTrigger(autoJob
                         .schedulingStrategy()
                         .createTrigger(taskId, autoJob))
-                .setAnnotationId((Long) DefaultValueUtil.chooseNumber(autoJob.id() == -1, null, autoJob.id()))
+                .setAnnotationId((Long) DefaultValueUtil.chooseNumber(autoJob.id() == -1 || autoJob.asType() == AutoJobTask.TaskType.MEMORY_TASk, null, autoJob.id()))
                 .setIsChildTask(autoJob.schedulingStrategy() == SchedulingStrategy.AS_CHILD_TASK);
     }
 

@@ -73,24 +73,21 @@ public class ScheduleTaskUtil {
 
     public ScheduledFuture<Object> EOneTimeTask(Callable<Object> runnable, long delay, TimeUnit unit) {
         if (runnable == null || delay < 0 || unit == null) {
-            log.error("执行失败，错误参数");
-            return null;
+            throw new NullPointerException();
         }
         return executorService.schedule(runnable, delay == 0 ? 1 : delay, unit);
     }
 
     public void EFixedRateTask(Runnable runnable, long delay, long rate, TimeUnit unit) {
         if (runnable == null || delay < 0 || unit == null || rate <= 0) {
-            log.error("执行失败，错误参数");
-            return;
+            throw new NullPointerException();
         }
         executorService.scheduleAtFixedRate(runnable, delay == 0 ? 1 : delay, rate, unit);
     }
 
     public void EFixedRateDelayTask(Runnable runnable, long delay, long nextDaly, TimeUnit unit) {
         if (runnable == null || delay < 0 || unit == null || nextDaly <= 0) {
-            log.error("执行失败，错误参数");
-            return;
+            throw new NullPointerException();
         }
         executorService.scheduleWithFixedDelay(runnable, delay, nextDaly, unit);
     }
@@ -115,8 +112,7 @@ public class ScheduleTaskUtil {
      */
     public static ScheduledFuture<Object> oneTimeTask(Callable<Object> runnable, long delay, TimeUnit unit) {
         if (runnable == null || delay < 0 || unit == null) {
-            log.error("执行失败，错误参数");
-            return null;
+            throw new NullPointerException();
         }
         return instance().schedule(runnable, delay == 0 ? 1 : delay, unit);
     }

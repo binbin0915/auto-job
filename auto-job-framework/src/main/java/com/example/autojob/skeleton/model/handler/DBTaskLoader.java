@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
+ * DB任务加载器
+ *
  * @author Huang Yongxiang
  * @date 2022-12-04 10:59
  * @email 1158055613@qq.com

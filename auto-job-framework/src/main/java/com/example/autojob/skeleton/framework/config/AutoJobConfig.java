@@ -1,5 +1,6 @@
 package com.example.autojob.skeleton.framework.config;
 
+import com.example.autojob.skeleton.annotation.HotLoadable;
 import com.example.autojob.skeleton.framework.container.CleanStrategy;
 import com.example.autojob.util.io.PropertiesHolder;
 import lombok.Getter;
@@ -22,20 +23,23 @@ public class AutoJobConfig extends AbstractAutoJobConfig {
 
     private CleanStrategy cleanStrategy;
 
-    private Boolean allowCheckExist;
-
     private Boolean enableAnnotation;
 
     private Double annotationDefaultDelayTime;
 
+    @HotLoadable
     private Boolean enableRegisterFilter;
 
+    @HotLoadable
     private List<String> filterClassPathList;
 
+    @HotLoadable
     private Boolean enableErrorRetry;
 
+    @HotLoadable
     private Integer errorRetryCount;
 
+    @HotLoadable
     private Double errorRetryInterval;
 
     private Boolean enableCluster;
@@ -54,12 +58,16 @@ public class AutoJobConfig extends AbstractAutoJobConfig {
 
     private Integer smtpPort;
 
+    @HotLoadable
     private Boolean taskRunErrorAlert;
 
+    @HotLoadable
     private Boolean clusterOpenProtectedModeAlert;
 
+    @HotLoadable
     private Boolean clusterCloseProtectedModeAlert;
 
+    @HotLoadable
     private Boolean taskRefuseHandleAlert;
 
     private AutoJobExecutorPoolConfig executorPoolConfig;
@@ -70,7 +78,6 @@ public class AutoJobConfig extends AbstractAutoJobConfig {
             schedulingQueueLength = propertiesHolder.getProperty("autoJob.context.schedulingQueue.length", Integer.class, "1000");
             memoryContainerLength = propertiesHolder.getProperty("autoJob.context.memoryContainer.length", Integer.class, "200");
             cleanStrategy = CleanStrategy.findWithName(propertiesHolder.getProperty("autoJob.context.memoryContainer.cleanStrategy", String.class, "KEEP_FINISHED"));
-            allowCheckExist = propertiesHolder.getProperty("autoJob.context.allowCheckExist", Boolean.class, "true");
             enableAnnotation = propertiesHolder.getProperty("autoJob.annotation.enable", Boolean.class, "true");
             annotationDefaultDelayTime = propertiesHolder.getProperty("autoJob.annotation.defaultDelayTime", Double.class, "30");
             enableRegisterFilter = propertiesHolder.getProperty("autoJob.register.filter.enable", Boolean.class, "false");
@@ -94,9 +101,5 @@ public class AutoJobConfig extends AbstractAutoJobConfig {
             taskRefuseHandleAlert = propertiesHolder.getProperty("autoJob.emailAlert.config" + ".taskRefuseHandle", Boolean.class, "true");
             executorPoolConfig = new AutoJobExecutorPoolConfig(propertiesHolder);
         }
-    }
-
-    public AutoJobConfig() {
-        super();
     }
 }
