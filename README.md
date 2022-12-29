@@ -20,6 +20,8 @@
 
 新增Rest接口：链接: https://www.apifox.cn/apidoc/shared-05120000-4d19-4c75-a7f6-dc56105972cb  访问密码 : autojob 
 
+增加多数据库适配，目前支持mysql，postresql
+
 ## 一、背景
 
 生活中，业务上我们会碰到很多有关作业调度的场景，如每周五十二点发放优惠券、或者每天凌晨进行缓存预热、亦或每月定期从第三方系统抽数等等，Spring和java目前也有原生的定时任务支持，但是其都存在一些弊病，如下：
@@ -578,6 +580,8 @@ autoJob:
   annotation:
     enable: true # 是否启用注解扫描，扫描被@AutoJob @FactoryJob的方法并将其包装成可执行任务对象
     defaultDelayTime: 30 # 在未给注解的任务配置调度信息的情况下，默认的任务延迟执行时间：min
+  database:
+    type: mysql # 数据库类型，目前支持，MySQL和PostgreSQL
   executor: # 执行器池，分为快池和慢池
     fastPool: # 快池相关配置，慢池相同
       update: # 执行器池支持根据流量动态调整线程数目
@@ -607,8 +611,6 @@ autoJob:
         initial: 20
         min: 10
         max: 50
-      queue: 
-          length: 100 # 等待队列长度
       relegation:
           threshold: 3 # 降级阈值，当任务的上次执行时长超过该阈值（分钟）时，下次将会降级到slow pool运行
   register:
