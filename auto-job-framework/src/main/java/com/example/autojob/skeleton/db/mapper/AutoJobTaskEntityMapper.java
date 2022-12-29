@@ -86,14 +86,14 @@ public class AutoJobTaskEntityMapper extends BaseMapper<AutoJobTaskEntity> {
      * @date 2022/8/26 9:50
      */
     public List<AutoJobTaskEntity> selectNearTask(long nearTime, TimeUnit unit) {
-        String sql = getSelectExpression() + " where (id in (SELECT task_id FROM `aj_trigger` where next_triggering_time >= ? and next_triggering_time <= ? and del_flag = 0 and is_pause = 0)) and del_flag = 0 and status = 1";
+        String sql = getSelectExpression() + " where (id in (SELECT task_id FROM aj_trigger where next_triggering_time >= ? and next_triggering_time <= ? and del_flag = 0 and is_pause = 0)) and del_flag = 0 and status = 1";
         return queryList(sql, System.currentTimeMillis(), System.currentTimeMillis() + unit.toMillis(nearTime));
     }
 
     @Override
     public List<AutoJobTaskEntity> page(int pageNum, int size) {
         int skip = (pageNum - 1) * size;
-        String sql = getSelectExpression() + String.format(" where id in ( SELECT max( id ) FROM aj_auto_job WHERE del_flag = 0 GROUP BY annotation_id ) limit %d, %d", skip, size);
+        String sql = getSelectExpression() + String.format(" where id in ( SELECT max( id ) FROM aj_auto_job WHERE " + "del_flag = 0 GROUP BY annotation_id ) %s", getPageSql(skip, size));
         return queryList(sql);
     }
 

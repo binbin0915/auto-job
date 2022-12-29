@@ -23,7 +23,9 @@ public class DataSourceHolder {
 
     public DataSourceHolder() {
         try {
-            InputStream in = JdbcUtils.class.getClassLoader().getResourceAsStream("druid.properties");
+            InputStream in = JdbcUtils.class
+                    .getClassLoader()
+                    .getResourceAsStream("druid.properties");
             Properties properties = new Properties();
             properties.load(in);
             dataSource = DruidDataSourceFactory.createDataSource(properties);
@@ -113,5 +115,6 @@ public class DataSourceHolder {
     public void release(Connection connection) {
         release(null, null, connection);
     }
+
 
 }

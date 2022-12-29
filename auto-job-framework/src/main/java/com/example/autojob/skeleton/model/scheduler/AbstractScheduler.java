@@ -46,9 +46,14 @@ public abstract class AbstractScheduler {
 
     public boolean lock(long taskId) {
         AutoJobTaskEntityMapper mapper = new AutoJobTaskEntityMapper();
-        if (!mapper.lock(taskId)) {
-            log.warn("获取DB任务：{}的锁失败，任务将不会执行", taskId);
-            register.removeTask(taskId);
+        try {
+            if (!mapper.lock(taskId)) {
+                log.warn("获取DB任务：{}的锁失败，任务将不会执行", taskId);
+                register.removeTask(taskId);
+                return false;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
             return false;
         }
         TaskRunningContext

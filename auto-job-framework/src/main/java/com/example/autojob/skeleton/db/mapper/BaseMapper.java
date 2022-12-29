@@ -3,6 +3,7 @@ package com.example.autojob.skeleton.db.mapper;
 import com.example.autojob.skeleton.db.AutoJobSQLException;
 import com.example.autojob.skeleton.db.DataSourceHolder;
 import com.example.autojob.skeleton.db.TransactionManager;
+import com.example.autojob.skeleton.enumerate.DatabaseType;
 import com.example.autojob.skeleton.framework.boot.AutoJobApplication;
 import com.example.autojob.util.convert.DateUtils;
 import com.example.autojob.util.convert.DefaultValueUtil;
@@ -244,9 +245,19 @@ public abstract class BaseMapper<T> {
         return updateBatch(sql, params);
     }
 
+    protected String getPageSql(int skip, int size) {
+        DatabaseType type = DatabaseType.getCurrentDatabaseType();
+        if (type == null || type == DatabaseType.MY_SQL) {
+            return String.format("limit %d, %d", skip, size);
+        } else if (type == DatabaseType.POSTGRES_SQL) {
+            return String.format("limit %d offset %d", size, skip);
+        }
+        return String.format("limit %d,%d", skip, size);
+    }
+
     public List<T> page(int pageNum, int size) {
         int skip = (pageNum - 1) * size;
-        String condition = String.format(" where del_flag = 0 limit %d, %d", skip, size);
+        String condition = String.format(" where del_flag = 0 %s", getPageSql(skip, size));
         return queryList(getSelectExpression() + condition);
     }
 

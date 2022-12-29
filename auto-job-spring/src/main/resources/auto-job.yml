@@ -9,6 +9,8 @@ autoJob:
   annotation:
     enable: true
     defaultDelayTime: 30
+  database:
+    type: mysql
   executor:
     fastPool:
       update:
@@ -21,12 +23,12 @@ autoJob:
         max: 50
         keepAliveTime: 60
       maxThread:
-        initial: 10
+        initial: 5
         min: 10
         max: 50
     slowPool:
       update:
-        enable: false
+        enable: true
         trafficUpdateCycel: 5
         adjustedThreshold: 0.5
       coreThread:
@@ -38,8 +40,6 @@ autoJob:
         initial: 20
         min: 10
         max: 50
-    queue:
-      length: 100
     relegation:
       threshold: 3
   register:
@@ -52,7 +52,7 @@ autoJob:
         retry:
           enable: true
           retryCount: 3
-          interval: 0.12
+          interval: 1
   emailAlert:
     enable: false
     auth:

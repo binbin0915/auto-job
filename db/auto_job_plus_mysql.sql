@@ -24,7 +24,7 @@ CREATE TABLE `aj_auto_job`  (
   `run_lock` int(0) NOT NULL DEFAULT 0 COMMENT '启动锁 0-未上锁 1-已上锁',
   `task_level` int(0) NULL DEFAULT -1 COMMENT '任务优先级',
   `version` bigint(0) NULL DEFAULT NULL COMMENT '版本号',
-  `belong_to` int(0) NULL DEFAULT NULL COMMENT '预留字段，所属于',
+  `belong_to` bigint(0) NULL DEFAULT NULL COMMENT '预留字段，所属于',
   `status` int(0) NOT NULL DEFAULT 1 COMMENT '状态 0-已停用 1-已启用',
   `create_time` datetime(0) NULL DEFAULT NULL,
   `del_flag` int(0) NULL DEFAULT 0,
