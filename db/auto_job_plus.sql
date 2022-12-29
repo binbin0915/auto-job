@@ -72,7 +72,8 @@ CREATE TABLE `aj_run_logs`  (
 -- ----------------------------
 DROP TABLE IF EXISTS `aj_scheduling_record`;
 CREATE TABLE `aj_scheduling_record`  (
-  `id` bigint(0) NOT NULL COMMENT '主键',
+  `id` bigint NOT NULL COMMENT '主键',
+  `write_timestamp` bigint NULL DEFAULT NULL COMMENT '写入时间戳',
   `scheduling_time` datetime(0) NULL DEFAULT NULL COMMENT '调度时间',
   `task_alias` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '任务别名',
   `task_id` bigint(0) NOT NULL COMMENT '任务Id',
