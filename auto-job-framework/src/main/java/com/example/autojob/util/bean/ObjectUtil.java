@@ -197,7 +197,7 @@ public class ObjectUtil {
                     convertResult.put(field.getName(), String.valueOf(value));
                     continue;
                 }
-                if (!(value instanceof Collection) && !(value instanceof Number) && !(value instanceof String) && !(value instanceof Boolean)) {
+                if (!(value instanceof Collection) && !(value instanceof Number) && !(value instanceof String) && !(value instanceof Boolean) && !(value instanceof Date)) {
                     convertResult.put(field.getName(), convertFieldsToStringByClass(value, convertColumns));
                 } else {
                     convertResult.put(field.getName(), value);

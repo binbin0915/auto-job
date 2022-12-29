@@ -93,7 +93,7 @@ public class AutoJobTaskEntityMapper extends BaseMapper<AutoJobTaskEntity> {
     @Override
     public List<AutoJobTaskEntity> page(int pageNum, int size) {
         int skip = (pageNum - 1) * size;
-        String sql = getSelectExpression() + String.format(" where id in ( SELECT max( id ) FROM aj_auto_job WHERE del_flag = 0GROUP BY annotation_id ) limit %d, %d", skip, size);
+        String sql = getSelectExpression() + String.format(" where id in ( SELECT max( id ) FROM aj_auto_job WHERE del_flag = 0 GROUP BY annotation_id ) limit %d, %d", skip, size);
         return queryList(sql);
     }
 

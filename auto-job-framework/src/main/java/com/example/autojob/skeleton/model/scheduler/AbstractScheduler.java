@@ -91,6 +91,7 @@ public abstract class AbstractScheduler {
                     .publishTaskEventSync(TaskEventFactory.newTaskMissFireEvent(task), TaskMissFireEvent.class, true);
             return;
         }
+        task.setIsWaiting(true);
         if (task
                 .getTrigger()
                 .getLastRunTime() > unit.toMillis(threshold)) {

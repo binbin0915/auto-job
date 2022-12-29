@@ -173,6 +173,7 @@ public class MemoryTaskContainer implements WithDaemonThread {
                 .filter(task -> !task
                         .getTrigger()
                         .getIsPause())
+                .filter(task -> task.getIsWaiting() == null || !task.getIsWaiting())
                 .filter(task -> task.getIsFinished() == null || !task.getIsFinished())
                 .filter(task -> task.getIsStart() == null || !task.getIsStart())
                 .filter(task -> task

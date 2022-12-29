@@ -108,8 +108,9 @@ public class AutoJobLogHelper implements IAutoJobLogProducer<AutoJobLog> {
      * @author Huang Yongxiang
      * @date 2022/8/19 17:07
      */
-    public void setSlf4jProxy(Logger logger) {
+    public AutoJobLogHelper setSlf4jProxy(Logger logger) {
         slf4jLogger = logger;
+        return this;
     }
 
     public void debug(String appendLogPattern, Object... appendLogArguments) {

@@ -69,6 +69,7 @@ public class DefaultRunnablePostProcessor implements RunnablePostProcessor {
                             .reset();
                 }
                 autoJobTask.setIsStart(true);
+                autoJobTask.setIsWaiting(false);
                 autoJobTask.setIsFinished(false);
                 AutoJobLogContainer
                         .getInstance()
@@ -77,7 +78,9 @@ public class DefaultRunnablePostProcessor implements RunnablePostProcessor {
                 TaskEventManager
                         .getInstance()
                         .publishTaskEventSync(TaskEventFactory.newBeforeRunEvent(autoJobTask), TaskBeforeRunEvent.class, true);
-                autoJobTask.getLogHelper().info("Auto-Job-Start=========================>任务：{}即将开始执行", autoJobTask.getId());
+                autoJobTask
+                        .getLogHelper()
+                        .info("Auto-Job-Start=========================>任务：{}即将开始执行", autoJobTask.getId());
             }
         }
     }
@@ -88,7 +91,6 @@ public class DefaultRunnablePostProcessor implements RunnablePostProcessor {
             TaskExecutable taskExecutable = (TaskExecutable) executable;
             AutoJobTask autoJobTask = taskExecutable.getAutoJobTask();
             if (autoJobTask != null) {
-                log.debug("任务{}已在执行器{}执行完成，执行成功", autoJobTask.getId(), executor.getExecutorName());
                 TaskRunningContext.removeRunningTask(autoJobTask);
                 autoJobTask
                         .getTrigger()
@@ -114,7 +116,10 @@ public class DefaultRunnablePostProcessor implements RunnablePostProcessor {
                     AutoJobMapperHolder.TRIGGER_ENTITY_MAPPER.updateOperatingStatus(false, autoJobTask.getId());
                 }
                 /*=======================Finished======================<*/
-                autoJobTask.getLogHelper().info("Auto-Job-End=========================>任务：{}执行完成", autoJobTask.getId());
+                autoJobTask
+                        .getLogHelper()
+                        .setSlf4jProxy(null)
+                        .info("Auto-Job-End=========================>任务：{}执行完成", autoJobTask.getId());
                 TaskEventManager
                         .getInstance()
                         .publishTaskEventSync(TaskEventFactory.newAfterRunEvent(autoJobTask), TaskAfterRunEvent.class, true);
@@ -135,7 +140,6 @@ public class DefaultRunnablePostProcessor implements RunnablePostProcessor {
             TaskExecutable taskExecutable = (TaskExecutable) executable;
             AutoJobTask autoJobTask = taskExecutable.getAutoJobTask();
             if (autoJobTask != null) {
-                log.error("任务{}已在执行器{}执行完成，执行失败", autoJobTask.getAnnotationId() != null ? autoJobTask.getAnnotationId() : autoJobTask.getId(), executor.getExecutorName());
                 TaskRunningContext.removeRunningTask(autoJobTask);
                 autoJobTask
                         .getTrigger()
@@ -162,7 +166,10 @@ public class DefaultRunnablePostProcessor implements RunnablePostProcessor {
                     AutoJobMapperHolder.TRIGGER_ENTITY_MAPPER.updateOperatingStatus(false, autoJobTask.getId());
                 }
                 /*=======================Finished======================<*/
-                autoJobTask.getLogHelper().error("Auto-Job-Error=========================>任务：{}执行异常：{}", autoJobTask.getId(), throwable.toString());
+                autoJobTask
+                        .getLogHelper()
+                        .setSlf4jProxy(null)
+                        .error("Auto-Job-Error=========================>任务：{}执行异常：{}", autoJobTask.getId(), throwable.toString());
                 TaskEventManager
                         .getInstance()
                         .publishTaskEventSync(TaskEventFactory.newAfterRunEvent(autoJobTask), TaskAfterRunEvent.class, true);

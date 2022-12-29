@@ -63,8 +63,6 @@ public class AutoJobExecutorPoolConfig extends AbstractAutoJobConfig {
         slowPoolInitialThreadCount = propertiesHolder.getProperty("autoJob.executor.slowPool.maxThread.initial", Integer.class, "50");
         slowPoolMinThreadCount = propertiesHolder.getProperty("autoJob.executor.slowPool.maxThread.min", Integer.class, "10");
         slowPoolMaxThreadCount = propertiesHolder.getProperty("autoJob.executor.slowPool.maxThread.max", Integer.class, "100");
-        queueLength = propertiesHolder.getProperty("autoJob.executor.queue.length", Integer.class, "100");
-
         relegationThreshold = propertiesHolder.getProperty("autoJob.executor.relegation.threshold", Double.class, "3");
 
     }

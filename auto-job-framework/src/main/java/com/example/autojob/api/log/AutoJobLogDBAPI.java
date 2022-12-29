@@ -2,8 +2,10 @@ package com.example.autojob.api.log;
 
 import com.example.autojob.logging.domain.AutoJobLog;
 import com.example.autojob.logging.domain.AutoJobRunLog;
+import com.example.autojob.logging.domain.AutoJobSchedulingRecord;
 import com.example.autojob.skeleton.db.entity.EntityConvertor;
 import com.example.autojob.skeleton.db.mapper.AutoJobMapperHolder;
+import com.example.autojob.util.convert.DefaultValueUtil;
 
 import java.util.Date;
 import java.util.List;
@@ -17,6 +19,40 @@ import java.util.stream.Collectors;
  * @Email 1158055613@qq.com
  */
 public class AutoJobLogDBAPI implements AutoJobLogAPI {
+    @Override
+    public List<AutoJobSchedulingRecord> page(Integer pageCount, Integer pageSize, Long taskId) {
+        if (pageCount == null || pageSize == null || taskId == null) {
+            throw new NullPointerException();
+        }
+
+        return AutoJobMapperHolder.SCHEDULING_RECORD_ENTITY_MAPPER
+                .pageByTaskId(pageCount, pageSize, taskId)
+                .stream()
+                .map(EntityConvertor::entity2schedulingRecord)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public Integer count(Long taskId) {
+        if (taskId == null) {
+            return 0;
+        }
+        return AutoJobMapperHolder.SCHEDULING_RECORD_ENTITY_MAPPER.countByTaskId(taskId);
+    }
+
+    @Override
+    public List<AutoJobSchedulingRecord> findSchedulingRecordsBetween(Long taskId, Date start, Date end) {
+        if (taskId == null || start == null) {
+            throw new NullPointerException();
+        }
+        end = DefaultValueUtil.defaultValue(end, new Date());
+        return AutoJobMapperHolder.SCHEDULING_RECORD_ENTITY_MAPPER
+                .listBetween(taskId, start, end)
+                .stream()
+                .map(EntityConvertor::entity2schedulingRecord)
+                .collect(Collectors.toList());
+    }
+
     @Override
     public List<AutoJobLog> findLogsBySchedulingId(Long schedulingId) {
         return AutoJobMapperHolder.LOG_ENTITY_MAPPER

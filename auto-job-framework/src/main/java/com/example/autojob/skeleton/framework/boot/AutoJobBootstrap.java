@@ -1,5 +1,6 @@
 package com.example.autojob.skeleton.framework.boot;
 
+import com.example.autojob.api.log.AutoJobLogDBAPI;
 import com.example.autojob.api.task.DBTaskAPI;
 import com.example.autojob.api.task.MemoryTaskAPI;
 import com.example.autojob.logging.domain.AutoJobLog;
@@ -174,6 +175,7 @@ public class AutoJobBootstrap {
         /*=================API配置=================>*/
         this.runningContext.setDbTaskAPI(new DBTaskAPI());
         this.runningContext.setMemoryTaskAPI(new MemoryTaskAPI());
+        this.runningContext.setLogDbAPI(new AutoJobLogDBAPI());
         /*=======================Finished======================<*/
 
         this.runningContext.setSchedulers(new LinkedList<>());

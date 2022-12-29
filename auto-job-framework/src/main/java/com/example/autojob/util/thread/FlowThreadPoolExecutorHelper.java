@@ -351,7 +351,7 @@ public class FlowThreadPoolExecutorHelper implements ThreadPoolExecutorHelper {
             double change = trafficPerSecond - maxThreadCount;
             double changePercent = (Math.abs(change) == 0 ? 0 : (Math.abs(change) * 1.0) / maxThreadCount);
             if (changePercent > updateThreshold) {
-                //log.warn("最近{}秒流量：{}，最大线程数：{}，当前变化率：{}%", trafficListenerCycle, trafficPerSecond, maxThreadCount, changePercent * 100);
+                //log.warn("最近{}秒流量：{}，最大线程数：{}，当前变化率：{}%", trafficListenerCycle, callCount.get(), maxThreadCount, (change < 0 ? -1 : 1) * changePercent * 100);
                 if (change < 0) {
                     return -1;
                 } else if (change > 0) {
@@ -761,11 +761,11 @@ public class FlowThreadPoolExecutorHelper implements ThreadPoolExecutorHelper {
                     ///平均执行时间为0一般是当前提交的任务还没执行完，此时根据流量更新
                     if (averageTimeSecond == 0) {
                         int newCorePoolSize = (int) Math.min(trafficMonitor.allowMaxCoreThreadCount, trafficPerSecond);
-                        newCorePoolSize = Math.max(trafficMonitor.allowMinThreadCount, newCorePoolSize);
+                        newCorePoolSize = Math.max(trafficMonitor.allowMinCoreThreadCount, newCorePoolSize);
                         int newMaxPoolSize = (int) Math.min(trafficMonitor.allowMaxThreadCount, maxTrafficPerSecond);
                         newMaxPoolSize = Math.max(trafficMonitor.allowMinThreadCount, newMaxPoolSize);
                         if (executor.update(newCorePoolSize, newMaxPoolSize)) {
-                            log.info("更新成功：核心线程数{}，最大线程数{}", newCorePoolSize, newMaxPoolSize);
+                            log.info("每秒平均流量：{}，周期最大流量：{}，平均每秒最大流量：{}，平局执行时长：{}，更新成功：核心线程数{}，最大线程数{}", trafficPerSecond, trafficMonitor.callCount.get(), maxTrafficPerSecond, averageTimeSecond, newCorePoolSize, newMaxPoolSize);
                         }
                     } else {
                         int newCorePoolSize = (int) (trafficPerSecond * averageTimeSecond);
@@ -777,7 +777,7 @@ public class FlowThreadPoolExecutorHelper implements ThreadPoolExecutorHelper {
                         newMaxPoolSize = Math.max(trafficMonitor.allowMinThreadCount, newMaxPoolSize);
                         newMaxPoolSize = Math.min(trafficMonitor.allowMaxThreadCount, newMaxPoolSize);
                         if (executor.update(newCorePoolSize, newMaxPoolSize)) {
-                            log.info("更新成功：核心线程数{}，最大线程数{}", newCorePoolSize, newMaxPoolSize);
+                            log.info("每秒平均流量：{}，周期最大流量：{}，平均每秒最大流量：{}，平局执行时长：{}，更新成功：核心线程数{}，最大线程数{}", trafficPerSecond, trafficMonitor.callCount.get(), maxTrafficPerSecond, averageTimeSecond, newCorePoolSize, newMaxPoolSize);
                         }
 
                     }

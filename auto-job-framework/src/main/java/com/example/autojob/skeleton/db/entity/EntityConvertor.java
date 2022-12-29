@@ -301,6 +301,9 @@ public class EntityConvertor {
         entity.setSchedulingTime(new Timestamp(schedulingRecord
                 .getSchedulingTime()
                 .getTime()));
+        entity.setWriteTimestamp(schedulingRecord
+                .getSchedulingTime()
+                .getTime());
         entity.setTaskAlias(schedulingRecord.getTaskAlias());
         if (!schedulingRecord.isRun()) {
             entity.setIsRun(0);

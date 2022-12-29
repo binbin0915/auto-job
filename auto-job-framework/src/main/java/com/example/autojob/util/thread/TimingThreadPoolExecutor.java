@@ -73,7 +73,8 @@ public class TimingThreadPoolExecutor extends ThreadPoolExecutor {
     }
 
     public boolean update(int corePoolSize, int maxPoolSize) {
-        if (maxPoolSize >= corePoolSize && corePoolSize > getActiveCount() && corePoolSize > 0 && corePoolSize != getCorePoolSize() && maxPoolSize != getMaximumPoolSize()) {
+        maxPoolSize = Math.max(maxPoolSize, corePoolSize);
+        if (corePoolSize > getActiveCount() && corePoolSize > 0 && corePoolSize != getCorePoolSize() && maxPoolSize != getMaximumPoolSize()) {
             setCorePoolSize(corePoolSize);
             setMaximumPoolSize(maxPoolSize);
             return true;

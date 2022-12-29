@@ -22,6 +22,11 @@ public class AutoJobSchedulingRecordEntity {
     private Long id;
 
     /**
+     * 写入时间戳
+     */
+    private Long writeTimestamp;
+
+    /**
      * 调度时间
      */
     private Timestamp schedulingTime;

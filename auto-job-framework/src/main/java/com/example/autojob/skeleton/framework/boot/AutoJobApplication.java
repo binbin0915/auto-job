@@ -1,5 +1,6 @@
 package com.example.autojob.skeleton.framework.boot;
 
+import com.example.autojob.api.log.AutoJobLogDBAPI;
 import com.example.autojob.api.task.AutoJobAPI;
 import com.example.autojob.api.task.DBTaskAPI;
 import com.example.autojob.api.task.MemoryTaskAPI;
@@ -82,6 +83,10 @@ public class AutoJobApplication implements Closeable {
      * 内存任务API服务类
      */
     private MemoryTaskAPI memoryTaskAPI;
+    /**
+     * DB存储日志API
+     */
+    private AutoJobLogDBAPI logDbAPI;
     /**
      * 任务转移管理器
      */

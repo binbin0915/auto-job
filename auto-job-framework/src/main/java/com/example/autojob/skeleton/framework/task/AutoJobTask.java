@@ -47,6 +47,10 @@ public abstract class AutoJobTask {
      */
     protected Boolean isStart = false;
     /**
+     * 是否在等待资源
+     */
+    protected Boolean isWaiting = false;
+    /**
      * 运行方法所在的类
      */
     protected Class<?> methodClass;

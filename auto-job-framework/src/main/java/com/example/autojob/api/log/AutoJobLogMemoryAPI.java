@@ -2,12 +2,13 @@ package com.example.autojob.api.log;
 
 import com.example.autojob.logging.domain.AutoJobLog;
 import com.example.autojob.logging.domain.AutoJobRunLog;
+import com.example.autojob.logging.domain.AutoJobSchedulingRecord;
 
 import java.util.Date;
 import java.util.List;
 
 /**
- * 内存日志API
+ * 内存日志API，暂不支持
  *
  * @Author Huang Yongxiang
  * @Date 2022/11/07 14:56
@@ -15,22 +16,37 @@ import java.util.List;
  */
 public class AutoJobLogMemoryAPI implements AutoJobLogAPI {
     @Override
+    public List<AutoJobSchedulingRecord> page(Integer pageCount, Integer pageSize, Long taskId) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Integer count(Long taskId) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public List<AutoJobSchedulingRecord> findSchedulingRecordsBetween(Long taskId, Date start, Date end) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public List<AutoJobLog> findLogsBySchedulingId(Long schedulingId) {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public List<AutoJobRunLog> findRunLogsBySchedulingId(Long schedulingId) {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public List<AutoJobLog> findLogsByTaskIdBetween(Long taskId, Date start, Date end) {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public List<AutoJobRunLog> findRunLogsByTaskIdBetween(Long taskId, Date start, Date end) {
-        return null;
+        throw new UnsupportedOperationException();
     }
 }
