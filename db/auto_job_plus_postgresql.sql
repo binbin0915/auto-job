@@ -109,6 +109,7 @@ CREATE TABLE "aj_scheduling_record"
     "task_id"         int8 NOT NULL,
     "is_success"      int4          DEFAULT 1,
     "is_run"          int4 NOT NULL DEFAULT 0,
+    "is_retry"        int4 NOT NULL DEFAULT 0,
     "result"          text          DEFAULT NULL,
     "execution_time"  int8          DEFAULT NULL,
     "del_flag"        int4 NOT NULL DEFAULT 0,
@@ -123,6 +124,7 @@ COMMENT ON COLUMN "aj_scheduling_record"."task_alias" IS '任务别名';
 COMMENT ON COLUMN "aj_scheduling_record"."task_id" IS '任务Id';
 COMMENT ON COLUMN "aj_scheduling_record"."is_success" IS '是否执行成功 0-否 1-是';
 COMMENT ON COLUMN "aj_scheduling_record"."is_run" IS '是否正在运行 1-是 0-否';
+COMMENT ON COLUMN "aj_scheduling_record"."is_retry" IS '是否是重试调度 0-否 1-是';
 COMMENT ON COLUMN "aj_scheduling_record"."result" IS '任务结果 JSON序列化';
 COMMENT ON COLUMN "aj_scheduling_record"."execution_time" IS '执行时长:ms';
 COMMENT ON COLUMN "aj_scheduling_record"."del_flag" IS '删除标识';

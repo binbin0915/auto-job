@@ -79,6 +79,7 @@ CREATE TABLE `aj_scheduling_record`  (
   `task_id` bigint(0) NOT NULL COMMENT '任务Id',
   `is_success` int(0) NULL DEFAULT 1 COMMENT '是否执行成功 0-否 1-是',
   `is_run` int(0) NOT NULL DEFAULT 0 COMMENT '是否正在运行 1-是 0-否',
+  `is_retry` int DEFAULT NULL COMMENT '是否是重试调度 0-否 1-是',
   `result` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '任务结果 JSON序列化',
   `execution_time` bigint(0) NULL DEFAULT NULL COMMENT '执行时长:ms',
   `del_flag` int(0) NOT NULL DEFAULT 0 COMMENT '删除标识',
