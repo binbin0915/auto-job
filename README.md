@@ -2,9 +2,9 @@
 
 ## 更新
 
-**2022-11-22：**初版0.9.1
+**2022-11-22：** 初版0.9.1
 
-**2022-12-9：**0.9.2
+**2022-12-9：** 0.9.2
 
 优化API。
 
@@ -18,9 +18,23 @@
 
 调整项目结构。
 
-新增Rest接口：链接: https://www.apifox.cn/apidoc/shared-05120000-4d19-4c75-a7f6-dc56105972cb  访问密码 : autojob 
+**2022-12-26：** 新增Rest接口：链接: https://www.apifox.cn/apidoc/shared-05120000-4d19-4c75-a7f6-dc56105972cb  访问密码 : autojob 
 
-增加多数据库适配，目前支持mysql，postresql
+**2022-12-27：** 优化子任务处理逻辑，新增任务MissFire事件
+
+**2022-12-29**： 增加多数据库适配，目前支持mysql，postresql
+
+2023-1-3： 
+
+优化重试机制，每个任务可单独配置重试逻辑
+
+优化邮件报警机制，每个任务可单独配置邮箱
+
+新增任务重试事件`TaskRetryEvent`
+
+调度记录表新增`is_retry`属性，表明该条调度记录是否是由于异常进行重试的调度记录
+
+其他已知BUG
 
 ## 一、背景
 
@@ -71,7 +85,9 @@
 public class AutoJobMainApplication {
     public static void main(String[] args) {
     //框架启动
-    new AutoJobLauncherBuilder(AutoJobMainApplication.class).withAutoScanProcessor().build().run();
+    	new AutoJobBootstrap(AutoJobMainApplication.class)
+                .build()
+                .run();
         System.out.println("==================================>系统创建完成");
  	}
 
@@ -80,31 +96,33 @@ public class AutoJobMainApplication {
 
 得益于良好的系统架构和编码设计，你的应用启动无需过多配置，只需要一行代码
 
-**动态：**框架提供API，支持任务的动态CURD操作，即时生效。
+**动态：** 框架提供API，支持任务的动态CURD操作，即时生效。
 
-**任务依赖：**支持配置子任务，当父任务执行结束且执行成功后将会主动触发一次子任务的执行。
+**多数据库支持：** 提供多类型数据库支持，目前支持MySQL和PostgreSQL。 
 
-**一致性：**框架使用DB乐观锁实现任务的一致性，在集群模式下，调度器在调度任务前都会尝试获取锁，获取锁成功后才会进行该任务的调度。
+**任务依赖：** 支持配置子任务，当父任务执行结束且执行成功后将会主动触发一次子任务的执行。
 
-**HA（开发中）：**该框架支持去中心化的集群部署，集群节点通过RPC加密通信。集群节点之间会自动进行故障转移和负载均衡，
+**一致性：** 框架使用DB乐观锁实现任务的一致性，在集群模式下，调度器在调度任务前都会尝试获取锁，获取锁成功后才会进行该任务的调度。
 
-**弹性增缩容（开发中）：**支持节点的动态上下线，同时节点支持开启保护模式，防止恶劣的网络环境下节点脱离集群。
+**HA（开发中）：** 该框架支持去中心化的集群部署，集群节点通过RPC加密通信。集群节点之间会自动进行故障转移和负载均衡，
 
-**任务失败重试：**支持任务失败重试，并且可设置重试间隔。
+**弹性增缩容（开发中）：** 支持节点的动态上下线，同时节点支持开启保护模式，防止恶劣的网络环境下节点脱离集群。
 
-**完整的生命周期：**框架提供任务完整的生命周期事件，业务可捕捉并做对应的处理。
+**任务失败重试：** 支持任务失败重试，并且可设置重试间隔。
 
-**动态调度线程池：**框架使用自研的动态线程池，可灵活根据任务流量动态调整线程池核心线程和最大线程参数，节省系统线程资源，并且提供了默认的拒绝处理器，防止任务被missFire。
+**完整的生命周期：** 框架提供任务完整的生命周期事件，业务可捕捉并做对应的处理。
 
-**异步非阻塞的日志处理：**日志采用生产者消费者模型，基于自研的内存消息队列，任务方法作为日志的生产者，生产日志放入消息队列，框架启动对应的日志消费线程进行日志处理。
+**动态调度线程池：** 框架使用自研的动态线程池，可灵活根据任务流量动态调整线程池核心线程和最大线程参数，节省系统线程资源，并且提供了默认的拒绝处理器，防止任务被missFire。
 
-**实时日志：**日志将会实时的进行保存，便于跟踪。
+**异步非阻塞的日志处理：** 日志采用生产者消费者模型，基于自研的内存消息队列，任务方法作为日志的生产者，生产日志放入消息队列，框架启动对应的日志消费线程进行日志处理。
 
-**任务白名单：**提供任务白名单功能，只有在白名单中的任务才允许被注册和调度，保证系统安全。
+**实时日志：** 日志将会实时的进行保存，便于跟踪。
 
-**可拓展的日志存储策略：**日志支持多种策略保存，如内存Cache、数据库等，可根据项目需要灵活增加保存策略，如Redis、文件等。
+**任务白名单：** 提供任务白名单功能，只有在白名单中的任务才允许被注册和调度，保证系统安全。
 
-**丰富的调度机制：**支持Cron like表达式，repeat-cycle调度、子任务触发、延迟触发等，得益于良好的编码设计，用户可非常简单的新增自定义调度器，如下：
+**可拓展的日志存储策略：** 日志支持多种策略保存，如内存Cache、数据库等，可根据项目需要灵活增加保存策略，如Redis、文件等。
+
+**丰富的调度机制：** 支持Cron like表达式，repeat-cycle调度、子任务触发、延迟触发等，得益于良好的编码设计，用户可非常简单的新增自定义调度器，如下：
 
 ```java
 /**
@@ -135,23 +153,23 @@ public class AutoJobMainApplication {
 }
 ```
 
-**任务报警：**框架支持邮件报警，目前原生支持QQ邮箱、163邮箱、GMail等，同时也支持自定义的邮箱smtp服务器。
+**任务报警：** 框架支持邮件报警，目前原生支持QQ邮箱、163邮箱、GMail等，同时也支持自定义的邮箱smtp服务器。
 
 ![1668580284754](https://gitee.com/hyxl-520/auto-job/raw/master/doc/%E9%82%AE%E4%BB%B6%E6%8A%A5%E8%AD%A6.png)
 
 目前系统提供：任务失败报警、任务被拒报警、节点开启保护模式报警、节点关闭保护模式报警，当然用户也可非常简单的进行邮件报警的拓展。
 
-**丰富的任务入参：**框架支持基础的数据类型和对象类型的任务入参，如Boolean,String,Long,Integer,Double等类型，对于对象入参，框架默认使用JSON进行序列化入参。
+**丰富的任务入参：** 框架支持基础的数据类型和对象类型的任务入参，如Boolean,String,Long,Integer,Double等类型，对于对象入参，框架默认使用JSON进行序列化入参。
 
-**良好的前端集成性：**框架提供相关API，用户可以灵活开发Restful接口接入到企业项目，无需额外占用一个进程或机器来单独运行调度中心。
+**良好的前端集成性：** 框架提供相关API，用户可以灵活开发Restful接口接入到企业项目，无需额外占用一个进程或机器来单独运行调度中心。
 
-**内存任务：**框架提供DB任务和内存任务两种类型，DB任务持久化到数据库，声明周期在数据库内记录，内存任务除了日志，整个生命周期都在内存中完成，相比DB任务具有无锁、调度快速的特点。
+**内存任务：** 框架提供DB任务和内存任务两种类型，DB任务持久化到数据库，声明周期在数据库内记录，内存任务除了日志，整个生命周期都在内存中完成，相比DB任务具有无锁、调度快速的特点。
 
-**脚本任务：**提供脚本任务的执行，如Python、Shell，SQL等。
+**脚本任务：** 提供脚本任务的执行，如Python、Shell，SQL等。
 
-**动态分片（开发中）：**集群模式下框架支持任务分片，多机运行。
+**动态分片（开发中）：** 集群模式下框架支持任务分片，多机运行。
 
-**全异步：**任务调度流程采用全异步实现，如异步调度、异步执行、异步日志等，有效对密集调度进行流量削峰，理论上支持任意时长任务的运行。
+**全异步：** 任务调度流程采用全异步实现，如异步调度、异步执行、异步日志等，有效对密集调度进行流量削峰，理论上支持任意时长任务的运行。
 
 ## 三、快速使用
 
@@ -624,19 +642,19 @@ autoJob:
           enable: true
           retryCount: 3
           interval: 1 # 两次重试的间隔：min
-  emailAlert: # 邮件报警相关配置
+  emailAlert: # 全局邮件报警相关配置
     enable: true
     auth:
       sender: "XXX@163.com" # 发送方，唯一
       receiver: "XXX@qq.com" # 接收方，多个逗号分割
-      token: "LXZYE214123CEWASU" # smtp登录密码
+      token: "LXZYE214123CEWASU" # smtp密码
       type: 163Mail # 邮件类型，目前支持：QQMail、163Mail、gMail（google）、outLookMail、customize（自定义）
       customize: # 自定义下的smtp服务器的相关配置
         smtpAddress:
         smtpPort:
     config: # 提供部分事件报警（开关）
-      taskRunError: true # 任务运行出错
-      taskRefuseHandle: true # 任务被拒绝执行
+      taskRunError: true # 任务运行出错（优先使用任务私有邮件客户端，不存在使用全局客户端）
+      taskRefuseHandle: true # 任务被拒绝执行（优先使用任务私有邮件客户端，不存在使用全局客户端）
       clusterOpenProtectedMode: true # 集群节点开启保护模式（集群模式下有效）
       clusterCloseProtectedMode: true # 集群节点关闭保护模式（集群模式下有效）
   logging: # 日志的相关配置
@@ -801,6 +819,7 @@ public static AlertMail newRunErrorAlertMail(TaskRunErrorAlertEvent event) {
         AlertMailBuilder builder = AlertMailBuilder.newInstance();
         AutoJobTask errorTask = event.getErrorTask();
         return builder
+            	.setMailClient(errorTask.getMailClient())
                 .setTitle(event.getTitle())
                 .setLevel(AlertEventLevel.WARN)
                 .addContentTitle(String.format("任务：\"%d:%s\"执行失败", errorTask.getId(), errorTask.getAlias()), 1)
@@ -975,6 +994,8 @@ public class AutoJobSpringApplication {
 
 在创建应用时还需要在入口类上配置`@AutoJobRegisterPreProcessorScan`，指定注册前置处理器的扫描包路径，否则该过滤器不会被扫描到。
 
+注意：子任务不会被该类过滤器处理。
+
 ### 6、注解任务开发的高级应用
 
 在第三章节-第三小节-基于注解中，简单演示了注解`@AutoJob`的用法，AutoJob框架还提供了其他注解，如`@FactoryAutoJob`、`@Conditional`等，下面一一讲解。
@@ -1042,9 +1063,10 @@ public String getRandomString() {
 
 public class RandomStringMethodFactory implements IMethodTaskFactory {
     @Override
-    public MethodTask newTask(AutoJobConfigHolder configHolder, Class<?> methodClass, String methodName) {
-        return new AutoJobMethodTaskBuilder(methodClass, methodName)
+    public MethodTask newTask(AutoJobConfigHolder configHolder, Method method) {
+        return new AutoJobMethodTaskBuilder(method.getDeclaringClass(), method.getName())
                 .setTaskId(IdGenerator.getNextIdAsLong())
+            	//...
                 .build();
     }
 }
