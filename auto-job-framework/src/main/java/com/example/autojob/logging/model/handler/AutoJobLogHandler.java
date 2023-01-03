@@ -11,8 +11,8 @@ import com.example.autojob.skeleton.db.mapper.AutoJobMapperHolder;
 import com.example.autojob.skeleton.framework.boot.AutoJobApplication;
 import com.example.autojob.skeleton.framework.task.AutoJobTask;
 import com.example.autojob.skeleton.lang.WithDaemonThread;
+import com.example.autojob.util.convert.DefaultValueUtil;
 import com.example.autojob.util.id.IdGenerator;
-import com.example.autojob.util.id.SystemClock;
 import com.example.autojob.util.thread.SyncHelper;
 import lombok.extern.slf4j.Slf4j;
 
@@ -83,8 +83,8 @@ public class AutoJobLogHandler implements WithDaemonThread {
         saveCycle = 5000;
         maxBufferLength = 10;
         handleTask = task;
-        this.logSaveStrategyDelegate = logSaveStrategyDelegate;
-        this.runLogSaveStrategyDelegate = runLogSaveStrategyDelegate;
+        this.logSaveStrategyDelegate = DefaultValueUtil.defaultValue(logSaveStrategyDelegate, new DefaultLogSaveStrategyDelegate());
+        this.runLogSaveStrategyDelegate = DefaultValueUtil.defaultValue(runLogSaveStrategyDelegate, new DefaultRunLogSaveStrategyDelegate());
         startWork();
     }
 
@@ -120,39 +120,23 @@ public class AutoJobLogHandler implements WithDaemonThread {
                 .collect(Collectors.toList()));
     }
 
-    public void saveRunLogs() {
+    public synchronized void saveRunLogs() {
         runLogs.forEach(log -> log.setSchedulingId(schedulingId));
-        if (runLogSaveStrategyDelegate == null) {
-            new DefaultRunLogSaveStrategyDelegate()
-                    .doDelegate(AutoJobApplication
-                            .getInstance()
-                            .getConfigHolder(), AutoJobRunLog.class)
-                    .doHandle(taskId + "", runLogs);
-        } else {
-            runLogSaveStrategyDelegate
-                    .doDelegate(AutoJobApplication
-                            .getInstance()
-                            .getConfigHolder(), AutoJobRunLog.class)
-                    .doHandle(taskId + "", runLogs);
-        }
+        runLogSaveStrategyDelegate
+                .doDelegate(AutoJobApplication
+                        .getInstance()
+                        .getConfigHolder(), AutoJobRunLog.class)
+                .doHandle(taskId + "", runLogs);
         runLogs.clear();
     }
 
     public synchronized void saveLogs() {
         logs.forEach(log -> log.setSchedulingId(schedulingId));
-        if (logSaveStrategyDelegate == null) {
-            new DefaultLogSaveStrategyDelegate()
-                    .doDelegate(AutoJobApplication
-                            .getInstance()
-                            .getConfigHolder(), AutoJobLog.class)
-                    .doHandle(taskId + "", logs);
-        } else {
-            logSaveStrategyDelegate
-                    .doDelegate(AutoJobApplication
-                            .getInstance()
-                            .getConfigHolder(), AutoJobLog.class)
-                    .doHandle(taskId + "", logs);
-        }
+        logSaveStrategyDelegate
+                .doDelegate(AutoJobApplication
+                        .getInstance()
+                        .getConfigHolder(), AutoJobLog.class)
+                .doHandle(taskId + "", logs);
 
         logs.clear();
     }

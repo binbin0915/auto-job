@@ -1,8 +1,9 @@
-package com.example.autojob.util.mail;
+package com.example.autojob.skeleton.framework.mail;
 
 import com.example.autojob.util.convert.StringUtils;
-import com.example.autojob.util.id.SystemClock;
 import com.example.autojob.util.thread.SyncHelper;
+import lombok.Setter;
+import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.mail.*;
@@ -12,15 +13,16 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 /**
- * 邮件辅助类
+ * 邮件客户端类，仅支持smtp协议
  *
  * @Author Huang Yongxiang
  * @Date 2022/07/28 11:22
  */
 @Slf4j
-public class MailHelper {
+public class SMTPMailClient implements IMailClient {
     /**
      * 本人邮箱地址
      */
@@ -50,40 +52,44 @@ public class MailHelper {
     /**
      * 允许的发送间隔
      */
-    private final long interval = 5000;
+    private long interval = 5000;
     private long lastSendTime = System.currentTimeMillis() - interval;
 
-    public MailHelper(String username, String password, String receiveMail, MailType mailType) {
+    public static Builder builder(String senderUsername) {
+        return new Builder(senderUsername);
+    }
+
+    private SMTPMailClient(String username, String password, String[] receiveMailAddress, MailType mailType) {
         this.username = username;
         this.password = password;
-        this.receiveMail = receiveMail;
+        if (receiveMailAddress != null) {
+            if (receiveMailAddress.length > 1) {
+                this.receiveMailAddress = receiveMailAddress;
+            } else if (receiveMailAddress.length == 1) {
+                this.receiveMail = receiveMailAddress[0];
+            }
+        }
         this.mailType = mailType;
     }
 
-    public MailHelper(String username, String password, String[] receiveMailAddress, MailType mailType) {
+    private SMTPMailClient(String username, String password, String[] receiveMailAddress, String smtpAddress, int smtpPort) {
+        if (smtpPort < 0 || StringUtils.isEmpty(smtpAddress)) {
+            throw new IllegalArgumentException("错误的SMTP服务器地址");
+        }
         this.username = username;
         this.password = password;
-        this.receiveMailAddress = receiveMailAddress;
-        this.mailType = mailType;
-    }
-
-    public MailHelper(String username, String password, String receiveMail, String smtpAddress, int smtpPort) {
-        this.username = username;
-        this.password = password;
-        this.receiveMail = receiveMail;
+        if (receiveMailAddress != null) {
+            if (receiveMailAddress.length > 1) {
+                this.receiveMailAddress = receiveMailAddress;
+            } else if (receiveMailAddress.length == 1) {
+                this.receiveMail = receiveMailAddress[0];
+            }
+        }
         this.smtpAddress = smtpAddress;
         this.smtpPort = smtpPort;
         this.mailType = MailType.CUSTOMIZE;
     }
 
-    public MailHelper(String username, String password, String[] receiveMailAddress, String smtpAddress, int smtpPort) {
-        this.username = username;
-        this.password = password;
-        this.receiveMailAddress = receiveMailAddress;
-        this.smtpAddress = smtpAddress;
-        this.smtpPort = smtpPort;
-        this.mailType = MailType.CUSTOMIZE;
-    }
 
     public boolean sendMail(String title, String body) {
         SyncHelper.aWaitQuietly(() -> System.currentTimeMillis() >= lastSendTime + interval);
@@ -93,7 +99,7 @@ public class MailHelper {
                 return sendMailGmail(title, body);
             }
             case QQ_MAIL: {
-                return sendMainQQ(title, body);
+                return sendMailQQ(title, body);
             }
             case _163MAIL: {
                 return sendMail163(title, body);
@@ -108,7 +114,7 @@ public class MailHelper {
         return false;
     }
 
-    private boolean sendMainQQ(String title, String body) {
+    private boolean sendMailQQ(String title, String body) {
         //设置参数
         Properties props = new Properties();
         props.put("mail.smtp.ssl.enable", "true");
@@ -123,9 +129,9 @@ public class MailHelper {
             props.put("to", receiveMail);//接收的邮箱
         }
         if (receiveMailAddress != null && receiveMailAddress.length > 0) {
-            return MailHelper.sendAll(props, title, body, receiveMailAddress);
+            return SMTPMailClient.sendAll(props, title, body, receiveMailAddress);
         }
-        return MailHelper.send(props, title, body);
+        return SMTPMailClient.send(props, title, body);
     }
 
 
@@ -153,9 +159,9 @@ public class MailHelper {
             props.put("to", receiveMail);//接收的邮箱
         }
         if (receiveMailAddress != null && receiveMailAddress.length > 0) {
-            return MailHelper.sendAll(props, title, body, receiveMailAddress);
+            return SMTPMailClient.sendAll(props, title, body, receiveMailAddress);
         }
-        return MailHelper.send(props, title, body);
+        return SMTPMailClient.send(props, title, body);
     }
 
     /**
@@ -185,9 +191,9 @@ public class MailHelper {
             props.put("to", receiveMail);//接收的邮箱
         }
         if (receiveMailAddress != null && receiveMailAddress.length > 0) {
-            return MailHelper.sendAll(props, title, body, receiveMailAddress);
+            return SMTPMailClient.sendAll(props, title, body, receiveMailAddress);
         }
-        return MailHelper.send(props, title, body);
+        return SMTPMailClient.send(props, title, body);
 
     }
 
@@ -214,9 +220,9 @@ public class MailHelper {
             props.put("to", receiveMail);//接收的邮箱
         }
         if (receiveMailAddress != null && receiveMailAddress.length > 0) {
-            return MailHelper.sendAll(props, title, body, receiveMailAddress);
+            return SMTPMailClient.sendAll(props, title, body, receiveMailAddress);
         }
-        return MailHelper.send(props, title, body);
+        return SMTPMailClient.send(props, title, body);
 
     }
 
@@ -234,9 +240,9 @@ public class MailHelper {
             props.put("to", receiveMail);//接收的邮箱
         }
         if (receiveMailAddress != null && receiveMailAddress.length > 0) {
-            return MailHelper.sendAll(props, title, body, receiveMailAddress);
+            return SMTPMailClient.sendAll(props, title, body, receiveMailAddress);
         }
-        return MailHelper.send(props, title, body);
+        return SMTPMailClient.send(props, title, body);
     }
 
     /**
@@ -284,7 +290,7 @@ public class MailHelper {
             Message message = new MimeMessage(session);
             message.setFrom(new InternetAddress(username));
             message.addRecipient(Message.RecipientType.TO, new InternetAddress(to));
-            message.setSubject(title + "(" + MailHelper.getTitleTimeFormat(null) + ")");
+            message.setSubject(title + "(" + SMTPMailClient.getTitleTimeFormat(null) + ")");
             message.setContent(body, "text/html;" + "charset=utf-8");
             Transport.send(message);
         } catch (Exception e) {
@@ -323,7 +329,7 @@ public class MailHelper {
                             e.printStackTrace();
                         }
                     });
-            message.setSubject(title + "(" + MailHelper.getTitleTimeFormat(null) + ")");
+            message.setSubject(title + "(" + SMTPMailClient.getTitleTimeFormat(null) + ")");
             message.setContent(body, "text/html;" + "charset=utf-8");
             Transport.send(message);
         } catch (Exception e) {
@@ -336,29 +342,87 @@ public class MailHelper {
     }
 
     public enum MailType {
-        QQ_MAIL, GMAIL, _163MAIL, OUT_LOOK_MAIL, CUSTOMIZE;
+        QQ_MAIL("QQMail"), GMAIL("gMail"), _163MAIL("163Mail"), OUT_LOOK_MAIL("outLookMail"), CUSTOMIZE("customize");
+
+        private final String name;
+
+        MailType(String name) {
+            this.name = name;
+        }
 
         public static MailType convert(String name) {
-            if (!StringUtils.isEmpty(name)) {
-                switch (name) {
-                    case "QQMail": {
-                        return QQ_MAIL;
-                    }
-                    case "gMail": {
-                        return GMAIL;
-                    }
-                    case "163Mail": {
-                        return _163MAIL;
-                    }
-                    case "outLookMail": {
-                        return OUT_LOOK_MAIL;
-                    }
-                    case "customize": {
-                        return CUSTOMIZE;
-                    }
+            for (MailType type : MailType.values()) {
+                if (type.name.equalsIgnoreCase(name)) {
+                    return type;
                 }
             }
-            throw new IllegalArgumentException("错误的邮件类型");
+            return null;
+        }
+
+        public String getName() {
+            return name;
+        }
+    }
+
+    @Setter
+    @Accessors(chain = true)
+    public static class Builder {
+        /**
+         * 发送方邮箱地址
+         */
+        private final String senderUsername;
+        /**
+         * 发送方smtp授权码，无密码时留空
+         */
+        private String senderPassword;
+        /**
+         * 发送方邮箱类型
+         */
+        private MailType senderMailType;
+        /**
+         * 接收方邮箱地址
+         */
+        private String[] receiverAddress;
+        /**
+         * 发送间隔，密集发送时两次发送的间隔
+         */
+        private Long interval = 5000L;
+        /**
+         * 自定义的smtp服务器地址
+         */
+        private String smtpAddress;
+        /**
+         * 自定义的smtp服务器端口
+         */
+        private Integer smtpPort;
+
+        public Builder(String senderUsername) {
+            this.senderUsername = senderUsername;
+        }
+
+        public Builder setInterval(long interval, TimeUnit unit) {
+            this.interval = unit.toMillis(interval);
+            return this;
+        }
+
+        public Builder setReceiverAddress(String... receiverAddress) {
+            this.receiverAddress = receiverAddress;
+            return this;
+        }
+
+        public IMailClient build() {
+            SMTPMailClient mailClient;
+            if (senderMailType == null) {
+                throw new NullPointerException();
+            }
+            if (senderMailType != MailType.CUSTOMIZE) {
+                mailClient = new SMTPMailClient(senderUsername, senderPassword, receiverAddress, senderMailType);
+            } else {
+                mailClient = new SMTPMailClient(senderUsername, senderPassword, receiverAddress, smtpAddress, smtpPort);
+            }
+            mailClient.interval = interval;
+            mailClient.lastSendTime = System.currentTimeMillis() - interval;
+            return mailClient;
         }
     }
 

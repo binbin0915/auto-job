@@ -3,6 +3,9 @@ package com.example.autojob.skeleton.model.scheduler;
 import com.example.autojob.skeleton.framework.config.AutoJobConfigHolder;
 import com.example.autojob.skeleton.framework.task.AutoJobTask;
 import com.example.autojob.skeleton.lang.WithDaemonThread;
+import com.example.autojob.skeleton.lifecycle.TaskEventFactory;
+import com.example.autojob.skeleton.lifecycle.event.imp.TaskMissFireEvent;
+import com.example.autojob.skeleton.lifecycle.manager.TaskEventManager;
 import com.example.autojob.skeleton.model.executor.AutoJobTaskExecutorPool;
 import com.example.autojob.skeleton.model.register.IAutoJobRegister;
 import com.example.autojob.skeleton.model.tq.AutoJobTimeWheel;
@@ -59,6 +62,19 @@ public class AutoJobTimeWheelScheduler extends AbstractScheduler implements With
                             submitTask(item);
                         }
                     });
+                }
+                //获取时间轮是否有残留任务
+                for (int i = 0; i <= second; i++) {
+                    List<AutoJobTask> leftTasks = timeWheel.getSecondTasks(i);
+                    if (leftTasks != null && leftTasks.size() > 0) {
+                        leftTasks.forEach(task -> {
+                            log.warn("任务{} miss fire", task.getId());
+                            //miss fire的事件处理采用异步处理，避免阻塞时间轮的调度
+                            TaskEventManager
+                                    .getInstance()
+                                    .publishTaskEvent(TaskEventFactory.newTaskMissFireEvent(task), TaskMissFireEvent.class, true);
+                        });
+                    }
                 }
             } catch (Exception e) {
                 e.printStackTrace();

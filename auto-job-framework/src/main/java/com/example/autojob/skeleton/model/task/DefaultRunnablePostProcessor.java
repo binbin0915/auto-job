@@ -17,7 +17,10 @@ import com.example.autojob.skeleton.lifecycle.event.imp.TaskBeforeRunEvent;
 import com.example.autojob.skeleton.lifecycle.event.imp.TaskRunErrorEvent;
 import com.example.autojob.skeleton.lifecycle.event.imp.TaskRunSuccessEvent;
 import com.example.autojob.skeleton.lifecycle.manager.TaskEventManager;
+import com.example.autojob.util.thread.ScheduleTaskUtil;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * 任务执行后置处理器的默认实现，原则上无需自己实现，如果确实需要在任务开始、完成等完成一些操作，请优先使用任务事件处理器{@link ITaskEventHandler}
@@ -46,7 +49,11 @@ public class DefaultRunnablePostProcessor implements RunnablePostProcessor {
                 /*=======================Finished======================<*/
                 /*=================更新状态=================>*/
                 if (autoJobTask.getType() == AutoJobTask.TaskType.DB_TASK) {
-                    AutoJobMapperHolder.TRIGGER_ENTITY_MAPPER.updateOperatingStatus(true, autoJobTask.getId());
+                    ScheduleTaskUtil.oneTimeTask(() -> {
+                        AutoJobMapperHolder.TRIGGER_ENTITY_MAPPER.updateOperatingStatus(true, autoJobTask.getId());
+                        return null;
+                    }, 0, TimeUnit.SECONDS);
+
                 }
                 autoJobTask
                         .getTrigger()
@@ -101,19 +108,17 @@ public class DefaultRunnablePostProcessor implements RunnablePostProcessor {
                 autoJobTask.setIsStart(false);
                 autoJobTask
                         .getRunResult()
-                        .setIsSuccess(true);
-                autoJobTask
-                        .getRunResult()
-                        .setIsError(false);
+                        .success(result);
                 autoJobTask
                         .getTrigger()
                         .update();
-                autoJobTask
-                        .getRunResult()
-                        .setResult(result);
+                autoJobTask.setIsRetrying(false);
                 /*=================更新状态=================>*/
                 if (autoJobTask.getType() == AutoJobTask.TaskType.DB_TASK) {
-                    AutoJobMapperHolder.TRIGGER_ENTITY_MAPPER.updateOperatingStatus(false, autoJobTask.getId());
+                    ScheduleTaskUtil.oneTimeTask(() -> {
+                        AutoJobMapperHolder.TRIGGER_ENTITY_MAPPER.updateOperatingStatus(false, autoJobTask.getId());
+                        return null;
+                    }, 0, TimeUnit.SECONDS);
                 }
                 /*=======================Finished======================<*/
                 autoJobTask
@@ -150,26 +155,21 @@ public class DefaultRunnablePostProcessor implements RunnablePostProcessor {
                 autoJobTask.setIsStart(false);
                 autoJobTask
                         .getRunResult()
-                        .setIsSuccess(false);
-                autoJobTask
-                        .getRunResult()
-                        .setIsError(true);
-                //autoJobTask.getTrigger().update();
-                autoJobTask
-                        .getRunResult()
-                        .setResult(result);
-                autoJobTask
-                        .getRunResult()
-                        .setThrowable(throwable);
+                        .error(throwable, result);
                 /*=================更新状态=================>*/
                 if (autoJobTask.getType() == AutoJobTask.TaskType.DB_TASK) {
-                    AutoJobMapperHolder.TRIGGER_ENTITY_MAPPER.updateOperatingStatus(false, autoJobTask.getId());
+                    ScheduleTaskUtil.oneTimeTask(() -> {
+                        AutoJobMapperHolder.TRIGGER_ENTITY_MAPPER.updateOperatingStatus(false, autoJobTask.getId());
+                        return null;
+                    }, 0, TimeUnit.SECONDS);
                 }
                 /*=======================Finished======================<*/
                 autoJobTask
                         .getLogHelper()
                         .setSlf4jProxy(null)
-                        .error("Auto-Job-Error=========================>任务：{}执行异常：{}", autoJobTask.getId(), throwable.toString());
+                        .error("Auto-Job-Error=========================>任务：{}执行异常：{}", autoJobTask.getId(), throwable.getCause() == null ? throwable.toString() : throwable
+                                .getCause()
+                                .toString());
                 TaskEventManager
                         .getInstance()
                         .publishTaskEventSync(TaskEventFactory.newAfterRunEvent(autoJobTask), TaskAfterRunEvent.class, true);

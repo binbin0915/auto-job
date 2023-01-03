@@ -1,14 +1,11 @@
 package com.example.autojob.skeleton.framework.task;
 
-import lombok.Setter;
-
 /**
  * 任务运行结果
  *
  * @Author Huang Yongxiang
  * @Date 2022/08/19 14:52
  */
-@Setter
 public class AutoJobRunResult {
     /**
      * 完成时间
@@ -41,6 +38,23 @@ public class AutoJobRunResult {
         isError = null;
         result = null;
         throwable = null;
+    }
+
+    public void success(Object result) {
+        isSuccess = true;
+        isError = false;
+        this.result = result;
+    }
+
+    public void error(Throwable throwable, Object result) {
+        isSuccess = false;
+        isError = true;
+        this.throwable = throwable;
+        this.result = result;
+    }
+
+    public void finish() {
+        finishedTime = System.currentTimeMillis();
     }
 
     public boolean isRunSuccess() {

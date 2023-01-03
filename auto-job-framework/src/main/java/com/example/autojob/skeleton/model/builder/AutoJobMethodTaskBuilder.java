@@ -6,12 +6,16 @@ import com.example.autojob.skeleton.db.entity.EntityConvertor;
 import com.example.autojob.skeleton.db.mapper.AutoJobMapperHolder;
 import com.example.autojob.skeleton.db.mapper.TransactionEntry;
 import com.example.autojob.skeleton.enumerate.SchedulingStrategy;
+import com.example.autojob.skeleton.framework.boot.AutoJobApplication;
+import com.example.autojob.skeleton.framework.config.AutoJobRetryConfig;
+import com.example.autojob.skeleton.framework.mail.IMailClient;
 import com.example.autojob.skeleton.framework.task.AutoJobTask;
 import com.example.autojob.skeleton.framework.task.AutoJobTrigger;
 import com.example.autojob.skeleton.model.executor.DefaultMethodObjectFactory;
 import com.example.autojob.skeleton.model.executor.IMethodObjectFactory;
 import com.example.autojob.skeleton.model.interpreter.AutoJobAttributeContext;
 import com.example.autojob.skeleton.model.task.method.MethodTask;
+import com.example.autojob.util.convert.DefaultValueUtil;
 import com.example.autojob.util.convert.StringUtils;
 
 import java.util.Collections;
@@ -77,6 +81,13 @@ public class AutoJobMethodTaskBuilder {
     private SchedulingStrategy schedulingStrategy;
 
     /**
+     * 重试配置
+     */
+    private AutoJobRetryConfig retryConfig;
+
+    private IMailClient mailClient;
+
+    /**
      * 所属
      */
     private Long belongTo;
@@ -125,6 +136,11 @@ public class AutoJobMethodTaskBuilder {
         return this;
     }
 
+    public AutoJobMethodTaskBuilder setRetryConfig(AutoJobRetryConfig retryConfig) {
+        this.retryConfig = retryConfig;
+        return this;
+    }
+
     public AutoJobMethodTaskBuilder setSchedulingStrategy(SchedulingStrategy schedulingStrategy) {
         this.schedulingStrategy = schedulingStrategy;
         return this;
@@ -137,6 +153,11 @@ public class AutoJobMethodTaskBuilder {
 
     public AutoJobMethodTaskBuilder isSaveWhenDB(boolean saveWhenDB) {
         isSaveWhenDB = saveWhenDB;
+        return this;
+    }
+
+    public AutoJobMethodTaskBuilder setMailClient(IMailClient mailClient) {
+        this.mailClient = mailClient;
         return this;
     }
 
@@ -250,6 +271,14 @@ public class AutoJobMethodTaskBuilder {
         methodTask.setAlias(taskAlias);
         methodTask.setTrigger(trigger);
         methodTask.setIsChildTask(isChildTask);
+        methodTask.setRetryConfig(DefaultValueUtil.defaultValue(retryConfig, AutoJobApplication
+                .getInstance()
+                .getConfigHolder()
+                .getAutoJobConfig()
+                .getRetryConfig()));
+        methodTask.setMailClient(DefaultValueUtil.defaultValue(mailClient, AutoJobApplication
+                .getInstance()
+                .getMailClient()));
         methodTask.setSchedulingStrategy(schedulingStrategy);
         methodTask.setParamsString(paramsString);
         methodTask.setMethodObjectFactory(methodObjectFactory);

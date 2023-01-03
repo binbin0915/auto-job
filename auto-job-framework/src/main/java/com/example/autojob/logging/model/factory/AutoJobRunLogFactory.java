@@ -30,6 +30,8 @@ public class AutoJobRunLogFactory implements IAutoJobFactory {
             return getSuccessRunLog((TaskRunSuccessEvent) event);
         } else if (event instanceof TaskForbiddenEvent) {
             return getForbiddenRunLog((TaskForbiddenEvent) event);
+        } else if (event instanceof TaskRetryEvent) {
+            return getRetryRunLog((TaskRetryEvent) event);
         }
         return null;
     }
@@ -107,11 +109,21 @@ public class AutoJobRunLogFactory implements IAutoJobFactory {
                 .setMessage(event.getMessage());
     }
 
+    public static AutoJobRunLog getRetryRunLog(TaskRetryEvent event) {
+        return new AutoJobRunLog()
+                .setId(IdGenerator.getNextIdAsLong())
+                .setId(IdGenerator.getNextIdAsLong())
+                .setWriteTime(DateUtils.getTime())
+                .setTaskType(event
+                        .getTask()
+                        .getType()
+                        .toString())
+                .setTaskId(getRunLogTaskId(event.getTask()))
+                .setRunStatus(0)
+                .setMessage(event.getMessage());
+    }
+
     private static long getRunLogTaskId(AutoJobTask task) {
-        if (task.getType() == AutoJobTask.TaskType.DB_TASK) {
-            return task.getId();
-        } else {
-            return task.getAnnotationId();
-        }
+        return task.getId();
     }
 }

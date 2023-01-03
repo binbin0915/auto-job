@@ -1,7 +1,7 @@
 package com.example.autojob.util.bean;
 
-import com.example.autojob.util.json.JsonUtil;
 import com.example.autojob.util.convert.StringUtils;
+import com.example.autojob.util.json.JsonUtil;
 import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -397,6 +397,4 @@ public class ObjectUtil {
         }
         return object2;
     }
-
-
 }

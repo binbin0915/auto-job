@@ -2,6 +2,8 @@ package com.example.autojob.skeleton.framework.task;
 
 import com.example.autojob.logging.model.producer.AutoJobLogHelper;
 import com.example.autojob.skeleton.enumerate.SchedulingStrategy;
+import com.example.autojob.skeleton.framework.config.AutoJobRetryConfig;
+import com.example.autojob.skeleton.framework.mail.IMailClient;
 import com.example.autojob.skeleton.framework.pool.RunnablePostProcessor;
 import com.example.autojob.skeleton.model.task.DefaultRunnablePostProcessor;
 import com.example.autojob.skeleton.model.task.TaskExecutable;
@@ -51,6 +53,14 @@ public abstract class AutoJobTask {
      */
     protected Boolean isWaiting = false;
     /**
+     * 是否正在重试
+     */
+    protected Boolean isRetrying = false;
+    /**
+     * 重试配置
+     */
+    protected AutoJobRetryConfig retryConfig;
+    /**
      * 运行方法所在的类
      */
     protected Class<?> methodClass;
@@ -71,7 +81,7 @@ public abstract class AutoJobTask {
      */
     protected Object[] params;
     /**
-     * 参数字符串
+     * 参数字符串，Simple型参数或FULL型参数
      */
     protected String paramsString;
     /**
@@ -100,6 +110,10 @@ public abstract class AutoJobTask {
      * 任务持有的logHelper对象实例
      */
     protected AutoJobLogHelper logHelper;
+    /**
+     * 邮件报警客户端
+     */
+    protected IMailClient mailClient;
 
     @Override
     public boolean equals(Object o) {
@@ -143,6 +157,17 @@ public abstract class AutoJobTask {
 
     public String getReference() {
         return String.format("%s%s", methodClass == null ? "" : methodClass.getName() + ".", methodName);
+    }
+
+    /**
+     * 拒绝任务执行
+     *
+     * @return void
+     * @author Huang Yongxiang
+     * @date 2023/1/3 14:02
+     */
+    public void forbidden() {
+        isAllowRegister = false;
     }
 
     public enum TaskType {

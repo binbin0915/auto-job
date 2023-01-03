@@ -40,6 +40,10 @@ public class AutoJobSchedulingRecord {
      */
     private boolean isRun;
     /**
+     * 是否是重试调度
+     */
+    private boolean isRetry;
+    /**
      * 执行结果
      */
     private String result;
@@ -64,6 +68,7 @@ public class AutoJobSchedulingRecord {
         isRun = task
                 .getTrigger()
                 .getIsRunning();
+        isRetry = task.getIsRetrying();
         AutoJobRunResult runResult = task.getRunResult();
         if (runResult != null && runResult.hasResult()) {
             isSuccess = task

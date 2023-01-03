@@ -47,6 +47,10 @@ public class AutoJobSchedulingRecordEntity {
      */
     private Integer isRun;
     /**
+     * 是否是重试调度
+     */
+    private Integer isRetry;
+    /**
      * 执行结果 JSON序列化
      */
     private String result;

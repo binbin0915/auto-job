@@ -104,7 +104,7 @@ public class AutoJobRunSuccessScheduler extends AbstractScheduler implements ITa
                 }
                 task
                         .getRunResult()
-                        .setFinishedTime(System.currentTimeMillis());
+                        .finish();
                 task.setIsFinished(true);
                 TaskEventManager
                         .getInstance()

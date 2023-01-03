@@ -37,7 +37,7 @@ import com.example.autojob.skeleton.model.register.*;
 import com.example.autojob.skeleton.model.scheduler.*;
 import com.example.autojob.skeleton.model.tq.AutoJobTaskQueue;
 import com.example.autojob.util.bean.ObjectUtil;
-import com.example.autojob.util.mail.MailHelper;
+import com.example.autojob.skeleton.framework.mail.SMTPMailClient;
 import com.example.autojob.util.thread.FlowThreadPoolExecutorHelper;
 import com.example.autojob.util.thread.TimerThreadPoolExecutorHelper;
 import lombok.extern.slf4j.Slf4j;
@@ -161,14 +161,18 @@ public class AutoJobBootstrap {
 
         /*=================邮件配置=================>*/
         if (config.getEnableMailAlert()) {
-            MailHelper.MailType mailType = MailHelper.MailType.convert(config.getMailType());
-            if (mailType != null && mailType != MailHelper.MailType.CUSTOMIZE) {
-                this.runningContext.setMailHelper(new MailHelper(config.getSenderAddress(), config.getSenderToken(), config.getReceiverAddress(), mailType));
-            } else if (mailType == MailHelper.MailType.CUSTOMIZE) {
-                this.runningContext.setMailHelper(new MailHelper(config.getSenderAddress(), config.getSenderToken(), config.getReceiverAddress(), config.getSmtpAddress(), config.getSmtpPort()));
-            } else {
-                throw new IllegalArgumentException("未知的邮件类型：" + config.getMailType());
+            SMTPMailClient.MailType mailType = SMTPMailClient.MailType.convert(config.getMailType());
+            if (mailType == null) {
+                throw new IllegalArgumentException("未知的邮箱类型：" + config.getMailType());
             }
+            this.runningContext.setMailClient(SMTPMailClient
+                    .builder(config.getSenderAddress())
+                    .setSenderMailType(mailType)
+                    .setSenderPassword(config.getSenderToken())
+                    .setSmtpAddress(config.getSmtpAddress())
+                    .setSmtpPort(config.getSmtpPort())
+                    .setReceiverAddress(config.getReceiverAddress())
+                    .build());
         }
         /*=======================Finished======================<*/
 

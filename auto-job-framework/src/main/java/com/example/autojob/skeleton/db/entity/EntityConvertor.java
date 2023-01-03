@@ -305,6 +305,7 @@ public class EntityConvertor {
                 .getSchedulingTime()
                 .getTime());
         entity.setTaskAlias(schedulingRecord.getTaskAlias());
+        entity.setIsRetry(schedulingRecord.isRetry() ? 1 : 0);
         if (!schedulingRecord.isRun()) {
             entity.setIsRun(0);
             entity.setIsSuccess(schedulingRecord.isSuccess() ? 1 : 0);
@@ -322,6 +323,7 @@ public class EntityConvertor {
         record.setExecutionTime(entity.getExecutionTime());
         record.setSuccess(entity.getIsSuccess() != null && entity.getIsSuccess() == 1);
         record.setTaskAlias(entity.getTaskAlias());
+        record.setRetry(entity.getIsRetry() != null && entity.getIsRetry() == 1);
         record.setResult(entity.getResult());
         record.setTaskId(entity.getTaskId());
         record.setSchedulingTime(new Date(entity

@@ -7,9 +7,12 @@ import com.example.autojob.skeleton.db.mapper.AutoJobMapperHolder;
 import com.example.autojob.skeleton.db.mapper.TransactionEntry;
 import com.example.autojob.skeleton.enumerate.ScriptType;
 import com.example.autojob.skeleton.framework.boot.AutoJobApplication;
+import com.example.autojob.skeleton.framework.config.AutoJobRetryConfig;
+import com.example.autojob.skeleton.framework.mail.IMailClient;
 import com.example.autojob.skeleton.framework.task.AutoJobTask;
 import com.example.autojob.skeleton.framework.task.AutoJobTrigger;
 import com.example.autojob.skeleton.model.task.script.ScriptTask;
+import com.example.autojob.util.convert.DefaultValueUtil;
 
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
@@ -55,12 +58,19 @@ public class AutoJobScriptTaskBuilder {
      */
     private boolean isChildTask;
 
+    /**
+     * 重试配置
+     */
+    private AutoJobRetryConfig retryConfig;
+
     private Object[] params;
 
     /**
      * 如果是DB任务则创建时是否保存
      */
     private boolean isSaveWhenDB;
+
+    private IMailClient mailClient;
 
     public AutoJobScriptTaskBuilder() {
         trigger = AutoJobTriggerFactory.newDelayTrigger((long) (AutoJobApplication
@@ -96,6 +106,11 @@ public class AutoJobScriptTaskBuilder {
         return this;
     }
 
+    public AutoJobScriptTaskBuilder setRetryConfig(AutoJobRetryConfig retryConfig) {
+        this.retryConfig = retryConfig;
+        return this;
+    }
+
     public AutoJobScriptTaskBuilder setSaveWhenDB(boolean saveWhenDB) {
         isSaveWhenDB = saveWhenDB;
         return this;
@@ -103,6 +118,11 @@ public class AutoJobScriptTaskBuilder {
 
     public AutoJobScriptTaskBuilder setParams(String... params) {
         this.params = params;
+        return this;
+    }
+
+    public AutoJobScriptTaskBuilder setMailClient(IMailClient mailClient) {
+        this.mailClient = mailClient;
         return this;
     }
 
@@ -178,6 +198,14 @@ public class AutoJobScriptTaskBuilder {
         scriptTask.setAlias(taskAlias);
         scriptTask.setIsChildTask(isChildTask);
         scriptTask.setBelongTo(belongTo);
+        scriptTask.setRetryConfig(DefaultValueUtil.defaultValue(retryConfig, AutoJobApplication
+                .getInstance()
+                .getConfigHolder()
+                .getAutoJobConfig()
+                .getRetryConfig()));
+        scriptTask.setMailClient(DefaultValueUtil.defaultValue(mailClient, AutoJobApplication
+                .getInstance()
+                .getMailClient()));
         scriptTask.setType(taskType);
         scriptTask.setTaskLevel(taskLevel);
         if (params != null) {

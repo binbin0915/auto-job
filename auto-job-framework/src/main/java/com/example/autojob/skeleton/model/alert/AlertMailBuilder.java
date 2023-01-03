@@ -1,6 +1,7 @@
 package com.example.autojob.skeleton.model.alert;
 
 import com.example.autojob.skeleton.enumerate.AlertEventLevel;
+import com.example.autojob.skeleton.framework.mail.IMailClient;
 
 /**
  * 报警邮件构建者对象
@@ -12,6 +13,8 @@ public class AlertMailBuilder {
     private AlertMail alertMail;
 
     private StringBuilder builder;
+
+    private IMailClient mailClient;
 
     private AlertMailBuilder(AlertMail alertMail) {
         this.alertMail = alertMail;
@@ -149,9 +152,14 @@ public class AlertMailBuilder {
         return this;
     }
 
+    public AlertMailBuilder setMailClient(IMailClient mailClient) {
+        this.mailClient = mailClient;
+        return this;
+    }
 
     public AlertMail getAlertMail() {
         alertMail.setContent(builder.toString());
+        alertMail.setMailClient(mailClient);
         return alertMail;
     }
 

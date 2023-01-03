@@ -11,6 +11,7 @@ import com.example.autojob.skeleton.cluster.model.AutoJobTaskTransferManager;
 import com.example.autojob.skeleton.db.DataSourceHolder;
 import com.example.autojob.skeleton.framework.config.AutoJobConfigHolder;
 import com.example.autojob.skeleton.framework.container.MemoryTaskContainer;
+import com.example.autojob.skeleton.framework.mail.IMailClient;
 import com.example.autojob.skeleton.framework.network.AutoJobNetWorkManager;
 import com.example.autojob.skeleton.framework.processor.IAutoJobEnd;
 import com.example.autojob.skeleton.framework.processor.IAutoJobLoader;
@@ -21,7 +22,6 @@ import com.example.autojob.skeleton.model.executor.AutoJobTaskExecutorPool;
 import com.example.autojob.skeleton.model.register.IAutoJobRegister;
 import com.example.autojob.skeleton.model.scheduler.AbstractScheduler;
 import com.example.autojob.skeleton.model.tq.AutoJobTaskQueue;
-import com.example.autojob.util.mail.MailHelper;
 import com.example.autojob.util.thread.ScheduleTaskUtil;
 import com.example.autojob.util.thread.SyncHelper;
 import lombok.AccessLevel;
@@ -110,7 +110,7 @@ public class AutoJobApplication implements Closeable {
     /**
      * 邮件处理器
      */
-    private MailHelper mailHelper;
+    private IMailClient mailClient;
     /**
      * 连接池
      */

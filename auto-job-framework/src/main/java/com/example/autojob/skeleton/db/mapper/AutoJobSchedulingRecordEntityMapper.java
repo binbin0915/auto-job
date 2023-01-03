@@ -12,7 +12,7 @@ import java.util.List;
  * @Date 2022/08/29 16:27
  */
 public class AutoJobSchedulingRecordEntityMapper extends BaseMapper<AutoJobSchedulingRecordEntity> {
-    private static final String ALL_COLUMNS = "id, write_timestamp, scheduling_time, task_alias, task_id, is_success, is_run, result, execution_time, del_flag";
+    private static final String ALL_COLUMNS = "id, write_timestamp, scheduling_time, task_alias, task_id, is_success, is_run, is_retry, result, execution_time, del_flag";
 
     private static final String TABLE_NAME = "aj_scheduling_record";
 

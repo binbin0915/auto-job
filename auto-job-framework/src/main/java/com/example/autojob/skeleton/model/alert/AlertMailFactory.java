@@ -1,5 +1,6 @@
 package com.example.autojob.skeleton.model.alert;
 
+import com.example.autojob.skeleton.framework.boot.AutoJobApplication;
 import com.example.autojob.skeleton.framework.task.AutoJobTask;
 import com.example.autojob.skeleton.lang.IAutoJobFactory;
 import com.example.autojob.skeleton.enumerate.AlertEventLevel;
@@ -20,6 +21,7 @@ public class AlertMailFactory implements IAutoJobFactory {
         AlertMailBuilder builder = AlertMailBuilder.newInstance();
         AutoJobTask errorTask = event.getErrorTask();
         return builder
+                .setMailClient(errorTask.getMailClient())
                 .setTitle(event.getTitle())
                 .setLevel(AlertEventLevel.WARN)
                 .addContentTitle(String.format("任务：\"%d:%s\"执行失败", errorTask.getId(), errorTask.getAlias()), 1)
@@ -45,6 +47,9 @@ public class AlertMailFactory implements IAutoJobFactory {
     public static AlertMail newClusterOpenProtectedModelAlertMail(ClusterOpenProtectedModelAlertEvent event) {
         AlertMailBuilder builder = AlertMailBuilder.newInstance();
         return builder
+                .setMailClient(AutoJobApplication
+                        .getInstance()
+                        .getMailClient())
                 .setTitle(event.getTitle())
                 .setLevel(AlertEventLevel.SERIOUS_WARN)
                 .addContentTitle(String.format("节点：%s:%s启动保护模式", event
@@ -67,6 +72,9 @@ public class AlertMailFactory implements IAutoJobFactory {
     public static AlertMail newClusterCloseProtectedModeAlertMail(ClusterCloseProtectedModelEvent event) {
         AlertMailBuilder builder = AlertMailBuilder.newInstance();
         return builder
+                .setMailClient(AutoJobApplication
+                        .getInstance()
+                        .getMailClient())
                 .setTitle(event.getTitle())
                 .setLevel(AlertEventLevel.INFO)
                 .addContentTitle(String.format("节点：%s:%s关闭保护模式", event
@@ -91,6 +99,7 @@ public class AlertMailFactory implements IAutoJobFactory {
         AutoJobTask refusedTask = event.getRefusedTask();
         String refusedContent = !refusedTask.getIsAllowRegister() ? "白名单之外" : "资源过载";
         return builder
+                .setMailClient(refusedTask.getMailClient())
                 .setTitle(event.getTitle())
                 .setLevel(AlertEventLevel.WARN)
                 .addContentTitle(String.format("任务：\"%d:%s\"被拒绝执行", refusedTask.getId(), refusedTask.getAlias()), 1)

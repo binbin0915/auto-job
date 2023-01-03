@@ -47,8 +47,19 @@ public class AutoJobNetWorkManager {
         }
     }
 
+    /**
+     * 获取RPC远程接口代理实例，
+     *
+     * @param interfaceType 接口类型
+     * @param host          主机地址
+     * @param port          TCP端口号
+     * @return T
+     * @author Huang Yongxiang
+     * @date 2023/1/3 15:00
+     */
     public <T> T getProxyInterface(Class<T> interfaceType, String host, int port) {
-        RPCClientProxy<T> proxy = new RPCClientProxy<>("localhost".equals(host) ? InetUtil.getLocalhostIp() : host, port, interfaceType);
+        RPCClientProxy<T> proxy = new RPCClientProxy<>("localhost".equals(host) ? InetUtil.getLocalhostIp() : host,
+                port, interfaceType);
         return proxy.clientProxy();
     }
 }

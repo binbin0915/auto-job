@@ -38,14 +38,7 @@ public class AutoJobConfig extends AbstractAutoJobConfig {
     @HotLoadable
     private List<String> filterClassPathList;
 
-    @HotLoadable
-    private Boolean enableErrorRetry;
-
-    @HotLoadable
-    private Integer errorRetryCount;
-
-    @HotLoadable
-    private Double errorRetryInterval;
+    private AutoJobRetryConfig retryConfig;
 
     private Boolean enableCluster;
 
@@ -93,9 +86,6 @@ public class AutoJobConfig extends AbstractAutoJobConfig {
             filterClassPathList = Arrays.asList(propertiesHolder
                     .getProperty("autoJob.register.filter.classPath", "")
                     .split(","));
-            enableErrorRetry = propertiesHolder.getProperty("autoJob.scheduler.finished.error.retry.enable", Boolean.class, "true");
-            errorRetryCount = propertiesHolder.getProperty("autoJob.scheduler.finished.error.retry.retryCount", Integer.class, "3");
-            errorRetryInterval = propertiesHolder.getProperty("autoJob.scheduler.finished.error.retry.interval", Double.class, "5");
             enableCluster = propertiesHolder.getProperty("autoJob.cluster.enable", Boolean.class, "false");
             enableMailAlert = propertiesHolder.getProperty("autoJob.emailAlert.enable", Boolean.class, "false");
             senderAddress = propertiesHolder.getProperty("autoJob.emailAlert.auth.sender");
@@ -111,6 +101,7 @@ public class AutoJobConfig extends AbstractAutoJobConfig {
             clusterCloseProtectedModeAlert = propertiesHolder.getProperty("autoJob.emailAlert" + ".config.clusterCloseProtectedMode", Boolean.class, "true");
             taskRefuseHandleAlert = propertiesHolder.getProperty("autoJob.emailAlert.config" + ".taskRefuseHandle", Boolean.class, "true");
             executorPoolConfig = new AutoJobExecutorPoolConfig(propertiesHolder);
+            retryConfig = new AutoJobRetryConfig(propertiesHolder);
         }
     }
 }

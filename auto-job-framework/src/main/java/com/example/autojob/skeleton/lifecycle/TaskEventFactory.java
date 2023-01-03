@@ -104,6 +104,18 @@ public class TaskEventFactory implements IAutoJobFactory {
     public static TaskMissFireEvent newTaskMissFireEvent(AutoJobTask task) {
         TaskMissFireEvent event = new TaskMissFireEvent(task);
         event.setMessage(String.format("任务:%d miss fire", task.getId()));
+        event.setTriggeringTime(task
+                .getTrigger()
+                .getTriggeringTime());
+        return event;
+    }
+
+    public static TaskRetryEvent newTaskRetryEvent(AutoJobTask task, int retriedTimes, long retryTime, int maximumRetryCount) {
+        TaskRetryEvent event = new TaskRetryEvent(task);
+        event.setMessage(String.format("任务%d将在%dms后进行第%d/%d次重试", task.getId(), retryTime - System.currentTimeMillis(), retriedTimes, maximumRetryCount));
+        event.setMaximumRetryCount(maximumRetryCount);
+        event.setRetriedTimes(retriedTimes);
+        event.setRetryTime(retryTime);
         return event;
     }
 

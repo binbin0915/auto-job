@@ -1,7 +1,6 @@
 package com.example.autojob.skeleton.model.alert;
 
-import com.example.autojob.skeleton.framework.boot.AutoJobApplication;
-import com.example.autojob.util.mail.MailHelper;
+import com.example.autojob.skeleton.framework.mail.IMailClient;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -28,19 +27,14 @@ public class AlertMail {
      * 报警级别
      */
     private String level;
+    /**
+     * 邮箱客户端
+     */
+    private IMailClient mailClient;
 
     public boolean send() {
-        if (AutoJobApplication
-                .getInstance()
-                .getConfigHolder()
-                .getAutoJobConfig()
-                .getEnableMailAlert()) {
-            MailHelper mailHelper = AutoJobApplication
-                    .getInstance()
-                    .getMailHelper();
-            if (mailHelper != null) {
-                return mailHelper.sendMail(level + "：" + title, String.format("<h2 style='color: %s'>报警级别：%s\n%s</h2>", getLevelColor(), level, content));
-            }
+        if (mailClient != null) {
+            return mailClient.sendMail(level + "：" + title, String.format("<h2 style='color: %s'>报警级别：%s\n%s</h2>", getLevelColor(), level, content));
         }
         return false;
     }

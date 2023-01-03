@@ -91,6 +91,7 @@ public abstract class AbstractScheduler {
             return;
         }
         if (task.getIsStart()) {
+            log.warn("任务{} miss fire", task.getId());
             TaskEventManager
                     .getInstance()
                     .publishTaskEventSync(TaskEventFactory.newTaskMissFireEvent(task), TaskMissFireEvent.class, true);

@@ -27,7 +27,7 @@ public class ClassPathFilter extends AbstractRegisterFilter {
                                 .getName(), RegexUtil.wildcardToRegexString(item))));
             } else {
                 log.error("类路径过滤器异常，AutoJobConfig为null，此时将阻止任何任务通过");
-                task.setIsAllowRegister(false);
+                task.forbidden();
             }
         }
         if (chain != null) {

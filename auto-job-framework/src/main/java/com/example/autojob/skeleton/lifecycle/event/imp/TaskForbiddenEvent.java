@@ -4,7 +4,8 @@ import com.example.autojob.skeleton.framework.task.AutoJobTask;
 import com.example.autojob.skeleton.lifecycle.event.TaskEvent;
 
 /**
- * @Description 禁止的任务事件
+ * 禁止的任务事件
+ *
  * @Author Huang Yongxiang
  * @Date 2022/07/11 17:41
  */
